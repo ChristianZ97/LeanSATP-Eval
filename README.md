@@ -39,7 +39,7 @@ examples/                             one annotated proof per benchmark
 `proofs/` is the minimized form (aesop `Try this:`). `proofs_aesop_config/` keeps the
 `aesop (config := …) (add …)` block SATP emitted, e.g.
 `minif2f/proofs_aesop_config/aime_1990_p4.lean`. `examples/` tags each `have` `[satp]`
-or `[BFS-1]`; see `examples/README.md`.
+or `[bfs]`; see `examples/README.md`.
 
 ## Verify
 

@@ -3,16 +3,16 @@
 Lean 4 proofs from a DSP+ pipeline; subgoals closed by an SATP→BFS cascade.
 All proofs compile with `lake env lean` on stock Mathlib, no prover server.
 
-| Benchmark | Proved | Verified |
-|---|---|---|
-| MiniF2F (test, 244) | 189 | 189 |
-| PutnamBench (Lean 4, 672) | 27 | 27 |
+| Benchmark | Proved |
+|---|---|
+| MiniF2F-Test | 77.5% (189 / 244) |
+| PutnamBench | 27 / 672 |
 
 `#print axioms` on each proof: `[propext, Classical.choice, Quot.sound]`, no `sorryAx`.
 
 ## Pipeline
 
-[DSP+][dspplus], three stages:
+[DSP+][dspplus] three stages:
 
 1. Draft — an LLM writes an informal proof.
 2. Sketch — the same LLM formalizes it into Lean 4 with a `sorry` per subgoal.
@@ -20,11 +20,11 @@ All proofs compile with `lake env lean` on stock Mathlib, no prover server.
    [LeanSATP][leansatp] policy emits one `aesop` config; gaps it misses go to
    BFS-Prover-V2-7B, up to ×4.
 
-Draft + sketch model:
+Drafter & Sketcher:
 
 | Benchmark | Model |
 |---|---|
-| MiniF2F | [Qwen3.5-27B-FP8][q35] |
+| MiniF2F-Test | [Qwen3.5-27B-FP8][q35] |
 | PutnamBench | [Qwen3.6-27B-FP8][q36] |
 
 ## Layout

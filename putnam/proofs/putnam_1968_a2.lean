@@ -1,0 +1,225 @@
+
+import Mathlib
+
+set_option maxHeartbeats 0
+
+theorem putnam_1968_a2
+(a b c d e f : ℤ)
+(ε : ℝ)
+(hne : a * d ≠ b * c)
+(hε : ε > 0)
+: ∃ r s : ℚ, (|r * a + s * b - e| : ℝ) ∈ Set.Ioo 0 ε ∧ (|r * c + s * d - f| : ℝ) ∈ Set.Ioo 0 ε := by
+  let D : ℚ := (a * d - b * c : ℚ)
+  have hD_nonzero : D ≠ 0 := by
+    clear * - hne
+    simp_all only [ne_eq, D]
+    apply Aesop.BuiltinRules.not_intro
+    intro a_1
+    (norm_cast at *)
+    (bound )
+
+  have hδ₁_exists : ∃ δ₁ : ℚ, (δ₁ : ℝ) ∈ Set.Ioo 0 ε := by
+    clear * - hε
+    simp_all only [gt_iff_lt, Set.mem_Ioo, Rat.cast_pos]
+    obtain ⟨δ₂, hδ₂, _⟩ := exists_rat_btwn hε
+    simp_all only [Rat.cast_pos]
+    have := exists_rat_btwn hδ₂
+    simp_all only [Rat.cast_eq_id, id_eq]
+    cases' this with δ₁ hδ₁
+    use δ₁
+    simp_all only [true_and]
+    linarith [show (δ₁ : ℝ) < δ₂ by exact_mod_cast hδ₁.2]
+
+  let δ₁ : ℚ := Classical.choose hδ₁_exists
+  have hδ₁_in_Ioo : (δ₁ : ℝ) ∈ Set.Ioo 0 ε := by
+    clear * - hδ₁_exists
+    simp_all [δ₁]
+    cases Classical.choose_spec hδ₁_exists
+    simp_all only [Set.mem_Ioo, Rat.cast_pos, and_self]
+
+  have hδ₁_pos : 0 < (δ₁ : ℝ) := by
+    clear * - hδ₁_in_Ioo
+    simp_all only [Set.mem_Ioo, Rat.cast_pos, δ₁]
+
+  have hδ₁_lt_eps : (δ₁ : ℝ) < ε := by
+    clear * - hδ₁_in_Ioo
+    simp_all only [Set.mem_Ioo, Rat.cast_pos, δ₁]
+
+  have hδ₂_exists : ∃ δ₂ : ℚ, (δ₂ : ℝ) ∈ Set.Ioo 0 ε := by
+    clear * - hε
+    simp_all only [gt_iff_lt, Set.mem_Ioo, Rat.cast_pos]
+    simpa using exists_rat_btwn hε
+
+  let δ₂ : ℚ := Classical.choose hδ₂_exists
+  have hδ₂_in_Ioo : (δ₂ : ℝ) ∈ Set.Ioo 0 ε := by
+    clear * - hδ₂_exists
+    simp_all [δ₂]
+    simpa using Classical.choose_spec hδ₂_exists
+
+  have hδ₂_pos : 0 < (δ₂ : ℝ) := by
+    clear * - hδ₂_in_Ioo
+    simp_all only [Set.mem_Ioo, Rat.cast_pos, δ₂]
+
+  have hδ₂_lt_eps : (δ₂ : ℝ) < ε := by
+    clear * - hδ₂_in_Ioo
+    simp_all only [Set.mem_Ioo, Rat.cast_pos, δ₂]
+
+  let u : ℚ := (e : ℚ) + δ₁
+  let v : ℚ := (f : ℚ) + δ₂
+  let r : ℚ := ((d : ℚ) * u - (b : ℚ) * v) / D
+  let s : ℚ := ((a : ℚ) * v - (c : ℚ) * u) / D
+  have h_r_in_Q : True := by
+    clear * -
+    simp only at *
+
+  have h_s_in_Q : True := by
+    clear * -
+    simp only at *
+
+  have h_num_expansion : ((d : ℚ) * u - (b : ℚ) * v) * (a : ℚ) + ((a : ℚ) * v - (c : ℚ) * u) * (b : ℚ) = (a * d - b * c : ℚ) * u := by
+    clear * -
+    simp_all [u, δ₁, v, δ₂]
+    obtain ⟨w, h⟩ := hδ₁_exists
+    obtain ⟨w_1, h_1⟩ := hδ₂_exists
+    (nlinarith)
+
+  have h_frac_simplifies : (((d : ℚ) * u - (b : ℚ) * v) * (a : ℚ) + ((a : ℚ) * v - (c : ℚ) * u) * (b : ℚ)) / D = u := by
+    clear * - h_num_expansion hD_nonzero
+    simp_all only [ne_eq, Set.mem_Ioo, Rat.cast_pos, not_false_eq_true, mul_div_cancel_left₀, D, δ₂, δ₁, u, v]
+
+  have h_ra_sb_eq_u : (r : ℚ) * (a : ℚ) + (s : ℚ) * (b : ℚ) = u := by
+    clear * - h_frac_simplifies
+    simp_all [u, δ₁, v, δ₂, D, r, s]
+    obtain ⟨w, h⟩ := hδ₁_exists
+    obtain ⟨w_1, h_1⟩ := hδ₂_exists
+    (field_simp)
+    simp_all only
+
+  have h_num_expansion_cd : ((d : ℚ) * u - (b : ℚ) * v) * (c : ℚ) + ((a : ℚ) * v - (c : ℚ) * u) * (d : ℚ) = (a * d - b * c : ℚ) * v := by
+    clear * -
+    simp_all [u, δ₁, v, δ₂]
+    obtain ⟨w, h⟩ := hδ₁_exists
+    obtain ⟨w_1, h_1⟩ := hδ₂_exists
+    (nlinarith)
+
+  have h_frac_simplifies_cd : (((d : ℚ) * u - (b : ℚ) * v) * (c : ℚ) + ((a : ℚ) * v - (c : ℚ) * u) * (d : ℚ)) / D = v := by
+    clear * - h_num_expansion_cd hD_nonzero
+    simp_all only [ne_eq, Set.mem_Ioo, Rat.cast_pos, not_false_eq_true, mul_div_cancel_left₀, D, δ₂, δ₁, u, v]
+
+  have h_rc_sd_eq_v : (r : ℚ) * (c : ℚ) + (s : ℚ) * (d : ℚ) = v := by
+    clear * - h_frac_simplifies_cd
+    simp_all [u, δ₁, v, δ₂, D, r, s]
+    obtain ⟨w, h⟩ := hδ₁_exists
+    obtain ⟨w_1, h_1⟩ := hδ₂_exists
+    (field_simp)
+    simp_all only
+
+  have h_abs1_eq_u : |(r : ℝ) * (a : ℝ) + (s : ℝ) * (b : ℝ) - (e : ℝ)| = |(u : ℝ) - (e : ℝ)| := by
+    clear * - h_ra_sb_eq_u
+    simp_all [r, u, δ₁, v, δ₂, D, s]
+    obtain ⟨w, h⟩ := hδ₁_exists
+    obtain ⟨w_1, h_1⟩ := hδ₂_exists
+    (field_simp)
+    (norm_cast at *)
+    simp_all only [Int.cast_sub, Int.cast_mul]
+    (field_simp [*] at *)
+    simp_all only [add_sub_cancel_left]
+
+  have h_abs1_eq_d1 : |(u : ℝ) - (e : ℝ)| = (δ₁ : ℝ) := by
+    clear * -
+    simp_all [u, δ₁]
+    by_contra H
+    simp_all only [not_le]
+    norm_cast at *
+    have hu_pos : 0 < u
+    · simp_all [u, δ₁]
+      exfalso
+      have := Classical.choose_spec hδ₁_exists
+      simp_all
+      linarith
+    · simp_all [u, δ₁]
+      have := Classical.choose_spec hδ₁_exists
+      simp_all
+      linarith [this.1]
+
+  have h_abs2_eq_v : |(r : ℝ) * (c : ℝ) + (s : ℝ) * (d : ℝ) - (f : ℝ)| = |(v : ℝ) - (f : ℝ)| := by
+    clear * - h_rc_sd_eq_v
+    simp_all [r, u, δ₁, v, δ₂, D, s]
+    obtain ⟨w, h⟩ := hδ₁_exists
+    obtain ⟨w_1, h_1⟩ := hδ₂_exists
+    (field_simp)
+    (norm_cast at *)
+    simp_all only [Int.cast_sub, Int.cast_mul]
+    (field_simp [*] at *)
+    simp_all only [add_sub_cancel_left]
+
+  have h_abs2_eq_d2 : |(v : ℝ) - (f : ℝ)| = (δ₂ : ℝ) := by
+    clear * -
+    simp_all [v, δ₂]
+    have := Classical.choose_spec hδ₂_exists
+    simp_all
+    linarith
+
+  have h_abs1_pos : 0 < |(r : ℝ) * (a : ℝ) + (s : ℝ) * (b : ℝ) - (e : ℝ)| := by
+    clear * - h_abs1_eq_u h_abs1_eq_d1 hδ₁_pos
+    simp_all [δ₁, δ₂, u, v, r, D, s]
+    obtain ⟨w, h⟩ := hδ₁_exists
+    obtain ⟨w_1, h_1⟩ := hδ₂_exists
+    apply Aesop.BuiltinRules.not_intro
+    intro a_1
+    simp_all only [lt_self_iff_false]
+
+  have h_abs1_lt : |(r : ℝ) * (a : ℝ) + (s : ℝ) * (b : ℝ) - (e : ℝ)| < ε := by
+    clear * - h_abs1_eq_u h_abs1_eq_d1 hδ₁_lt_eps
+    simp_all [δ₁, r, u, v, δ₂, D, s]
+    norm_cast
+    simp_all only [Rat.cast_abs]
+    norm_cast
+    simp_all only [Rat.cast_abs]
+    rwa [abs_of_nonneg]
+    simp_all only [Rat.cast_nonneg]
+
+  have h_abs1_in_Ioo : (|(r : ℝ) * (a : ℝ) + (s : ℝ) * (b : ℝ) - (e : ℝ)| : ℝ) ∈ Set.Ioo 0 ε := by
+    clear * - h_abs1_pos h_abs1_lt
+    simp_all only [Set.mem_Ioo, Rat.cast_pos, Rat.cast_div, Rat.cast_sub, Rat.cast_mul, Rat.cast_intCast, Rat.cast_add,
+        abs_pos, ne_eq, not_false_eq_true, and_self, r, u, δ₁, v, δ₂, D, s]
+
+  have h_abs2_pos : 0 < |(r : ℝ) * (c : ℝ) + (s : ℝ) * (d : ℝ) - (f : ℝ)| := by
+    clear * - h_abs2_eq_v h_abs2_eq_d2 hδ₂_pos
+    simp_all [δ₂, δ₁, u, D, r, s, v]
+    obtain ⟨w, h⟩ := hδ₁_exists
+    obtain ⟨w_1, h_1⟩ := hδ₂_exists
+    apply Aesop.BuiltinRules.not_intro
+    intro a_1
+    simp_all only [lt_self_iff_false, D]
+
+  have h_abs2_lt : |(r : ℝ) * (c : ℝ) + (s : ℝ) * (d : ℝ) - (f : ℝ)| < ε := by
+    clear * - h_abs2_eq_v h_abs2_eq_d2 hδ₂_lt_eps
+    simp_all [δ₂, r, u, δ₁, v, D, s]
+    norm_cast
+    simp_all only [Rat.cast_abs]
+    norm_cast
+    simp_all only [Rat.cast_abs]
+    norm_cast
+    simp_all only [Rat.cast_abs]
+    norm_cast
+    simp_all only [Rat.cast_abs]
+    norm_cast at *
+    simp_all only [Int.cast_sub, Int.cast_mul, Rat.cast_abs]
+    rw [abs_of_nonneg]
+    · simp_all only
+    · simp_all only [Rat.cast_nonneg]
+
+  have h_abs2_in_Ioo : (|(r : ℝ) * (c : ℝ) + (s : ℝ) * (d : ℝ) - (f : ℝ)| : ℝ) ∈ Set.Ioo 0 ε := by
+    clear * - h_abs2_pos h_abs2_lt
+    simp_all only [Set.mem_Ioo, Rat.cast_pos, Rat.cast_div, Rat.cast_sub, Rat.cast_mul, Rat.cast_intCast, Rat.cast_add,
+        abs_pos, ne_eq, not_false_eq_true, and_self, r, u, δ₁, v, δ₂, D, s]
+
+  have h_final : ∃ r' s' : ℚ, (|(r' : ℝ) * (a : ℝ) + (s' : ℝ) * (b : ℝ) - (e : ℝ)| : ℝ) ∈ Set.Ioo 0 ε ∧ (|(r' : ℝ) * (c : ℝ) + (s' : ℝ) * (d : ℝ) - (f : ℝ)| : ℝ) ∈ Set.Ioo 0 ε := by
+    clear * - h_abs1_in_Ioo h_abs2_in_Ioo
+    simp_all [r, u, δ₁, v, δ₂, D, s]
+    use r, s
+    simp_all only [Set.mem_Ioo, Rat.cast_pos, Rat.cast_div, Rat.cast_sub, Rat.cast_mul, Rat.cast_intCast, Rat.cast_add,
+      not_false_eq_true, and_self, r, u, δ₁, v, δ₂, D, s]
+
+  exact h_final

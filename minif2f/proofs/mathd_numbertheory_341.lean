@@ -1,0 +1,15 @@
+import Mathlib
+open BigOperators Real Nat Topology Rat
+/-- What is the sum of the final three digits of the integer representation of $5^{100}$? Show that it is 13.-/
+
+theorem mathd_numbertheory_341 (a b c : ℕ) (h₀ : a ≤ 9 ∧ b ≤ 9 ∧ c ≤ 9)
+    (h₁ : Nat.digits 10 (5 ^ 100 % 1000) = [c, b, a]) : a + b + c = 13 := by
+
+    simp_all only [reducePow, reduceMod, reduceLeDiff, ofNat_pos, digits_of_two_le_of_pos, reduceDiv, digits_zero,
+      List.cons.injEq, and_true]
+    obtain ⟨left, right⟩ := h₀
+    obtain ⟨left_1, right_1⟩ := h₁
+    obtain ⟨left_2, right⟩ := right
+    obtain ⟨left_3, right_1⟩ := right_1
+    subst right_1 left_3 left_1
+    simp_all only [reduceLeDiff, reduceAdd]

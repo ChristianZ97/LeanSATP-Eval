@@ -1,25 +1,78 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- The volume of a cone is given by the formula $V = \frac{1}{3}Bh$, where $B$ is the area of the base and $h$ is the height. The area of the base of a cone is 30 square units, and its height is 6.5 units. What is the number of cubic units in its volume? Show that it is 65.-/
 
 theorem mathd_algebra_478 (b h v : ℝ) (h₀ : 0 < b ∧ 0 < h ∧ 0 < v) (h₁ : v = 1 / 3 * (b * h))
     (h₂ : b = 30) (h₃ : h = 13 / 2) : v = 65 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Matroid.Indep.ssubset_ground | rw [Matroid.Indep.ssubset_ground] | simp only [Matroid.Indep.ssubset_ground]))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplications := 1100
+    maxRuleApplicationDepth := 220
+    maxNormIterations := 60
+    enableSimp := false
+    enableUnfold := false
+    }) (rule_sets := [-builtin])
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by gcongr))
+    (add norm 0 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by simp))
+    (add norm 100 (by ring_nf at *))
+    (add norm 1 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 0 (by rfl))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 1 (by norm_cast))
+    (add safe 0 (by ring_nf))
+    (add unsafe 90% (by simp_all))
+    (add norm 100 (by apply mul_le_mul_right))
+    (add norm 100 (by apply mul_le_mul_left))
+    (add norm 100 (by apply mul_div_cancel₀))
+    (add norm 100 (by unfold one_div))
+    (add unsafe 90% (by grind only [Real.rpow_pos_of_pos]))
+    (add unsafe 10% (by linarith [mul_lt_mul_left]))
+    (add unsafe 50% (by apply le_div_iff'))
+    (add unsafe 10% (by linarith [mul_lt_mul_right]))
+    (add unsafe 10% (by push_cast [Real.pi_pos] at *))
+    (add unsafe 90% (by grind only [ne_of_gt]))
+    (add unsafe 50% (by apply div_le_iff'))
+    (add unsafe 10% (by linarith [Behrend.ceil_lt_mul]))
+    (add unsafe 10% (by linarith [div_lt_iff]))
+    (add unsafe 90% (by grind only [EisensteinSeries.r1_pos]))
+    (add unsafe 90% (by grind only [Real.log_rpow]))
+    (add unsafe 90% (by grind only [mul_pos_iff_of_pos_left]))
+    (add unsafe 90% (by grind only [one_half_pos]))
+    (add unsafe 50% (by apply div_le_iff))
+    (add unsafe 50% (by apply le_div_iff))
+    (add unsafe 10% (by linarith [div_lt_iff']))
+    (add unsafe 90% (by grind only [mul_nonneg_iff_of_pos_right]))
+    (add unsafe 90% (by grind only [one_lt_div]))
+    (add unsafe 90% (by grind only [Real.sqrt_pos]))
+    (add unsafe 90% (by grind only [Real.b_pos]))
+    (add unsafe 90% (by grind only [Real.rpow_one]))
+    (add unsafe 90% (by grind only [Real.pi_div_two_pos]))
+    (add unsafe 90% (by grind only [bernsteinApproximation.δ_pos]))
+    (add unsafe 90% (by grind only [inv_pos]))
+    (add unsafe 10% (by linarith [lt_div_iff]))
+    (add unsafe 90% (by grind only [Real.aux₀]))
+    (add unsafe 90% (by grind only [zero_lt_two]))
+    (add unsafe 90% (by simp_rw [Real.rpow_mul]))

@@ -1,112 +1,74 @@
 import Mathlib
-
 open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+/-- What is the distance between the two intersections of $y=x^2$ and $x+y=1$? Show that it is \sqrt{10}.-/
 
 theorem mathd_algebra_487 (a b c d : ℝ) (h₀ : b = a ^ 2) (h₁ : a + b = 1) (h₂ : d = c ^ 2)
     (h₃ : c + d = 1) (h₄ : a ≠ c) : Real.sqrt ((a - c) ^ 2 + (b - d) ^ 2) = Real.sqrt 10 := by
-  have h5 : a + a ^ 2 = (1:ℝ) := by
-    clear * - h₀ h₁
-    subst h₀
-    simp_all only
 
-  have h6 : c + c ^ 2 = (1:ℝ) := by
-    clear * - h₂ h₃
-    subst h₂
-    simp_all only
-
-  have h7 : a ^ 2 + a - (1:ℝ) = 0 := by
-    clear * - h5
-    (nlinarith)
-
-  have h8 : c ^ 2 + c - (1:ℝ) = 0 := by
-    clear * - h6
-    (nlinarith)
-
-  have h9 : a + c = -(1:ℝ) := by
-    clear * - h7 h8 h₄
-    simp_all only [ne_eq]
-    apply mul_right_cancel₀ (sub_ne_zero_of_ne <| h₄) <;> nlinarith [sq_nonneg (a - c)]
-
-  have h10 : a * c = -(1:ℝ) := by
-    clear * - h7 h8 h₄
-    simp_all only [ne_eq]
-    nlinarith [sq_nonneg (a - c), mul_self_pos.2 (sub_ne_zero.2 h₄)]
-
-  have h11 : (a - c) ^ 2 = (a + c) ^ 2 - (4:ℝ) * (a * c) := by
-    clear * -
-    (nlinarith)
-
-  have h12 : (a - c) ^ 2 = (-(1:ℝ)) ^ 2 - (4:ℝ) * (-(1:ℝ)) := by
-    clear * - h9 h10 h11
-    simp_all only [even_two, Even.neg_pow, one_pow, mul_neg, mul_one, sub_neg_eq_add]
-
-  have h13 : (a - c) ^ 2 = (1:ℝ) - (4:ℝ) * (-(1:ℝ)) := by
-    clear * - h12
-    simp_all only [even_two, Even.neg_pow, one_pow, mul_neg, mul_one, sub_neg_eq_add]
-
-  have h14 : (a - c) ^ 2 = (1:ℝ) - (-(4:ℝ)) := by
-    clear * - h13
-    simp_all only [mul_neg, mul_one, sub_neg_eq_add]
-
-  have h15 : (a - c) ^ 2 = (1:ℝ) + (4:ℝ) := by
-    clear * - h14
-    simp_all only [sub_neg_eq_add]
-
-  have h16 : (a - c) ^ 2 = (5:ℝ) := by
-    clear * - h15
-    simp_all only
-    (nlinarith)
-
-  have h17 : b = (1:ℝ) - a := by
-    clear * - h₀ h₁
-    subst h₀
-    (nlinarith)
-
-  have h18 : d = (1:ℝ) - c := by
-    clear * - h₂ h₃
-    subst h₂
-    (nlinarith)
-
-  have h19 : b - d = ((1:ℝ) - a) - ((1:ℝ) - c) := by
-    clear * - h17 h18
-    subst h18 h17
-    simp_all only [sub_sub_sub_cancel_left]
-
-  have h20 : b - d = (1:ℝ) - a - (1:ℝ) + c := by
-    clear * - h19
-    simp_all only [sub_sub_sub_cancel_left, sub_sub_cancel_left]
-    (nlinarith)
-
-  have h21 : b - d = c - a := by
-    clear * - h20
-    simp_all only [sub_sub_cancel_left]
-    (nlinarith)
-
-  have h22 : (b - d) ^ 2 = (c - a) ^ 2 := by
-    clear * - h21
-    simp_all only
-
-  have h23 : (b - d) ^ 2 = (a - c) ^ 2 := by
-    clear * - h22
-    simp_all only
-    (nlinarith)
-
-  have h24 : (b - d) ^ 2 = (5:ℝ) := by
-    clear * - h16 h23
-    simp_all only
-
-  have h25 : (a - c) ^ 2 + (b - d) ^ 2 = (5:ℝ) + (5:ℝ) := by
-    clear * - h16 h24
-    simp_all only
-
-  have h26 : (a - c) ^ 2 + (b - d) ^ 2 = (10:ℝ) := by
-    clear * - h25
-    simp_all only
-    (nlinarith)
-
-  have h27 : Real.sqrt ((a - c) ^ 2 + (b - d) ^ 2) = Real.sqrt (10:ℝ) := by
-    clear * - h26
-    simp_all only
-
-  exact h27
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 220
+    maxNormIterations := 60
+    maxGoals := 16
+    useDefaultSimpSet := false
+    }) (rule_sets := [-builtin])
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 0 (by simp_all))
+    (add norm 100 (by ring_nf at *))
+    (add norm 100 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add norm 0 (by grind only [Real.sqrt_mul]))
+    (add norm 0 (by grind only [Real.mul_self_sqrt]))
+    (add norm 0 (by grind only [Real.sqrt_mul_self]))
+    (add norm 0 (by grind only [sq_eq_sq]))
+    (add norm 0 (by grind only [Real.sqrt_mul']))
+    (add norm 0 (by grind only [Real.sqrt_sq_eq_abs]))
+    (add norm 0 (by grind only [norm_add_sq]))
+    (add norm 0 (by grind only [Real.sqrt_nonneg]))
+    (add norm 0 (by grind only [WithLp.prod_norm_eq_of_L2]))
+    (add norm 0 (by grind only [EuclideanSpace.norm_eq]))
+    (add norm 0 (by grind only [EuclideanSpace.dist_eq]))
+    (add norm 0 (by grind only [sq_add_sq_mul]))
+    (add norm 0 (by grind only [Real.sqrt_le_sqrt]))
+    (add norm 0 (by grind only [norm_sub_sq]))
+    (add norm 0 (by grind only [Real.sqrt]))
+    (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+    (add norm 0 (by grind only [UpperHalfPlane.dist_coe_center_sq]))
+    (add norm 0 (by grind only [Real.cos_half]))
+    (add norm 0 (by grind only [sq_add_sq_mul_sq_add_sq]))
+    (add safe 0 (by simp_all [Real.rpow_two]))
+    (add safe 0 (by simp_all [pow_two]))
+    (add safe 1 (by rw [norm_add_sq_real]))
+    (add safe 100 (by simp_all [sq_le_sq]))
+    (add safe 1 (by rw [norm_sub_sq_real]))
+    (add safe 1 (by rw [aux_add]))
+    (add unsafe 10% (by push_cast [Real.sq_sqrt] at *))
+    (add unsafe 10% (by push_cast [Real.sqrt_sq] at *))
+    (add unsafe 10% (by push_cast [sq_sub_sq] at *))
+    (add unsafe 90% (by unfold sq_abs))
+    (add unsafe 90% (by simp [sq_nonneg] at *))
+    (add unsafe 90% (by unfold sub_sq))
+    (add unsafe 90% (by unfold sq_lt_sq))

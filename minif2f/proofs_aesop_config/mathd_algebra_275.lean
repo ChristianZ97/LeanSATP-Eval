@@ -1,26 +1,75 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- If $\left(\sqrt[4]{11}\right)^{3x-3}=\frac{1}{5}$, what is the value of $\left(\sqrt[4]{11}\right)^{6x+2}$? Express your answer as a fraction. Show that it is \frac{121}{25}.-/
 
 theorem mathd_algebra_275 (x : ℝ) (h : ((11 : ℝ) ^ (1 / 4)) ^ (3 * x - 3) = 1 / 5) :
     ((11 : ℝ) ^ (1 / 4)) ^ (6 * x + 2) = 121 / 25 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Subspace.quotAnnihilatorEquiv_apply | rw [Subspace.quotAnnihilatorEquiv_apply] | simp only [Subspace.quotAnnihilatorEquiv_apply]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplications := 400
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 180
+    enableUnfold := false
+    }) (rule_sets := [-builtin])
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 0 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 0 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 0 (by ring_nf))
+    (add safe 0 (by simp_all))
+    (add safe 0 (by field_simp [*] at *))
+    (add norm 0 (by rw [← Real.rpow_sub]))
+    (add norm 0 (by grind only [Complex.cpow_add]))
+    (add norm 0 (by grind only [Real.Gamma]))
+    (add norm 100 (by solve_by_elim [Complex.ofReal_cpow]))
+    (add norm 0 (by grind only [Real.Gamma_add_one]))
+    (add norm 100 (by solve_by_elim [Complex.cpow_one]))
+    (add safe 0 (by simp_all [Real.Gamma_two]))
+    (add safe 0 (by nlinarith [Complex.ofReal_sub]))
+    (add safe 0 (by nlinarith [Complex.ofReal_div]))
+    (add unsafe 50% (by apply Real.rpow_mul))
+    (add unsafe 50% (by apply Real.rpow_one))
+    (add unsafe 50% (by apply Real.rpow_add))
+    (add unsafe 50% (by apply mul_one_div))
+    (add unsafe 50% (by apply Real.mul_rpow))
+    (add unsafe 90% (by simp_rw [Real.rpow_sub']))
+    (add unsafe 10% (by simp_all only [one_div]))
+    (add unsafe 90% (by simp_rw [Real.rpow_neg_one]))
+    (add unsafe 50% (by simp_rw [Complex.Gamma_one_half_eq]))
+    (add unsafe 50% (by simp only [Real.rpow_add_one]))
+    (add unsafe 90% (by simp_rw [Real.rpow_neg]))
+    (add unsafe 50% (by apply div_self))
+    (add unsafe 90% (by simp_rw [Complex.mul_cpow_ofReal_nonneg]))
+    (add unsafe 90% (by simp_rw [Real.div_rpow]))
+    (add unsafe 50% (by apply MeasureTheory.integral_comp_rpow_Ioi_of_pos))
+    (add unsafe 50% (by simp_rw [Complex.HadamardThreeLines.sSupNormIm_eps_pos]))
+    (add unsafe 10% (by simp_all [Real.doublingGamma]))
+    (add unsafe 50% (by unfold Real.Gamma_mul_Gamma_add_half_of_pos))
+    (add unsafe 90% (by simp_rw [Real.inv_rpow]))
+    (add unsafe 50% (by solve_by_elim [mul_div_assoc]))
+    (add unsafe 50% (by apply MeasureTheory.integral_comp_rpow_Ioi))
+    (add unsafe 50% (by simp only [Real.rpow_sub_one]))
+    (add unsafe 90% (by grind only [ne_of_gt]))

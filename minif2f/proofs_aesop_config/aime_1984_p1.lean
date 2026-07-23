@@ -3,52 +3,497 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem aime_1984_p1 (u : ℕ → ℚ) (h₀ : ∀ n, u (n + 1) = u n + 1)
     (h₁ : (∑ k in Finset.range 98, u k.succ) = 137) :
     (∑ k in Finset.range 49, u (2 * k.succ)) = 93 := by
-  let S_even := ∑ k in Finset.range 49, u (2 * k.succ)
-  let S_odd := ∑ k in Finset.range 49, u (2 * k + 1)
-
-  have h_split_sum : (∑ k in Finset.range 98, u k.succ) = S_even + S_odd := by
-    clear * -
-    simp_all only [succ_eq_add_one, S_even, S_odd]
-    simp only [Finset.sum_range_succ, mul_add]
-    simp_all only [Finset.range_zero, Finset.sum_empty, zero_add, reduceAdd, mul_one, mul_zero, reduceMul]
-    ring_nf <;> abel
-
-  have h_pointwise_relation : ∀ k ∈ Finset.range 49, u (2 * k.succ) = u (2 * k + 1) + 1 := by
+  have h_general_term : ∀ k : ℕ, u (k + 1) = u 1 + (k : ℚ) := by
     clear * - h₀
-    simp_all only [Finset.mem_range, succ_eq_add_one]
-    any_goals intros; simp_all [mul_add, h₀]
+    intro O
+    induction' O with D IH <;> simp_all <;> linarith
 
-  have h_sum_relation : S_even = S_odd + (49 : ℚ) := by
-    clear * - h_pointwise_relation h_split_sum
-    simp_all only [succ_eq_add_one, Finset.mem_range, S_even, S_odd]
-    simp (config := { decide := true }) only [Finset.sum_range_succ, h_pointwise_relation]
-    simp_all only [Finset.range_zero, Finset.sum_empty, mul_zero, zero_add, mul_one, reduceAdd, reduceMul]
-    linarith <;> norm_cast <;> ring
+  have h_sum_first_98_expansion : (∑ k in Finset.range 98, u k.succ) = (∑ k in Finset.range 98, (u 1 + (k : ℚ))) := by
+    clear * - h_general_term
+    congr 1 with v
+    simpa [succ_eq_add_one] using h_general_term v
 
-  have h_odd_in_terms_of_even : S_odd = S_even - (49 : ℚ) := by
-    clear * - h_sum_relation
-    simp_all only [succ_eq_add_one, add_sub_cancel_right, S_even, S_odd]
+  have h_sum_first_98_split : (∑ k in Finset.range 98, (u 1 + (k : ℚ))) = (98 : ℚ) * u 1 + (∑ k in Finset.range 98, (k : ℚ)) := by
+    clear * -
+    simp [Finset.sum_add_distrib, Finset.sum_range_id]
 
-  have h_substitute_sum : (137 : ℚ) = S_even + (S_even - (49 : ℚ)) := by
-    clear * - h₁ h_split_sum h_odd_in_terms_of_even
-    simp_all only [succ_eq_add_one, S_even, S_odd]
+  have h_sum_int_calc : (∑ k in Finset.range 98, (k : ℚ)) = (4753 : ℚ) := by
+    clear * -
+    aesop (config := {
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      maxGoals := 1024
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 0 (by interval_cases))
+      (add norm 0 (by ext))
+      (add norm 0 (by split))
+      (add norm 0 (by simp))
+      (add norm 0 (by ring_nf at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 0 (by assumption_mod_cast))
+      (add unsafe 50% (by norm_cast))
+      (add unsafe 10% (by ring_nf))
+      (add unsafe 50% (by exfalso))
+      (add unsafe 90% (by simp_all))
+      (add norm 100 (by nlinarith [Finset.prod_range_one]))
+      (add norm 100 (by nlinarith [Finset.prod_range_zero]))
+      (add norm 0 (by grind only [numDerangements_sum]))
+      (add norm 0 (by grind only [intervalIntegral.sum_integral_adjacent_intervals]))
+      (add norm 0 (by grind only [Finset.Nat.prod_antidiagonal_eq_prod_range_succ]))
+      (add norm 0 (by grind only [Finset.prod_range_succ_div_prod]))
+      (add norm 0 (by grind only [numDerangements]))
+      (add norm 0 (by grind only [bernsteinPolynomial.sum_smul]))
+      (add norm 0 (by grind only [summable_powerSeries_of_norm_lt_one]))
+      (add safe 0 (by simp only [Finset.prod_range_succ']))
+      (add safe 0 (by simp only [Finset.prod_range_succ]))
+      (add safe 0 (by simp only [Finset.prod_range_succ_comm]))
+      (add safe 0 (by nlinarith [sum_bernoulli]))
+      (add safe 0 (by simp only [Nat.choose_self]))
+      (add safe 0 (by nlinarith [ZetaAsymptotics.term_sum]))
+      (add safe 0 (by nlinarith [Finset.prod_range]))
+      (add safe 0 (by nlinarith [Polynomial.sum_bernoulli]))
+      (add safe 0 (by nlinarith [Finset.range_add_one]))
+      (add safe 0 (by simp_all [sum_range_pow]))
+      (add safe 0 (by nlinarith [Nat.prod_range_factorial_succ]))
+      (add safe 0 (by simp only [Finset.range_one]))
+      (add safe 0 (by simp only [Nat.prod_range_succ_factorial]))
+      (add safe 0 (by simp only [LiouvilleNumber.partialSum]))
+      (add safe 0 (by nlinarith [bernsteinPolynomial.sum]))
+      (add safe 0 (by nlinarith [Fin.prod_univ_eq_prod_range]))
+      (add safe 0 (by simp_all [Finset.prod_range_induction]))
+      (add safe 0 (by nlinarith [Polynomial.bernoulli]))
+      (add safe 0 (by nlinarith [Polynomial.bernoulli_def]))
+      (add safe 0 (by nlinarith [Nat.choose_succ_self_right]))
+      (add safe 0 (by simp only [Finset.range_succ]))
+      (add safe 100 (by simp only [Nat.choose_zero_right]))
+      (add unsafe 90% (by rw [← Finset.card_range] at *))
 
-  have h_arith_1 : (137 : ℚ) = (2 : ℚ) * S_even - (49 : ℚ) := by
-    clear * - h_substitute_sum
-    simp_all only [succ_eq_add_one, S_even]
-    (nlinarith)
+  have h_eq_u1 : (98 : ℚ) * u 1 + 4753 = 137 := by
+    clear * - h₁ h_sum_first_98_expansion h_sum_first_98_split h_sum_int_calc
+    aesop (config := {
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      maxGoals := 128
+      enableSimp := false
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by ring_nf))
+      (add unsafe 90% (by simp_all))
+      (add norm 100 (by simp only [mul_assoc] at *))
+      (add norm 100 (by simp only [mul_left_comm] at *))
+      (add norm 100 (by simp only [mul_comm] at *))
+      (add norm 100 (by simp only [mul_right_comm] at *))
+      (add norm 0 (by grind only [Real.BohrMollerup.f_add_nat_eq]))
+      (add norm 0 (by grind only [ZetaAsymptotics.term_sum]))
+      (add norm 0 (by grind only [mul_add_mul]))
+      (add norm 0 (by grind only [Finset.prod_range_add]))
+      (add norm 0 (by grind only [numDerangements_add_two]))
+      (add norm 0 (by grind only [numDerangements]))
+      (add norm 0 (by grind only [add_pow]))
+      (add norm 0 (by grind only [Finset.prod_range_one]))
+      (add norm 0 (by grind only [intervalIntegral.sum_integral_adjacent_intervals]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [Finset.prod_range_induction]))
+      (add norm 0 (by grind only [Finset.range_succ]))
+      (add norm 0 (by grind only [Finset.prod_range]))
+      (add norm 100 (by rw [← Nat.factorial]))
+      (add norm 0 (by grind only [sum_bernoulli]))
+      (add norm 100 (by simp only [mul_one] at *))
+      (add norm 0 (by grind only [sum_range_pow]))
+      (add norm 0 (by grind only [bernsteinPolynomial.sum]))
+      (add norm 0 (by grind only [Nat.cast_add]))
+      (add norm 0 (by grind only [numDerangements_sum]))
+      (add safe 0 (by simp only [Finset.prod_range_succ]))
+      (add safe 0 (by simp only [Finset.prod_range_succ']))
+      (add safe 0 (by simp only [Finset.prod_range_succ_comm]))
+      (add safe 0 (by nlinarith [Finset.range_add_one]))
+      (add safe 0 (by simp only [Nat.prod_range_factorial_succ]))
+      (add safe 0 (by simp only [Nat.prod_range_succ_factorial]))
+      (add safe 100 (by simp only [Nat.choose_self] at *))
+      (add safe 0 (by nlinarith [Nat.choose_succ_self_right]))
 
-  have h_arith_2 : (186 : ℚ) = (2 : ℚ) * S_even := by
-    clear * - h_arith_1
-    simp_all only [succ_eq_add_one, S_even]
-    (nlinarith)
+  have h_u1_coefficient : (98 : ℚ) * u 1 = -4616 := by
+    clear * - h_eq_u1
+    aesop (config := {
+      maxRuleApplicationDepth := 220
+      maxNormIterations := 30
+      maxGoals := 64
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by ring_nf))
+      (add safe 0 (by split))
+      (add unsafe 50% (by norm_cast))
+      (add unsafe 90% (by simp_all))
+      (add norm 1 (by simp_all [Eq.symm]))
+      (add norm 1 (by simp_all [Eq.trans]))
+      (add norm 100 (by norm_num [Pell.az] at *))
+      (add norm 100 (by solve_by_elim [ModularGroup.coe_S]))
+      (add norm 100 (by solve_by_elim [Pell.pellZd]))
+      (add norm 100 (by solve_by_elim [ModularGroup.coe_T]))
+      (add norm 1 (by simp_all [congrArg]))
+      (add norm 100 (by solve_by_elim [ModularGroup.coe_T_inv]))
+      (add norm 0 (by simp [GaussianInt.toComplex_one] at *))
+      (add norm 1 (by simp_all [WeierstrassCurve.Jacobian.add_smul_of_not_equiv]))
+      (add norm 100 (by solve_by_elim [ModularGroup.T_inv_mul_apply_one]))
+      (add norm 100 (by solve_by_elim [Matrix.SpecialLinearGroup.coe_mul]))
+      (add safe 1 (by simp_all [gold_add_goldConj]))
+      (add safe 0 (by simp_all [Nat.succ_mul_centralBinom_succ]))
+      (add safe 0 (by simp only [ArithmeticFunction.intCoe_one]))
+      (add safe 0 (by simp only [ArithmeticFunction.coe_coe]))
+      (add safe 100 (by grind only [Pell.pellZd_succ_succ]))
+      (add safe 0 (by simp only [ModularGroup.T_pow_mul_apply_one]))
+      (add safe 100 (by grind only [Pell.pellZd_succ]))
+      (add safe 0 (by simp only [ModularGroup.T_mul_apply_one]))
+      (add safe 1 (by rw [gold_mul_goldConj]))
+      (add safe 0 (by simp only [ArithmeticFunction.intCoe_apply]))
+      (add unsafe 10% (by push_cast [gosperCatalan] at *))
+      (add unsafe 50% (by simp_rw [Pell.dz_val]))
+      (add unsafe 50% (by simp_rw [Quaternion.star_add_self']))
+      (add unsafe 50% (by simp_rw [QuaternionGroup.a_mul_a]))
+      (add unsafe 50% (by simp_rw [goldConj_sq]))
+      (add unsafe 90% (by grind only [gosper_trick]))
+      (add unsafe 50% (by simp_rw [Quaternion.self_add_star']))
+      (add unsafe 50% (by simp_rw [QuaternionAlgebra.eq_re_of_eq_coe]))
+      (add unsafe 90% (by grind only [smoothSheafCommRing.eval_germ]))
+      (add unsafe 50% (by simp_rw [QuaternionAlgebra.star_add_self']))
 
-  have h_arith_3 : (93 : ℚ) = S_even := by
-    clear * - h_arith_2
-    simp_all only [succ_eq_add_one, S_even]
-    (nlinarith)
+  have h_u1_simplified : (49 : ℚ) * u 1 = -2308 := by
+    clear * - h_u1_coefficient
+    aesop (config := {
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 30
+      maxGoals := 1024
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by norm_cast))
+      (add safe 1 (by ring_nf))
+      (add safe 0 (by simp_all))
+      (add norm 1 (by simp_all [Eq.symm]))
+      (add norm 1 (by simp_all [Eq.trans]))
+      (add norm 1 (by simp_all [mul_left_cancel₀]))
+      (add norm 1 (by simp_all [Subtype.ext]))
+      (add norm 1 (by simp_all [congrArg]))
+      (add norm 0 (by grind only [Pell.Solution₁.eq_one_of_x_eq_one]))
+      (add norm 0 (by grind only [Subtype.eq]))
+      (add norm 1 (by simp_all [funext]))
+      (add norm 0 (by grind only [smoothSheafCommRing.eval_germ]))
+      (add norm 0 (by simp [Quaternion.ext] at *))
+      (add norm 1 (by simp_all [mul_right_inj']))
+      (add norm 100 (by rw [← Zsqrtd.Nonsquare.ns]))
+      (add norm 0 (by grind only [Pell.dz_val]))
+      (add norm 0 (by grind only [Pell.isPell_norm]))
+      (add safe 100 (by grind only [Zsqrtd.divides_sq_eq_zero]))
+      (add safe 100 (by grind only [vsub_left_cancel]))
+      (add safe 0 (by norm_num [Zsqrtd.divides_sq_eq_zero_z] at *))
+      (add safe 0 (by simp_all [WeierstrassCurve.Affine.Y_eq_of_Y_ne]))
+      (add safe 0 (by simp_all [Nat.succ_mul_centralBinom_succ]))
+      (add safe 100 (by grind only [Zsqrtd.not_divides_sq]))
+      (add safe 0 (by nlinarith [EckmannHilton.mul]))
+      (add safe 0 (by nlinarith [EckmannHilton.one]))
+      (add safe 0 (by nlinarith [rfl]))
+      (add safe 0 (by nlinarith [Sigma.subtype_ext]))
+      (add safe 0 (by norm_num [Polynomial.IsUnitTrinomial.irreducible_aux2] at *))
+      (add safe 100 (by grind only [Zsqrtd]))
+      (add unsafe 10% (by nlinarith [QuaternionAlgebra.eq_re_of_eq_coe]))
+      (add unsafe 50% (by rw [← Nat.centralBinom] at *))
+      (add unsafe 10% (by nlinarith [Polynomial.IsUnitTrinomial.irreducible_aux3]))
+      (add unsafe 10% (by nlinarith [PadicInt.mul_inv]))
+      (add unsafe 10% (by nlinarith [FractionalIdeal.right_inverse_eq]))
+      (add unsafe 50% (by simp_all [LinearPMap.sup_apply]))
 
-  exact h_arith_3.symm
+  have h_sum_even_terms_expansion : (∑ k in Finset.range 49, u (2 * k.succ)) = (∑ k in Finset.range 49, (u 1 + 2 * (k : ℚ) + 1)) := by
+    clear * - h_general_term
+    refine' Finset.sum_congr rfl fun k hk => _
+    have := h_general_term (2 * k.succ)
+    have := h_general_term (2 * k + 1)
+    norm_num [mul_add] at * <;> linarith
+
+  have h_sum_even_terms_split : (∑ k in Finset.range 49, (u 1 + 2 * (k : ℚ) + 1)) = (49 : ℚ) * u 1 + (∑ k in Finset.range 49, (2 * (k : ℚ) + 1)) := by
+    clear * -
+    classical simp [Finset.sum_add_distrib]
+    first
+    | ring
+    | simp
+
+  have h_sum_odds_calc : (∑ k in Finset.range 49, (2 * (k : ℚ) + 1)) = (2401 : ℚ) := by
+    clear * -
+    aesop (config := {
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      maxGoals := 1024
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 0 (by interval_cases))
+      (add norm 0 (by ext))
+      (add norm 0 (by split))
+      (add norm 0 (by simp))
+      (add norm 0 (by ring_nf at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 0 (by assumption_mod_cast))
+      (add unsafe 50% (by norm_cast))
+      (add unsafe 10% (by ring_nf))
+      (add unsafe 50% (by exfalso))
+      (add unsafe 90% (by simp_all))
+      (add unsafe 50% (by norm_cast at *))
+      (add norm 100 (by nlinarith [Finset.prod_range_one]))
+      (add norm 0 (by grind only [ZetaAsymptotics.term_sum]))
+      (add norm 100 (by nlinarith [Finset.prod_range_zero]))
+      (add norm 0 (by grind only [intervalIntegral.sum_integral_adjacent_intervals]))
+      (add norm 0 (by grind only [summable_powerSeries_of_norm_lt_one]))
+      (add norm 0 (by grind only [Finset.Nat.prod_antidiagonal_eq_prod_range_succ]))
+      (add norm 0 (by grind only [numDerangements]))
+      (add norm 0 (by grind only [bernsteinPolynomial.sum]))
+      (add norm 0 (by grind only [Finset.prod_range_succ_div_prod]))
+      (add norm 0 (by grind only [numDerangements_sum]))
+      (add norm 0 (by grind only [geom_sum_mul_add]))
+      (add norm 0 (by grind only [Fin.prod_univ_eq_prod_range]))
+      (add norm 0 (by grind only [Finset.range]))
+      (add norm 0 (by grind only [summable_powerSeries_of_norm_lt]))
+      (add safe 0 (by simp only [Finset.prod_range_succ']))
+      (add safe 0 (by simp only [Finset.prod_range_succ]))
+      (add safe 0 (by simp only [Finset.prod_range_succ_comm]))
+      (add safe 0 (by nlinarith [sum_bernoulli]))
+      (add safe 0 (by simp only [Nat.choose_self]))
+      (add safe 0 (by nlinarith [Finset.prod_range]))
+      (add safe 0 (by nlinarith [Finset.range_add_one]))
+      (add safe 0 (by simp_all [sum_range_pow]))
+      (add safe 0 (by simp only [Finset.range_one]))
+      (add safe 0 (by simp only [Nat.prod_range_factorial_succ]))
+      (add safe 0 (by simp only [Nat.prod_range_succ_factorial]))
+      (add safe 0 (by simp only [LiouvilleNumber.partialSum]))
+      (add safe 0 (by nlinarith [Polynomial.sum_bernoulli]))
+      (add safe 0 (by simp_all [Finset.prod_range_induction]))
+      (add safe 0 (by simp only [Finset.range_succ]))
+      (add safe 0 (by nlinarith [Polynomial.bernoulli]))
+      (add safe 0 (by nlinarith [Polynomial.bernoulli_def]))
+      (add unsafe 90% (by rw [← Finset.card_range] at *))
+
+  have h_target_sum_expr : (∑ k in Finset.range 49, u (2 * k.succ)) = (49 : ℚ) * u 1 + 2401 := by
+    clear * - h_sum_even_terms_expansion h_sum_even_terms_split h_sum_odds_calc
+    aesop (config := {
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      maxGoals := 256
+      enableSimp := false
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by ring_nf at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by ring_nf))
+      (add safe 1 (by field_simp [*] at *))
+      (add unsafe 90% (by ext))
+      (add unsafe 90% (by simp_all))
+      (add norm 0 (by grind only [sum_range_pow]))
+      (add norm 0 (by grind only [ZetaAsymptotics.term_sum]))
+      (add norm 0 (by grind only [Finset.prod_range]))
+      (add norm 0 (by grind only [intervalIntegral.sum_integral_adjacent_intervals]))
+      (add norm 0 (by grind only [Finset.prod_range_induction]))
+      (add norm 0 (by grind only [Real.BohrMollerup.f_add_nat_eq]))
+      (add norm 0 (by grind only [numDerangements_sum]))
+      (add norm 0 (by grind only [Finset.range_succ]))
+      (add norm 0 (by grind only [summable_powerSeries_of_norm_lt_one]))
+      (add norm 0 (by grind only [Finset.prod_range_succ_div_prod]))
+      (add norm 0 (by grind only [Polynomial.sum_bernoulli]))
+      (add norm 0 (by grind only [Finset.prod_flip]))
+      (add norm 0 (by grind only [Finset.Nat.prod_antidiagonal_eq_prod_range_succ]))
+      (add norm 0 (by grind only [Finset.prod_range_add]))
+      (add norm 0 (by grind only [Finset.range]))
+      (add norm 0 (by grind only [geom_sum_mul_add]))
+      (add norm 0 (by grind only [binomial_sum_eq]))
+      (add norm 0 (by grind only [Finset.prod_range_div']))
+      (add norm 0 (by grind only [numDerangements]))
+      (add norm 0 (by grind only [Finset.prod_range_one]))
+      (add norm 0 (by grind only [Finset.prod_range_mul_prod_Ico]))
+      (add norm 0 (by grind only [add_pow]))
+      (add norm 0 (by grind only [Polynomial.bernoulli_def]))
+      (add norm 0 (by grind only [Finset.eq_prod_range_div]))
+      (add norm 0 (by grind only [Finset.card_range]))
+      (add norm 0 (by grind only [summable_powerSeries_of_norm_lt]))
+      (add safe 0 (by simp only [Finset.prod_range_succ]))
+      (add safe 0 (by simp only [Finset.prod_range_succ']))
+      (add safe 0 (by simp_all [Finset.prod_range_succ_comm]))
+      (add safe 0 (by nlinarith [Finset.range_add_one]))
+      (add safe 0 (by nlinarith [Nat.prod_range_factorial_succ]))
+      (add safe 0 (by simp only [Nat.prod_range_succ_factorial]))
+
+  have h_final_result : (∑ k in Finset.range 49, u (2 * k.succ)) = 93 := by
+    clear * - h_target_sum_expr h_u1_simplified
+    aesop (config := {
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 256
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by ring_nf))
+      (add unsafe 90% (by ext))
+      (add unsafe 90% (by simp_all))
+      (add norm 0 (by grind only [Finset.prod_range_succ_comm]))
+      (add norm 0 (by grind only [Finset.prod_range_succ']))
+      (add norm 0 (by grind only [sum_range_pow]))
+      (add norm 0 (by grind only [Finset.range_succ]))
+      (add norm 0 (by grind only [Finset.prod_flip]))
+      (add norm 0 (by grind only [intervalIntegral.sum_integral_adjacent_intervals]))
+      (add norm 0 (by grind only [Finset.prod_range_induction]))
+      (add norm 0 (by grind only [ZetaAsymptotics.term_sum]))
+      (add norm 0 (by grind only [summable_powerSeries_of_norm_lt_one]))
+      (add norm 0 (by grind only [Finset.prod_range_succ_div_prod]))
+      (add norm 0 (by grind only [Polynomial.sum_bernoulli]))
+      (add norm 0 (by grind only [Finset.self_mem_range_succ]))
+      (add norm 0 (by grind only [Finset.Nat.prod_antidiagonal_eq_prod_range_succ]))
+      (add norm 0 (by grind only [Polynomial.bernoulli_def]))
+      (add norm 0 (by grind only [numDerangements]))
+      (add norm 0 (by grind only [Nat.choose_succ_self_right]))
+      (add norm 0 (by grind only [Finset.range]))
+      (add norm 0 (by grind only [Finset.prod_range_div']))
+      (add norm 0 (by grind only [binomial_sum_eq]))
+      (add norm 0 (by grind only [sum_bernoulli]))
+      (add norm 0 (by grind only [Finset.prod_range_one]))
+      (add norm 0 (by grind only [Nat.fib_succ_eq_succ_sum]))
+      (add norm 0 (by grind only [Finset.eq_prod_range_div]))
+      (add norm 0 (by grind only [Finset.prod_range]))
+      (add norm 0 (by grind only [Fin.prod_univ_eq_prod_range]))
+      (add norm 0 (by grind only [numDerangements_sum]))
+      (add norm 0 (by grind only [dist_partial_sum']))
+      (add norm 0 (by grind only [dist_partial_sum]))
+      (add safe 0 (by simp only [Finset.prod_range_succ]))
+      (add safe 0 (by simp only [Nat.prod_range_factorial_succ]))
+      (add safe 0 (by nlinarith [Finset.range_add_one]))
+      (add safe 0 (by simp only [Nat.prod_range_succ_factorial]))
+
+  exact h_final_result

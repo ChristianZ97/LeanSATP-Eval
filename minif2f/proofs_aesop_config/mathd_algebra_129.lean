@@ -1,24 +1,76 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- Solve for $a$: $\dfrac{8^{-1}}{4^{-1}}-a^{-1}=1$. Show that it is -2.-/
 
 theorem mathd_algebra_129 (a : ℝ) (h₀ : a ≠ 0) (h₁ : 8⁻¹ / 4⁻¹ - a⁻¹ = 1) : a = -2 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Matroid.Indep.ssubset_ground | rw [Matroid.Indep.ssubset_ground] | simp only [Matroid.Indep.ssubset_ground]))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplications := 1600
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 1200
+    maxGoals := 32
+    enableUnfold := false
+    }) (rule_sets := [-builtin])
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by push_neg))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 100 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 0 (by ring_nf))
+    (add safe 0 (by simp_all))
+    (add norm 0 (by grind only [div_eq_one]))
+    (add norm 0 (by grind only [div_ne_one]))
+    (add norm 0 (by grind only [div_ne_one_of_ne]))
+    (add norm 0 (by grind only [inv_eq_one]))
+    (add norm 0 (by grind only [inv_eq_iff_eq_inv]))
+    (add norm 0 (by grind only [inv_ne_one]))
+    (add norm 0 (by grind only [quadratic_eq_zero_iff]))
+    (add norm 0 (by grind only [WeierstrassCurve.Affine.slope_of_X_ne]))
+    (add norm 0 (by grind only [Quaternion.star_eq_neg]))
+    (add norm 100 (by apply div_ne_zero))
+    (add norm 0 (by grind only [irrational_iff_ne_rational]))
+    (add norm 0 (by grind only [eq_neg_self_iff]))
+    (add norm 0 (by grind only [div_eq_iff]))
+    (add norm 0 (by grind only [div_eq_one_iff_eq]))
+    (add norm 0 (by grind only [inv_ne_zero]))
+    (add norm 0 (by grind only [div_eq_zero_iff]))
+    (add norm 0 (by grind only [neg_div]))
+    (add norm 0 (by grind only [sq_eq_zero_iff]))
+    (add norm 0 (by grind only [Quaternion.star_eq_self]))
+    (add norm 0 (by grind only [eq_inv_iff_mul_eq_one]))
+    (add norm 0 (by grind only [norm_div_eq_zero_iff]))
+    (add norm 0 (by grind only [mul_eq_one_iff_eq_inv]))
+    (add norm 0 (by grind only [WeierstrassCurve.Affine.slope]))
+    (add norm 0 (by grind only [geom_sum_inv]))
+    (add norm 0 (by grind only [mul_self_eq_one_iff]))
+    (add norm 0 (by grind only [mul_eq_left₀]))
+    (add norm 1 (by solve_by_elim [Real.sin_eq_zero_iff]))
+    (add norm 0 (by grind only [WeierstrassCurve.Affine.Y_eq_of_Y_ne]))
+    (add norm 0 (by grind only [mul_left_inj']))
+    (add norm 0 (by grind only [div_eq_iff_mul_eq]))
+    (add norm 0 (by grind only [neg_eq]))
+    (add norm 0 (by grind only [Real.pi_ne_zero]))

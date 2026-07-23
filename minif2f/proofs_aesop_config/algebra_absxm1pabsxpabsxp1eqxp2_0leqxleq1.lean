@@ -3,6 +3,12 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem algebra_absxm1pabsxpabsxp1eqxp2_0leqxleq1 (x : ℝ)
     (h₀ : abs (x - 1) + abs x + abs (x + 1) = x + 2) : 0 ≤ x ∧ x ≤ 1 := by
   have h₁ : 0 ≤ x := by

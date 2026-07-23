@@ -1,111 +1,75 @@
 import Mathlib
-
 open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+/-- If $A$, $B$, and $C$ represent three distinct digits from 1 to 9 and they satisfy the following equations, what is the value of the sum $A+B+C$? (In the equation below, $AA$ represents a two-digit number both of whose digits are $A$.) $$A+B=C$$$$AA-B=2\times C$$$$C\times B=AA+A$$ Show that it is 8.-/
 
 theorem mathd_numbertheory_430 (a b c : ℕ) (h₀ : 1 ≤ a ∧ a ≤ 9) (h₁ : 1 ≤ b ∧ b ≤ 9)
     (h₂ : 1 ≤ c ∧ c ≤ 9) (h₃ : a ≠ b) (h₄ : a ≠ c) (h₅ : b ≠ c) (h₆ : a + b = c)
     (h₇ : 10 * a + a - b = 2 * c) (h₈ : c * b = 10 * a + a + a) : a + b + c = 8 := by
-  have h_11a : (10:ℕ) * a + a = (11:ℕ) * a := by
-    clear * -
-    (nlinarith)
 
-  have h_step1 : ((11:ℕ) * a) - b = 2 * c := by
-    clear * - h₇ h_11a
-    simp_all only
-
-  have h_step2 : ((11:ℕ) * a) - b = 2 * (a + b) := by
-    clear * - h_step1 h₆
-    subst h₆
-    simp_all only
-
-  have h_step3 : ((11:ℕ) * a) - b = 2 * a + 2 * b := by
-    clear * - h_step2
-    simp_all only
-    apply mul_add
-
-  have h_step4 : ((11:ℕ) * a) - 2 * a = 2 * b + b := by
-    clear * - h_step3
-    (omega)
-
-  have h_step5 : (9:ℕ) * a = 3 * b := by
-    clear * - h_step4
-    (omega)
-
-  have h_step6 : 3 * a = b := by
-    clear * - h_step5
-    (nlinarith)
-
-  have h_step7 : c = a + 3 * a := by
-    clear * - h_step6 h₆
-    subst h_step6 h₆
-    simp_all only
-
-  have h_step8 : c = 4 * a := by
-    clear * - h_step7
-    subst h_step7
-    (nlinarith)
-
-  have h_12a : 10 * a + a + a = (12:ℕ) * a := by
-    clear * -
-    (nlinarith)
-
-  have h_step9 : c * b = (12:ℕ) * a := by
-    clear * - h₈ h_12a
-    simp_all only
-
-  have h_step10 : (4 * a) * (3 * a) = (12:ℕ) * a := by
-    clear * - h_step8 h_step6 h_step9
-    subst h_step8 h_step6
-    simp_all only
-
-  have h_step11 : (12:ℕ) * a * a = (12:ℕ) * a := by
-    clear * - h_step10
-    simp_all only [mul_eq_mul_right_iff, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, mul_eq_left₀]
-    rcases Nat.eq_zero_or_pos a with h | h <;> aesop
-    have : 4 * a * (3 * a) = 12 * a := h_step10
-    simp_all only
-    exact Or.inl (by nlinarith)
-
-  have h_step12 : a = 1 := by
-    clear * - h_step11 h₀
-    simp_all only [mul_eq_mul_right_iff, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, mul_eq_left₀]
-    obtain ⟨left, right⟩ := h₀
-    cases h_step11 with
-    | inl h =>
-    subst h
-    simp_all only [le_refl, one_le_ofNat]
-    | inr h_1 =>
-    subst h_1
-    simp_all only [nonpos_iff_eq_zero, one_ne_zero]
-
-  have h_step13 : b = 3 * 1 := by
-    clear * - h_step6 h_step12
-    subst h_step6 h_step12
-    simp_all only [mul_one]
-
-  have h_step14 : b = 3 := by
-    clear * - h_step13
-    subst h_step13
-    simp_all only [mul_one]
-
-  have h_step15 : c = 4 * 1 := by
-    clear * - h_step8 h_step12
-    subst h_step8 h_step12
-    simp_all only [mul_one]
-
-  have h_step16 : c = 4 := by
-    clear * - h_step15
-    subst h_step15
-    simp_all only [mul_one]
-
-  have h_step17 : a + b + c = 1 + 3 + 4 := by
-    clear * - h_step12 h_step14 h_step16
-    subst h_step14 h_step16 h_step12
-    simp_all only [reduceAdd]
-
-  have h_step18 : a + b + c = 8 := by
-    clear * - h_step17
-    simp_all only [reduceAdd]
-
-  exact h_step18
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 220
+    maxNormIterations := 60
+    maxGoals := 16
+    enableSimp := false
+    })
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by simp))
+    (add norm 100 (by ring_nf at *))
+    (add norm 1 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 1 (by norm_cast))
+    (add safe 1 (by ring_nf))
+    (add unsafe 90% (by simp_all))
+    (add norm 0 (by grind only [Nat.add_sub_of_le]))
+    (add norm 100 (by simp only [mul_comm] at *))
+    (add norm 0 (by grind only [add_tsub_cancel_of_le]))
+    (add norm 0 (by grind only [tsub_add_cancel_of_le]))
+    (add norm 1 (by norm_num [two_mul] at *))
+    (add norm 1 (by norm_num [Pell.eq_of_xn_modEq_lem2] at *))
+    (add norm 1 (by simp_all [Eq.symm]))
+    (add norm 100 (by simp only [mul_left_comm] at *))
+    (add norm 0 (by grind only [Nat.add_sub_cancel']))
+    (add norm 0 (by grind only [Nat.add_sub_assoc]))
+    (add norm 0 (by grind only [add_tsub_assoc_of_le]))
+    (add norm 0 (by grind only [tsub_add_eq_add_tsub]))
+    (add norm 0 (by grind only [add_tsub_cancel_left]))
+    (add norm 1 (by norm_num [mul_two] at *))
+    (add norm 100 (by simp only [mul_assoc] at *))
+    (add norm 0 (by grind only [Nat.sub_add_cancel]))
+    (add norm 0 (by grind only [tsub_add_tsub_cancel]))
+    (add norm 100 (by simp only [mul_right_comm] at *))
+    (add norm 0 (by grind only [add_tsub_cancel_right]))
+    (add norm 100 (by rw [← ack_two]))
+    (add norm 0 (by grind only [Nat.div_add_mod]))
+    (add norm 1 (by simp_all [Eq.trans]))
+    (add norm 0 (by grind only [Nat.add_sub_cancel]))
+    (add norm 1 (by norm_num [Polynomial.natDegree_mul_mirror] at *))
+    (add norm 0 (by grind only [sub_eq_add]))
+    (add norm 0 (by grind only [Nat.add_sub_cancel_left]))
+    (add safe 100 (by simp_all [Finset.mulETransformRight.card]))
+    (add safe 0 (by norm_num [mul_add_mul] at *))
+    (add safe 100 (by simp_all [Sym2.two_mul_card_image_offDiag]))

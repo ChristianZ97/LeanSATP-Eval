@@ -1,30 +1,73 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- My father's age is $1222_{3}$, in base three to represent his three lower limbs -- two legs and a cane.  How old is he in base ten? Show that it is 53.-/
 
 theorem mathd_numbertheory_85 : 1 * 3 ^ 3 + 2 * 3 ^ 2 + 2 * 3 + 2 = 53 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-    maxGoals                := 64
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by ring_nf at *))
-    (add unsafe 90% (by ext))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 90% (by simp))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 30% (by first | apply FiberBundle.extChartAt_target | rw [FiberBundle.extChartAt_target] | simp only [FiberBundle.extChartAt_target]))
-    (add unsafe 30% (by first | apply MeasureTheory.Memℒp.smul | rw [MeasureTheory.Memℒp.smul] | simp only [MeasureTheory.Memℒp.smul]))
-    (add unsafe 30% (by first | apply MeasureTheory.Memℒp.smul_of_top_right | rw [MeasureTheory.Memℒp.smul_of_top_right] | simp only [MeasureTheory.Memℒp.smul_of_top_right]))
-    (add unsafe 30% (by first | apply Quaternion.imI_nnratCast | rw [Quaternion.imI_nnratCast] | simp only [Quaternion.imI_nnratCast]))
-    (add unsafe 30% (by first | apply Quaternion.imK_nnratCast | rw [Quaternion.imK_nnratCast] | simp only [Quaternion.imK_nnratCast]))
-    (add unsafe 30% (by first | apply Set.subset_insert_iff_of_not_mem | rw [Set.subset_insert_iff_of_not_mem] | simp only [Set.subset_insert_iff_of_not_mem]))
+  aesop (config := {
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 520
+    maxGoals := 64
+    enableUnfold := false
+    }) (rule_sets := [-builtin])
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 1 (by ring_nf))
+    (add safe 0 (by simp_all))
+    (add safe 0 (by field_simp [*] at *))
+    (add norm 0 (by grind only [sq_add_sq_mul]))
+    (add norm 0 (by grind only [add_sq']))
+    (add norm 0 (by rw [← sum_eight_sq_mul_sum_eight_sq]))
+    (add safe 0 (by simp_all [euler_four_squares]))
+    (add safe 0 (by simp_all [sum_four_sq_mul_sum_four_sq]))
+    (add safe 1 (by rw [Int.sq_add_sq_of_two_mul_sq_add_sq]))
+    (add unsafe 10% (by push_cast [add_sq] at *))
+    (add unsafe 50% (by simp only [sq_add_mul_sq_mul_sq_add_mul_sq]))
+    (add unsafe 10% (by push_cast [even_two_mul] at *))
+    (add unsafe 10% (by push_cast [Nat.euler_four_squares] at *))
+    (add unsafe 50% (by simp only [sq_add_sq_mul_sq_add_sq]))
+    (add unsafe 10% (by push_cast [QuaternionGroup.xa_sq] at *))
+    (add unsafe 10% (by push_cast [Int.two_pow_two_pow_add_two_pow_two_pow] at *))
+    (add unsafe 10% (by push_cast [QuaternionGroup.a_mul_a] at *))
+    (add unsafe 10% (by push_cast [Nat.sq_add_sq_mul] at *))
+    (add unsafe 10% (by push_cast [FermatLastTheoremForThreeGen.a_cube_add_b_cube_eq_mul] at *))
+    (add unsafe 10% (by push_cast [ArithmeticFunction.moebius_sq_eq_one_of_squarefree] at *))
+    (add unsafe 10% (by push_cast [Pell.Solution₁.prop_x] at *))
+    (add unsafe 10% (by push_cast [even_two] at *))
+    (add unsafe 10% (by push_cast [two_mul] at *))
+    (add unsafe 10% (by push_cast [Quaternion.self_add_star] at *))
+    (add unsafe 10% (by push_cast [mul_add_mul] at *))
+    (add unsafe 10% (by push_cast [pow_two] at *))
+    (add unsafe 10% (by push_cast [ack_two] at *))
+    (add unsafe 10% (by push_cast [CoxeterSystem.simple_sq] at *))
+    (add unsafe 10% (by push_cast [sq_sub_sq] at *))
+    (add unsafe 10% (by push_cast [jacobiSym.quadratic_reciprocity] at *))
+    (add unsafe 10% (by push_cast [Nat.fib_two_mul_add_one] at *))
+    (add unsafe 10% (by push_cast [Int.isUnit_sq] at *))
+    (add unsafe 10% (by push_cast [ZMod.neg_one_pow_div_two_of_three_mod_four] at *))
+    (add unsafe 10% (by push_cast [Pell.Solution₁.prop_y] at *))
+    (add unsafe 90% (by apply Int.sq_eq_one_of_sq_le_three))

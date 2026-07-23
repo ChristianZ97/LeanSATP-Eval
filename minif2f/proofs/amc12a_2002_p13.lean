@@ -3,29 +3,33 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem amc12a_2002_p13 (a b : ℝ) (h₀ : 0 < a ∧ 0 < b) (h₁ : a ≠ b) (h₂ : abs (a - 1 / a) = 1)
     (h₃ : abs (b - 1 / b) = 1) : a + b = Real.sqrt 5 := by
   have h_pos_a : 0 < a := by
     clear * - h₀
-    simp_all only
+    (ring)
+    (linarith)
 
   have h_pos_b : 0 < b := by
     clear * - h₀
-    simp_all only
+    (ring)
+    (linarith)
 
   have h_a_sq : (a - (1:ℝ) / a)^2 = 1 := by
     clear * - h₂
     simp_all only [one_div, sq_eq_one_iff]
-    rw [abs_eq (by positivity)] at *
-    simp_all only
+    (grind only [sq_abs])
 
   have h_a_expand : a^2 - 2 + ((1:ℝ) / a)^2 = 1 := by
     clear * - h_a_sq
     simp_all only [one_div, sq_eq_one_iff, inv_pow]
-    rcases eq_or_ne a 0 with hyp | hyp
-    · simp_all only [inv_zero, sub_self, zero_ne_one, zero_eq_neg, one_ne_zero, or_self]
-    · simp_all only [ne_eq]
-      rcases h_a_sq with h | h <;> field_simp [sub_eq_iff_eq_add] at * <;> nlinarith
+    (grind only [one_div])
 
   have h_a_inv_sq : ((1:ℝ) / a)^2 = (1:ℝ) / a^2 := by
     clear * - h_pos_a
@@ -38,25 +42,17 @@ theorem amc12a_2002_p13 (a b : ℝ) (h₀ : 0 < a ∧ 0 < b) (h₁ : a ≠ b) (h
   have h_a_poly : a^2 + (1:ℝ) / a^2 = 3 := by
     clear * - h_a_rearrange
     simp_all only [one_div]
-    nlinarith [sq_nonneg (a ^ 2 - 1)]
+    (linarith)
 
   have h_b_sq : (b - (1:ℝ) / b)^2 = 1 := by
     clear * - h₃
-    simp_all
-    have em := eq_or_ne b 0
-    simp_all only [ne_eq]
-    rcases em with (rfl | hb₀)
-    · simp_all
-    · rw [abs_eq (by positivity)] at h₃
-      simp_all only
+    simp_all only [one_div, sq_eq_one_iff]
+    (grind only [sq_abs])
 
   have h_b_expand : b^2 - 2 + ((1:ℝ) / b)^2 = 1 := by
     clear * - h_b_sq
-    simp_all
-    rcases eq_or_ne b 0 with (rfl | hb0)
-    · simp_all
-    · simp_all only [ne_eq]
-      rcases h_b_sq with h | h <;> field_simp [sub_eq_iff_eq_add] at * <;> nlinarith
+    simp_all only [one_div, sq_eq_one_iff, inv_pow]
+    (grind only [Real.sq_sqrt])
 
   have h_b_inv_sq : ((1:ℝ) / b)^2 = (1:ℝ) / b^2 := by
     clear * - h_pos_b
@@ -69,109 +65,55 @@ theorem amc12a_2002_p13 (a b : ℝ) (h₀ : 0 < a ∧ 0 < b) (h₁ : a ≠ b) (h
   have h_b_poly : b^2 + (1:ℝ) / b^2 = 3 := by
     clear * - h_b_rearrange
     simp_all only [one_div]
-    classical nlinarith [sq_nonneg (b ^ 2 - 1)]
+    (linarith)
 
   let r1 : ℝ := (3 + Real.sqrt 5) / 2
   let r2 : ℝ := (3 - Real.sqrt 5) / 2
   have h_r_sum : r1 + r2 = 3 := by
     clear * -
-    aesop
-    (add safe 1 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by ring_nf at *))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 100% (by split))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 90% (by simp))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by ext))
-    (add unsafe 70% (by gcongr))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
+    simp_all only [r1, r2]
+    (linarith)
 
   have h_r_prod : r1 * r2 = 1 := by
     clear * -
     simp_all only [r1, r2]
-    (field_simp)
-    (ring_nf)
-    simp_all only [ofNat_nonneg, sq_sqrt]
-    (ring_nf)
+    (simp only [sub_div] at *)
+    (grind only [Real.sq_sqrt])
 
   have h_a_val : a^2 = r1 ∨ a^2 = r2 := by
     clear * - h_a_poly
     simp_all only [one_div, r1, r2]
-    by_cases ha0 : a = 0
-    · simp_all
-    · field_simp [mul_comm] at *
-      apply or_iff_not_imp_left.2
-      exact fun h =>
-        mul_left_cancel₀ (sub_ne_zero_of_ne h) <| by nlinarith [Real.sq_sqrt (show (0 : ℝ) ≤ 5 by positivity)]
+    (grind only [Real.sq_sqrt])
 
   have h_b_val : b^2 = r1 ∨ b^2 = r2 := by
     clear * - h_b_poly
     simp_all only [one_div, r1, r2]
-    rcases eq_or_ne b 0 with h₀ | h₀
-    · simp_all
-    · simp_all only [ne_eq]
-      field_simp at *
-      apply or_iff_not_imp_left.2
-      exact fun hk =>
-        mul_left_cancel₀ (sub_ne_zero_of_ne hk)
-          (by nlinarith [Real.sq_sqrt (show (0 : ℝ) ≤ 5 by norm_num), Real.sq_sqrt (show (0 : ℝ) ≤ 3 by norm_num)])
+    (grind only [Real.sq_sqrt])
 
   have h_neq_sq : a^2 ≠ b^2 := by
     clear * - h₁ h_pos_a h_pos_b
     simp_all only [ne_eq]
-    apply Aesop.BuiltinRules.not_intro
-    intro a_1
-    (field_simp [*] at *)
+    (bound )
+    simp_all only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_left_inj₀]
 
   have h_unique_pair : (a^2 = r1 ∧ b^2 = r2) ∨ (a^2 = r2 ∧ b^2 = r1) := by
     clear * - h_a_val h_b_val h_neq_sq
     simp_all only [ne_eq, r1, r2]
-    (field_simp)
-    cases h_a_val with
-    | inl h =>
-      cases h_b_val with
-      | inl h_1 => simp_all only [not_true_eq_false, r2, r1]
-      | inr h_2 =>
-        simp_all only [isUnit_iff_ne_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, IsUnit.div_mul_cancel, and_self,
-          true_or, r2, r1]
-    | inr h_1 =>
-      cases h_b_val with
-      | inl h =>
-        simp_all only [isUnit_iff_ne_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, IsUnit.div_mul_cancel, and_self,
-          or_true, r2, r1]
-      | inr h_2 => simp_all only [not_true_eq_false, r2, r1]
+    (grind only [SimpleGraph.Walk.IsEulerian.card_filter_odd_degree])
 
   have h_sum_squares : a^2 + b^2 = 3 := by
     clear * - h_unique_pair h_r_sum
     simp_all only [r1, r2]
-    cases h_unique_pair with
-    | inl h => simp_all only [r2, r1]
-    | inr h_1 =>
-      simp_all only [r2, r1]
-      obtain ⟨left, right⟩ := h_1
-      (field_simp)
+    (grind only [Real.sqrt_sq])
 
   have h_prod_squares : a^2 * b^2 = 1 := by
     clear * - h_unique_pair h_r_prod
     simp_all only [r1, r2]
-    cases h_unique_pair with
-    | inl h => simp_all only [r2, r1]
-    | inr h_1 =>
-      simp_all only [r2, r1]
-      obtain ⟨left, right⟩ := h_1
-      (field_simp)
-      (nlinarith)
+    (grind only [Real.sqrt_sq])
 
   have h_ab_pos : a * b > 0 := by
     clear * - h_pos_a h_pos_b
-    simp_all only [gt_iff_lt, mul_pos_iff_of_pos_left]
+    (nlinarith)
 
   have h_ab_eq : a * b = 1 := by
     clear * - h_prod_squares h_ab_pos
@@ -180,26 +122,24 @@ theorem amc12a_2002_p13 (a b : ℝ) (h₀ : 0 < a ∧ 0 < b) (h₁ : a ≠ b) (h
 
   have h_sum_sq_exp : (a + b)^2 = a^2 + b^2 + 2 * a * b := by
     clear * -
-    (nlinarith)
+    (linarith)
 
   have h_sum_sq_sub : (a + b)^2 = 3 + 2 * (1:ℝ) := by
     clear * - h_sum_sq_exp h_sum_squares h_ab_eq
     simp_all only [mul_one, add_right_inj]
-    (nlinarith)
+    (linarith)
 
   have h_sum_sq_final : (a + b)^2 = 5 := by
     clear * - h_sum_sq_sub
     simp_all only [mul_one]
-    (nlinarith)
+    (linarith)
 
   have h_sum_pos : 0 < a + b := by
     clear * - h_pos_a h_pos_b
-    (nlinarith)
+    (linarith)
 
   have h_final : a + b = Real.sqrt 5 := by
     clear * - h_sum_sq_final h_sum_pos
-    exact
-        eq_of_sub_eq_zero
-          (by nlinarith [Real.sqrt_pos.2 (show (0 : ℝ) < 5 by norm_num), Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 5)])
+    (grind only [Real.sqrt_sq])
 
   exact h_final

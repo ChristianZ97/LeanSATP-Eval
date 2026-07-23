@@ -1,26 +1,74 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- If $n$ is a multiple of three, what is the remainder when $(n + 4) + (n + 6) + (n + 8)$ is divided by $9$? Show that it is 0.-/
 
 theorem mathd_numbertheory_582 (n : ℕ) (h₀ : 0 < n) (h₁ : 3 ∣ n) :
     (n + 4 + (n + 6) + (n + 8)) % 9 = 0 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Subspace.quotAnnihilatorEquiv_apply | rw [Subspace.quotAnnihilatorEquiv_apply] | simp only [Subspace.quotAnnihilatorEquiv_apply]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 520
+    maxGoals := 1024
+    })
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by simp))
+    (add norm 100 (by ring_nf at *))
+    (add norm 1 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add norm 100 (by norm_num [Nat.add_mod] at *))
+    (add norm 100 (by norm_num [Nat.add_mod_left] at *))
+    (add norm 100 (by norm_num [Nat.mul_add_mod] at *))
+    (add norm 100 (by norm_num [Nat.add_mod_mod] at *))
+    (add norm 100 (by norm_num [Nat.add_mod_right] at *))
+    (add norm 100 (by norm_num [Nat.mod_add_mod] at *))
+    (add norm 100 (by norm_num [Nat.mod_self] at *))
+    (add norm 100 (by norm_num [Nat.mod_mod] at *))
+    (add norm 100 (by norm_num [PNat.XgcdType.r] at *))
+    (add norm 100 (by norm_num [Nat.mod_succ] at *))
+    (add norm 100 (by norm_num [Nat.mul_add_mod'] at *))
+    (add norm 100 (by norm_num [Nat.mod_eq_of_lt] at *))
+    (add norm 0 (by grind only [Nat.mod_add_div]))
+    (add norm 100 (by norm_num [Nat.add_mod_add_ite] at *))
+    (add norm 100 (by norm_num [Nat.dvd_iff_mod_eq_zero] at *))
+    (add norm 100 (by norm_num [Nat.mod_eq_zero_of_dvd] at *))
+    (add norm 0 (by grind only [Nat.div_add_mod]))
+    (add norm 100 (by norm_num [Nat.mod_succ_eq_iff_lt] at *))
+    (add norm 100 (by norm_num [Nat.one_mod] at *))
+    (add norm 0 (by grind only [Nat.ModEq]))
+    (add norm 100 (by rw [Nat.mod_two_add_succ_mod_two] at *))
+    (add norm 0 (by grind only [Nat.mod_injOn_Ico]))
+    (add norm 100 (by norm_num [Nat.add_mod_eq_add_mod_right] at *))
+    (add norm 100 (by norm_num [Fin.val_add] at *))
+    (add norm 100 (by norm_num [Nat.add_mod_of_add_mod_lt] at *))
+    (add norm 100 (by norm_num [Fin.coe_modNat] at *))
+    (add safe 1 (by rw [Nat.mod_mul_left_mod]))
+    (add safe 1 (by rw [Nat.add_mul_mod_self_left]))
+    (add safe 1 (by rw [Nat.mod_mul_right_mod]))
+    (add unsafe 50% (by simp_rw [Nat.mul_mod]))
+    (add unsafe 50% (by simp_rw [Nat.mod_mod_of_dvd]))
+    (add unsafe 50% (by simp_rw [Nat.mul_mod_mul_left]))

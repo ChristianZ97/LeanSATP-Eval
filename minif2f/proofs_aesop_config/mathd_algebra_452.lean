@@ -1,43 +1,76 @@
 import Mathlib
-
 open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+/-- The first and ninth terms of an arithmetic sequence are $\frac23$ and $\frac45$, respectively. What is the fifth term? Show that it is \frac{11}{15}.-/
 
 theorem mathd_algebra_452 (a : ℕ → ℝ) (h₀ : ∀ n, a (n + 2) - a (n + 1) = a (n + 1) - a n)
     (h₁ : a 1 = 2 / 3) (h₂ : a 9 = 4 / 5) : a 5 = 11 / 15 := by
-  have h_midpoint : a 5 = ((a 1) + (a 9)) / (2 : ℝ) := by
-    clear * - h₀
-    have t₂ := h₀ 4
-    simp_all only [reduceAdd, zero_add]
-    nlinarith [h₀ 1, h₀ 2, h₀ 3, h₀ 4, h₀ 5, h₀ 6, h₀ 7, h₀ 8, h₀ 9]
 
-  have h_sum_sub_a1 : (a 1) + (a 9) = ((2 : ℝ) / (3 : ℝ)) + (a 9) := by
-    clear * - h₁
-    simp_all only
-
-  have h_sum_sub_a9 : ((2 : ℝ) / (3 : ℝ)) + (a 9) = ((2 : ℝ) / (3 : ℝ)) + ((4 : ℝ) / (5 : ℝ)) := by
-    clear * - h₂
-    simp_all only
-
-  have h_total_sum : (a 1) + (a 9) = ((2 : ℝ) / (3 : ℝ)) + ((4 : ℝ) / (5 : ℝ)) := by
-    clear * - h_sum_sub_a1 h_sum_sub_a9
-    simp_all only [add_right_inj, add_left_inj]
-
-  have h_fraction_sum : ((2 : ℝ) / (3 : ℝ)) + ((4 : ℝ) / (5 : ℝ)) = (22 : ℝ) / (15 : ℝ) := by
-    clear * -
-    (field_simp)
-    (ring)
-
-  have h_sum_value : (a 1) + (a 9) = (22 : ℝ) / (15 : ℝ) := by
-    clear * - h_total_sum h_fraction_sum
-    simp_all only
-
-  have h_avg_calc : ((22 : ℝ) / (15 : ℝ)) / (2 : ℝ) = (11 : ℝ) / (15 : ℝ) := by
-    clear * -
-    (ring)
-
-  have h_final : a 5 = (11 : ℝ) / (15 : ℝ) := by
-    clear * - h_midpoint h_sum_value h_avg_calc
-    simp_all only
-
-  exact h_final
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 60
+    maxGoals := 128
+    enableSimp := false
+    })
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 100 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 0 (by ring_nf))
+    (add safe 0 (by simp_all))
+    (add norm 0 (by grind only [one_div]))
+    (add norm 100 (by apply sub_div))
+    (add norm 100 (by apply div_self))
+    (add norm 0 (by grind only [div_div]))
+    (add norm 100 (by apply mul_one_div))
+    (add norm 0 (by grind only [div_mul]))
+    (add norm 0 (by grind only [div_eq_one_iff_eq]))
+    (add norm 0 (by grind only [mul_div_cancel_left]))
+    (add norm 0 (by grind only [div_sub']))
+    (add norm 0 (by grind only [mul_div_assoc]))
+    (add norm 0 (by grind only [mul_div_cancel_right]))
+    (add norm 0 (by grind only [mul_div]))
+    (add norm 0 (by grind only [div_one]))
+    (add norm 100 (by apply div_mul_cancel₀))
+    (add norm 0 (by grind only [add_div]))
+    (add norm 0 (by grind only [eq_div_iff]))
+    (add norm 100 (by apply Real.rpow_sub))
+    (add norm 0 (by grind only [two_ne_zero']))
+    (add norm 0 (by grind only [CircleDeg1Lift.transnumAuxSeq]))
+    (add norm 0 (by grind only [div_eq_iff]))
+    (add norm 0 (by grind only [mul_div_cancel_left₀]))
+    (add norm 0 (by grind only [one_div_one]))
+    (add norm 0 (by grind only [sub_div']))
+    (add norm 0 (by grind only [div_lt_iff]))
+    (add norm 0 (by grind only [div_right_comm]))
+    (add norm 0 (by grind only [WeakFEPair.h_feq']))
+    (add norm 0 (by grind only [mul_lt_mul_left]))
+    (add safe 0 (by simp_all [two_ne_zero]))
+    (add unsafe 50% (by apply mul_div_cancel₀))
+    (add unsafe 50% (by simp_all [one_half_pos]))
+    (add unsafe 50% (by simp_all [lt_div_iff]))
+    (add unsafe 50% (by apply div_le_iff'))

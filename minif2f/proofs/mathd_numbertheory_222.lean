@@ -3,12 +3,17 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem mathd_numbertheory_222 (b : ℕ) (h₀ : Nat.lcm 120 b = 3720) (h₁ : Nat.gcd 120 b = 8) :
     b = 248 := by
   have h_step1 : (120 : ℕ) * b = Nat.gcd 120 b * Nat.lcm 120 b := by
     clear * -
-    apply Eq.symm
-    apply Nat.gcd_mul_lcm
+    simp only [Nat.gcd_mul_lcm] at *
 
   have h_step2 : (120 : ℕ) * b = 8 * 3720 := by
     clear * - h_step1 h₀ h₁
@@ -25,7 +30,7 @@ theorem mathd_numbertheory_222 (b : ℕ) (h₀ : Nat.lcm 120 b = 3720) (h₁ : N
   have h_step5 : b = (29760 : ℕ) / (120 : ℕ) := by
     clear * - h_step4
     simp_all only [reduceDiv]
-    (nlinarith)
+    (linarith)
 
   have h_lemma_simp : (29760 : ℕ) / (120 : ℕ) = (2976 : ℕ) / (12 : ℕ) := by
     clear * -

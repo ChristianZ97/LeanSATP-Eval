@@ -1,13 +1,52 @@
 import Mathlib
+
 open BigOperators Real Nat Topology Rat
-/-- What is the value of the following expression?
+set_option maxHeartbeats 0
 
-$\frac{100^2-7^2}{70^2-11^2} \cdot \frac{(70-11)(70+11)}{(100-7)(100+7)}$
-
-$\textbf{(A) } 1 \qquad \textbf{(B) } \frac{9951}{9950} \qquad \textbf{(C) } \frac{4780}{4779} \qquad \textbf{(D) } \frac{108}{107} \qquad \textbf{(E) } \frac{81}{80} $ Show that it is \textbf{(A) } 1.-/
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 
 theorem amc12b_2020_p2 :
     (100 ^ 2 - 7 ^ 2 : ℝ) / (70 ^ 2 - 11 ^ 2) * ((70 - 11) * (70 + 11) / ((100 - 7) * (100 + 7))) =
       1 := by
+  have h_diff1 : (100 ^ 2 - 7 ^ 2 : ℝ) = (100 - 7 : ℝ) * (100 + 7 : ℝ) := by
+    clear * -
+    (linarith)
 
-    (norm_num)
+  have h_diff2 : (70 ^ 2 - 11 ^ 2 : ℝ) = (70 - 11 : ℝ) * (70 + 11 : ℝ) := by
+    clear * -
+    (linarith)
+
+  have h_frac1 : (100 ^ 2 - 7 ^ 2 : ℝ) / (70 ^ 2 - 11 ^ 2) = ((100 - 7 : ℝ) * (100 + 7 : ℝ)) / ((70 - 11 : ℝ) * (70 + 11 : ℝ)) := by
+    clear * - h_diff1 h_diff2
+    simp_all only
+
+  have h_frac2 : ((70 - 11) * (70 + 11) / ((100 - 7) * (100 + 7))) = ((70 - 11 : ℝ) * (70 + 11 : ℝ)) / ((100 - 7 : ℝ) * (100 + 7 : ℝ)) := by
+    clear * -
+    simp_all only
+
+  have h_combined : (100 ^ 2 - 7 ^ 2 : ℝ) / (70 ^ 2 - 11 ^ 2) * ((70 - 11) * (70 + 11) / ((100 - 7) * (100 + 7))) =
+    (((100 - 7 : ℝ) * (100 + 7 : ℝ)) / ((70 - 11 : ℝ) * (70 + 11 : ℝ))) * (((70 - 11 : ℝ) * (70 + 11 : ℝ)) / ((100 - 7 : ℝ) * (100 + 7 : ℝ))) := by
+    clear * - h_frac1 h_frac2
+    simp_all only
+
+  have h_num_cancel : ((100 - 7 : ℝ) * (100 + 7 : ℝ)) / ((100 - 7 : ℝ) * (100 + 7 : ℝ)) = (1 : ℝ) := by
+    clear * -
+    (linarith)
+
+  have h_den_cancel : ((70 - 11 : ℝ) * (70 + 11 : ℝ)) / ((70 - 11 : ℝ) * (70 + 11 : ℝ)) = (1 : ℝ) := by
+    clear * -
+    (linarith)
+
+  have h_product : (((100 - 7 : ℝ) * (100 + 7 : ℝ)) / ((70 - 11 : ℝ) * (70 + 11 : ℝ))) * (((70 - 11 : ℝ) * (70 + 11 : ℝ)) / ((100 - 7 : ℝ) * (100 + 7 : ℝ))) = (1 : ℝ) := by
+    clear * - h_num_cancel h_den_cancel
+    (linarith)
+
+  have h_result : (100 ^ 2 - 7 ^ 2 : ℝ) / (70 ^ 2 - 11 ^ 2) * ((70 - 11) * (70 + 11) / ((100 - 7) * (100 + 7))) = (1 : ℝ) := by
+    clear * - h_combined h_product
+    simp_all only
+
+  exact h_result

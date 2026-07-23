@@ -3,14 +3,15 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem mathd_numbertheory_5 (n : ℕ) (h₀ : 10 ≤ n) (h₁ : ∃ x, x ^ 2 = n) (h₂ : ∃ t, t ^ 3 = n) :
     64 ≤ n := by
+  by_contra nm
   obtain ⟨m, rfl⟩ := h₁
-  obtain ⟨k, hk⟩ := h₂
-  by_contra hm
-  simp_all only [not_le]
-  have : k < 4 := by nlinarith [sq_nonneg (k ^ 2)]
-  interval_cases k <;>
-    all_goals
-      have : m < 8 := by nlinarith
-      interval_cases m <;> omega
+  have : m < 8 := by nlinarith
+  interval_cases m <;> norm_cast at *

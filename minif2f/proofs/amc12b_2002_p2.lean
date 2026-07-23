@@ -1,15 +1,15 @@
 import Mathlib
-open BigOperators Real Nat Topology Rat
-/-- What is the value of  $(3x - 2)(4x + 1) - (3x - 2)4x + 1$ when $x=4$?
 
-$\mathrm{(A)}\ 0
-\qquad\mathrm{(B)}\ 1
-\qquad\mathrm{(C)}\ 10
-\qquad\mathrm{(D)}\ 11
-\qquad\mathrm{(E)}\ 12$ Show that it is \mathrm{(D)}\ 11.-/
+open BigOperators Real Nat Topology Rat
+set_option maxHeartbeats 0
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 
 theorem amc12b_2002_p2 (x : ℤ) (h₀ : x = 4) :
     (3 * x - 2) * (4 * x + 1) - (3 * x - 2) * (4 * x) + 1 = 11 := by
-
-    subst h₀
-    simp_all only [Int.reduceMul, Int.reduceSub, Int.reduceAdd]
+  subst h₀
+  (linarith)

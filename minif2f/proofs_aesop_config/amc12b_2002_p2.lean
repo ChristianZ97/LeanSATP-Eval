@@ -1,30 +1,75 @@
 import Mathlib
-open BigOperators Real Nat Topology Rat
-/-- What is the value of  $(3x - 2)(4x + 1) - (3x - 2)4x + 1$ when $x=4$?
 
-$\mathrm{(A)}\ 0
-\qquad\mathrm{(B)}\ 1
-\qquad\mathrm{(C)}\ 10
-\qquad\mathrm{(D)}\ 11
-\qquad\mathrm{(E)}\ 12$ Show that it is \mathrm{(D)}\ 11.-/
+open BigOperators Real Nat Topology Rat
+set_option maxHeartbeats 0
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 
 theorem amc12b_2002_p2 (x : ℤ) (h₀ : x = 4) :
     (3 * x - 2) * (4 * x + 1) - (3 * x - 2) * (4 * x) + 1 = 11 := by
-
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 60
+    maxGoals := 128
+    enableSimp := false
+    })
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 1 (by ring_nf))
+    (add safe 0 (by field_simp [*] at *))
+    (add unsafe 90% (by simp_all))
+    (add norm 0 (by grind only [mul_div_cancel_right]))
+    (add norm 0 (by grind only [div_mul]))
+    (add norm 0 (by grind only [mul_div_cancel_left]))
+    (add norm 0 (by grind only [mul_div_cancel]))
+    (add norm 0 (by grind only [sub_eq_add]))
+    (add norm 0 (by grind only [mul_add_mul]))
+    (add norm 0 (by grind only [div_div]))
+    (add norm 0 (by grind only [div_eq_iff_eq_mul]))
+    (add norm 1 (by rw [QuaternionGroup.xa_mul_xa]))
+    (add norm 0 (by grind only [Pell.d]))
+    (add norm 0 (by grind only [Int.emod_add_ediv]))
+    (add norm 0 (by grind only [div_mul_cancel]))
+    (add norm 0 (by grind only [Real.Angle.coe_sub]))
+    (add norm 0 (by grind only [AddConstMapClass.map_add_zsmul]))
+    (add norm 0 (by grind only [div_self']))
+    (add norm 0 (by grind only [eq_div_iff_mul_eq']))
+    (add norm 100 (by simp only [mul_comm] at *))
+    (add norm 100 (by simp only [mul_right_comm] at *))
+    (add norm 1 (by rw [AddConstMapClass.map_sub_zsmul]))
+    (add norm 0 (by grind only [mul_div]))
+    (add norm 100 (by simp only [mul_assoc] at *))
+    (add norm 0 (by grind only [Int.modEq_add_fac]))
+    (add norm 0 (by grind only [mul_div_assoc]))
+    (add norm 100 (by simp only [mul_left_comm] at *))
+    (add norm 0 (by grind only [div_eq_mul_inv]))
+    (add norm 0 (by grind only [AddConstMapClass.map_sub_const]))
+    (add norm 0 (by grind only [Pell.isPell_norm]))
+    (add norm 0 (by grind only [div_inv_eq_mul]))
+    (add norm 0 (by simp only [sub_div] at *))
+    (add norm 0 (by grind only [div_one]))
+    (add norm 0 (by grind only [AddConstMapClass.map_sub_int']))
+    (add unsafe 10% (by push_cast [QuaternionGroup.a_mul_xa] at *))

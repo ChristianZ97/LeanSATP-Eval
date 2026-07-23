@@ -1,82 +1,75 @@
 import Mathlib
-
 open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+/-- If $3a + b + c = -3, a+3b+c = 9, a+b+3c = 19$, then find $abc$. Show that it is -56.-/
 
 theorem mathd_algebra_338 (a b c : ℝ) (h₀ : 3 * a + b + c = -3) (h₁ : a + 3 * b + c = 9)
     (h₂ : a + b + 3 * c = 19) : a * b * c = -56 := by
-  have h_step1 : (3 * a + b + c) + (a + 3 * b + c) + (a + b + 3 * c) = ((-3 : ℝ) + 9 + 19) := by
-    clear * - h₀ h₁ h₂
-    simp_all only
 
-  have h_step2 : 5 * a + 5 * b + 5 * c = (25 : ℝ) := by
-    clear * - h_step1
-    (nlinarith)
-
-  have h_step3 : 5 * (a + b + c) = (25 : ℝ) := by
-    clear * - h_step2
-    (nlinarith)
-
-  have h_step4 : a + b + c = (5 : ℝ) := by
-    clear * - h_step3
-    (nlinarith)
-
-  have h_step5 : 2 * a + (a + b + c) = (-3 : ℝ) := by
-    clear * - h₀
-    (nlinarith)
-
-  have h_step6 : 2 * a + (5 : ℝ) = (-3 : ℝ) := by
-    clear * - h_step5 h_step4
-    simp_all only
-
-  have h_step7 : 2 * a = (-8 : ℝ) := by
-    clear * - h_step6
-    (nlinarith)
-
-  have h_step8 : a = (-4 : ℝ) := by
-    clear * - h_step7
-    (nlinarith)
-
-  have h_step9 : (a + b + c) + 2 * b = (9 : ℝ) := by
-    clear * - h₁
-    (nlinarith)
-
-  have h_step10 : (5 : ℝ) + 2 * b = (9 : ℝ) := by
-    clear * - h_step9 h_step4
-    simp_all only
-
-  have h_step11 : 2 * b = (4 : ℝ) := by
-    clear * - h_step10
-    (nlinarith)
-
-  have h_step12 : b = (2 : ℝ) := by
-    clear * - h_step11
-    (nlinarith)
-
-  have h_step13 : (a + b + c) + 2 * c = (19 : ℝ) := by
-    clear * - h₂
-    (nlinarith)
-
-  have h_step14 : (5 : ℝ) + 2 * c = (19 : ℝ) := by
-    clear * - h_step13 h_step4
-    simp_all only
-
-  have h_step15 : 2 * c = (14 : ℝ) := by
-    clear * - h_step14
-    (nlinarith)
-
-  have h_step16 : c = (7 : ℝ) := by
-    clear * - h_step15
-    (nlinarith)
-
-  have h_step17 : a * b * c = ((-4 : ℝ) * 2 * 7) := by
-    clear * - h_step8 h_step12 h_step16
-    subst h_step8 h_step12 h_step16
-    simp_all only [neg_mul]
-
-  have h_step18 : a * b * c = (-56 : ℝ) := by
-    clear * - h_step17
-    simp_all only [neg_mul, neg_inj]
-    (nlinarith)
-
-  exact h_step18
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 800
+    maxGoals := 128
+    })
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 100 (by abel))
+    (add norm 100 (by push_neg))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 0 (by omega))
+    (add safe 0 (by simp_all))
+    (add safe 0 (by field_simp [*] at *))
+    (add safe 0 (by rfl))
+    (add norm 100 (by simp only [mul_assoc] at *))
+    (add norm 100 (by simp only [mul_left_comm] at *))
+    (add norm 100 (by simp only [mul_comm] at *))
+    (add norm 100 (by simp only [mul_right_comm] at *))
+    (add norm 0 (by grind only [mul_inv]))
+    (add norm 0 (by grind only [Quaternion.star_imI]))
+    (add norm 0 (by grind only [Quaternion.star_imJ]))
+    (add norm 0 (by grind only [Quaternion.coe_commutes]))
+    (add norm 0 (by grind only [Pell.isPell_norm]))
+    (add norm 0 (by grind only [QuaternionAlgebra.Basis]))
+    (add norm 0 (by grind only [Real.Angle.coe_two_pi]))
+    (add norm 0 (by grind only [Quaternion.star_mul_eq_coe]))
+    (add norm 0 (by grind only [Quaternion.neg_imI]))
+    (add safe 1 (by linarith [Quaternion.mul_re]))
+    (add safe 1 (by linarith [Quaternion.mul_imK]))
+    (add safe 1 (by linarith [QuaternionAlgebra.mul_re]))
+    (add safe 1 (by linarith [Pell.Solution₁.x_mul]))
+    (add unsafe 50% (by rw [← QuaternionAlgebra.mul_imJ] at *))
+    (add unsafe 50% (by simp_all [mul_neg_one]))
+    (add unsafe 50% (by simp_all [mul_neg]))
+    (add unsafe 50% (by simp_all [neg_mul]))
+    (add unsafe 50% (by rw [← QuaternionAlgebra.mul_imI] at *))
+    (add unsafe 50% (by simp_all [Complex.I_mul_I]))
+    (add unsafe 50% (by rw [← Quaternion.mul_imJ] at *))
+    (add unsafe 50% (by simp_all [neg_one_mul]))
+    (add unsafe 50% (by rw [← Quaternion.mul_imI] at *))
+    (add unsafe 50% (by simp_all [Complex.I_sq]))
+    (add unsafe 50% (by rw [← QuaternionAlgebra.mul_imK] at *))
+    (add unsafe 50% (by simp_all [Quaternion.coe_mul_eq_smul]))
+    (add unsafe 50% (by simp_all [Complex.I]))
+    (add unsafe 50% (by simp_all [jacobiTheta₂_term]))
+    (add unsafe 50% (by simp_all [Complex.exp_pi_mul_I]))

@@ -63,6 +63,25 @@ changes no `Mathlib/*.lean` files; the proofs use no fork-only aesop options.
   it depends on `Lean.ofReduceBool` / `Lean.trustCompiler` beyond the standard
   trio; a header comment in that file flags it.
 
+## Data & version lineage
+
+The toolchain is uniformly v4.26 (training verifier, prove stage, this repo's
+verification env). The *inputs* predate it:
+
+- **Statements** — `minif2f.jsonl` vendored from [DSP-Plus][dspplus], which
+  adapts the [DeepSeek-Prover-V1.5 miniF2F release][dsv15]; statement text is
+  unmodified v4.17-rc1-era Lean (the 31 big-operator statements above are the
+  visible consequence). HF mirror (uuid-normalized):
+  [ChristianZ97/minif2f-satp][m2fsatp].
+- **Sketches** — the draft/sketch bank is reused verbatim from the v1
+  generation: produced and sketch-verified under the v4.17-rc1-era
+  environment. Only the prove stage ran under v4.26.
+- **Policy training set (v2)** — [NuminaMath-LEAN][numina] as published
+  (upstream revision unspecified), consumed via the cleaned derivative
+  [ChristianZ97/NuminaMath-LEAN-SATP-cleaned][numinaclean]
+  (`3e78c837`); goal states extracted and training verified with a Kimina
+  backend at Lean v4.26 (details on the [model card][card]).
+
 ## Provenance
 
 These files were re-derived by re-running each solved problem's `satpbfsaesop4x`
@@ -78,6 +97,10 @@ PutnamBench under the v2 checkpoint is a separate run (in progress) and is not
 part of this branch yet.
 
 [dspplus]: https://github.com/microsoft/DSP-Plus
+[dsv15]: https://github.com/deepseek-ai/DeepSeek-Prover-V1.5/blob/main/datasets/minif2f.jsonl
+[m2fsatp]: https://huggingface.co/datasets/ChristianZ97/minif2f-satp
+[numina]: https://huggingface.co/datasets/AI-MO/NuminaMath-LEAN
+[numinaclean]: https://huggingface.co/datasets/ChristianZ97/NuminaMath-LEAN-SATP-cleaned
 [leansatp]: https://github.com/ChristianZ97/LeanSATP/tree/v2
 [main]: https://github.com/ChristianZ97/LeanSATP-Eval/tree/main
 [q35]: https://huggingface.co/Qwen/Qwen3.5-27B-FP8

@@ -94,13 +94,15 @@ closure of each gap, not necessarily the original bank draw.
 For the per-mode pass rates and reproducibility bands see the
 [LeanSATP v2 README][leansatp] and the [satp-policy-v2 model card][card].
 PutnamBench under the v2 checkpoint is a separate run (in progress) and is not
-part of this branch yet.
+part of this branch yet; its statements are
+[ChristianZ97/putnambench-satp][pbsatp] (uuid-normalized PutnamBench).
 
 [dspplus]: https://github.com/microsoft/DSP-Plus
 [dsv15]: https://github.com/deepseek-ai/DeepSeek-Prover-V1.5/blob/main/datasets/minif2f.jsonl
 [m2fsatp]: https://huggingface.co/datasets/ChristianZ97/minif2f-satp
 [numina]: https://huggingface.co/datasets/AI-MO/NuminaMath-LEAN
 [numinaclean]: https://huggingface.co/datasets/ChristianZ97/NuminaMath-LEAN-SATP-cleaned
+[pbsatp]: https://huggingface.co/datasets/ChristianZ97/putnambench-satp
 [leansatp]: https://github.com/ChristianZ97/LeanSATP/tree/v2
 [main]: https://github.com/ChristianZ97/LeanSATP-Eval/tree/main
 [q35]: https://huggingface.co/Qwen/Qwen3.5-27B-FP8

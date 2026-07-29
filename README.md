@@ -38,7 +38,7 @@ git clone --branch v2 https://github.com/ChristianZ97/LeanSATP
 lake env lean /path/to/minif2f/proofs/amc12a_2002_p6.lean
 ```
 
-Environment: lean4 `v4.26.0`, Mathlib `2df2f0150c`, stock aesop. The environment changes no `Mathlib/*.lean` files; the proofs use no fork-only aesop options.
+Environment: lean4 `v4.26.0`, Mathlib `2df2f0150c`, aesop `2f6d238`. The environment changes no `Mathlib/*.lean` files, and its one aesop addition — a `bfsScore` config field used by the BFS search — appears in none of these proofs, so they also verify against upstream aesop.
 
 ## Notes
 

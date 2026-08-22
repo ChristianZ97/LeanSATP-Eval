@@ -1,15 +1,40 @@
+
 import Mathlib
-open BigOperators Real Nat Topology Rat
 
-syntax "∑ " ident " in " term ", " term:67 : term
-syntax "∏ " ident " in " term ", " term:67 : term
-macro_rules
-  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
-  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
-/-- What is the largest negative integer $x$ satisfying $$24x \equiv 15 \pmod{1199}~?$$ Show that it is -449.-/
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
 
-theorem mathd_numbertheory_765 (x : ℤ) (h₀ : x < 0) (h₁ : 24 * x % 1199 = 15) : x ≤ -449 := by
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
 
-  (bound )
-  (ring_nf at *)
-  (grind only [Int.emod_nonneg])
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+
+  | _ => Elab.throwUnsupportedSyntax
+end Google
+
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
+
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
+
+
+set_option maxHeartbeats 0
+
+theorem mathd_numbertheory_765 : IsGreatest {x : ℤ | x < 0 ∧ 24 * x % 1199 = 15} (-449) := by
+  unfold IsGreatest
+  simp only [Set.mem_setOf_eq, upperBounds]
+  repeat' constructor <;> omega

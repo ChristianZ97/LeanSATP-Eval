@@ -1,75 +1,43 @@
+
 import Mathlib
 
-open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
 
-syntax "∑ " ident " in " term ", " term:67 : term
-syntax "∏ " ident " in " term ", " term:67 : term
-macro_rules
-  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
-  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
+
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+
+  | _ => Elab.throwUnsupportedSyntax
+end Google
+
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
+
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
+
+
+set_option maxHeartbeats 0
 
 theorem aime_1987_p5 (x y : ℤ) (h₀ : y ^ 2 + 3 * (x ^ 2 * y ^ 2) = 30 * x ^ 2 + 517) :
     3 * (x ^ 2 * y ^ 2) = 588 := by
-  have h₁ : y ^ 2 * (1 + 3 * x ^ 2) = 30 * x ^ 2 + 517 := by
-    clear * - h₀
-    (linarith)
-
-  have h₂ : 30 * x ^ 2 = 10 * (3 * x ^ 2 + 1) - 10 := by
-    clear * -
-    (linarith)
-
-  have h₃ : y ^ 2 * (1 + 3 * x ^ 2) = 10 * (3 * x ^ 2 + 1) + 507 := by
-    clear * - h₁ h₂
-    simp_all only
-    (linarith)
-
-  have h₄ : y ^ 2 * (1 + 3 * x ^ 2) - 10 * (3 * x ^ 2 + 1) = 507 := by
-    clear * - h₃
-    simp_all only [add_sub_cancel_left]
-
-  have h₅ : (y ^ 2 - 10) * (3 * x ^ 2 + 1) = 507 := by
-    clear * - h₄
-    (linarith)
-
-  have h₆ : 507 = 3 * 13 ^ 2 := by
-    clear * -
-    simp only [reducePow, reduceMul] at *
-
-  have h₇ : 3 * x ^ 2 + 1 = 13 := by
-    clear * - h₅ h₆
-    have key := h₅
-    have : y ^ 2 - 10 ≤ 507 := by nlinarith
-    on_goal 1 =>
-    have : y ^ 2 ≤ 517 := by omega
-    have : y ≤ 22 := by nlinarith
-    have : y ≥ -22 := by nlinarith
-    interval_cases y <;> omega
-
-  have h₈ : 3 * x ^ 2 = 12 := by
-    clear * - h₇
-    (linarith)
-
-  have h₉ : x ^ 2 = 4 := by
-    clear * - h₈
-    (nlinarith)
-
-  have h₁₀ : y ^ 2 - 10 = 39 := by
-    clear * - h₅ h₇
-    (nlinarith)
-
-  have h₁₁ : y ^ 2 = 49 := by
-    clear * - h₁₀
-    (linarith)
-
-  have h₁₂ : 3 * (x ^ 2 * y ^ 2) = 3 * 4 * 49 := by
-    clear * - h₉ h₁₁
-    simp_all only
-    (linarith)
-
-  have h₁₃ : 3 * (x ^ 2 * y ^ 2) = 588 := by
-    clear * - h₁₂
-    simp only [Int.reduceMul] at *
-    (linarith)
-
-  exact h₁₃
+  have key := h₀
+  have : y ^ 2 ≤ 517 := by nlinarith
+  have : y ≤ 22 := by nlinarith
+  have : y ≥ -22 := by nlinarith
+  interval_cases y <;> ring_nf at h₀ ⊢ <;> omega

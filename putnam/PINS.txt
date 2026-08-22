@@ -1,0 +1,14 @@
+run: workspace/result/qwen36-27b_int4/satp_dsp_putnam_v427_sbfs1
+manifest: _batch_putnam_sbfs1.jsonl sha256=cbcba78fbe0ff92ae6e2055a4b4c69fe3849c233015bed322ef6f3a72e04a5d8
+mode: satpbfsaesop
+toolchain: leanprover/lean4:v4.27.0
+pins: see LeanSATP/deps/.pins (mathlib + aesop identity); verified via `lake env lean` in LeanSATP workspace
+gate: standalone compile + #print axioms allowlist ['Classical.choice', 'Quot.sound', 'propext']
+gate timeout: 2400s per file (--timeout; default would drop heavy proofs)
+published: 42  flagged(_flagged_axioms/): []
+excluded service-dependent: []
+excluded gate-failed: []
+rescued (stale-name normalized, re-gated): ['putnam_1972_a1'] table={'abs_add': 'abs_add_le', 'Real.rpow_nat_cast': 'Real.rpow_natCast', 'Int.mod_self': 'Int.emod_self', 'Real.sqrt_eq_iff_sq_eq': None}
+resumed_complete published (in-row winner provenance verified): ['putnam_1963_b2', 'putnam_1967_b2', 'putnam_1968_a1', 'putnam_1971_b1']
+dead `<;> sorry` tail stripped (re-gated after strip): ['putnam_1994_b3']
+note: sketch winners carry the run's file-level `set_option maxHeartbeats 0` pin (run artifact, untouched)

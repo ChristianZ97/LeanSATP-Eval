@@ -1,90 +1,93 @@
 import Mathlib
 
-open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
 
-syntax "∑ " ident " in " term ", " term:67 : term
-syntax "∏ " ident " in " term ", " term:67 : term
-macro_rules
-  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
-  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
+
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+  | _ => Elab.throwUnsupportedSyntax
+end Google
+
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
+
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
+
 
 theorem amc12_2000_p20 (x y z : ℝ) (h₀ : 0 < x ∧ 0 < y ∧ 0 < z) (h₁ : x + 1 / y = 4)
     (h₂ : y + 1 / z = 1) (h₃ : z + 1 / x = 7 / 3) : x * y * z = 1 := by
-  have h_pos_prod : 0 < x * y * z := by
-    clear * - h₀
-    (bound )
 
-  have h_prod_eq : (x + (1 : ℝ) / y) * (y + (1 : ℝ) / z) * (z + (1 : ℝ) / x) = (4 : ℝ) * (1 : ℝ) * ((7 : ℝ) / 3) := by
-    clear * - h₁ h₂ h₃
-    (grind only [mul_div_assoc])
-
-  have h_rhs_calc : (4 : ℝ) * (1 : ℝ) * ((7 : ℝ) / 3) = (28 : ℝ) / 3 := by
-    clear * -
-    simp_all only [mul_one]
-    (linarith)
-
-  have h_combined_prod : (x + (1 : ℝ) / y) * (y + (1 : ℝ) / z) * (z + (1 : ℝ) / x) = (28 : ℝ) / 3 := by
-    clear * - h_prod_eq h_rhs_calc
-    (linarith)
-
-  have h_lhs_expand : (x + (1 : ℝ) / y) * (y + (1 : ℝ) / z) * (z + (1 : ℝ) / x) =
-      x * y * z + (x + (1 : ℝ) / y) + (y + (1 : ℝ) / z) + (z + (1 : ℝ) / x) + (1 : ℝ) / (x * y * z) := by
-    clear * - h₀
-    (grind only [mul_div_assoc])
-
-  have h_substituted_vals : x * y * z + (4 : ℝ) + (1 : ℝ) + ((7 : ℝ) / 3) + (1 : ℝ) / (x * y * z) = (28 : ℝ) / 3 := by
-    clear * - h_combined_prod h_lhs_expand h₁ h₂ h₃
-    simp_all only [one_div, mul_one, mul_inv_rev]
-
-  have h_int_sum : (4 : ℝ) + (1 : ℝ) = (5 : ℝ) := by
-    clear * -
-    (linarith)
-
-  have h_total_const : (5 : ℝ) + ((7 : ℝ) / 3) = (22 : ℝ) / 3 := by
-    clear * - h_int_sum
-    (linarith)
-
-  have h_reduced_eq : x * y * z + ((22 : ℝ) / 3) + (1 : ℝ) / (x * y * z) = (28 : ℝ) / 3 := by
-    clear * - h_substituted_vals h_total_const
-    simp_all only [one_div, mul_inv_rev]
-    (linarith)
-
-  have h_isolate_var_term : x * y * z + (1 : ℝ) / (x * y * z) = (28 : ℝ) / 3 - (22 : ℝ) / 3 := by
-    clear * - h_reduced_eq
-    (linarith)
-
-  have h_diff_calc : (28 : ℝ) / 3 - (22 : ℝ) / 3 = (6 : ℝ) / 3 := by
-    clear * -
-    (linarith)
-
-  have h_frac_simp : (6 : ℝ) / 3 = (2 : ℝ) := by
-    clear * -
-    (linarith)
-
-  have h_recip_relation : x * y * z + (1 : ℝ) / (x * y * z) = (2 : ℝ) := by
-    clear * - h_isolate_var_term h_diff_calc h_frac_simp
-    (linarith)
-
-  have h_no_denom : (x * y * z) * (x * y * z) + (1 : ℝ) = (2 : ℝ) * (x * y * z) := by
-    clear * - h_recip_relation h_pos_prod
-    (grind only [mul_two])
-
-  have h_quadratic_form : (x * y * z) * (x * y * z) - (2 : ℝ) * (x * y * z) + (1 : ℝ) = (0 : ℝ) := by
-    clear * - h_no_denom
-    (linarith)
-
-  have h_perfect_square : ((x * y * z) - (1 : ℝ)) ^ 2 = (0 : ℝ) := by
-    clear * - h_quadratic_form
-    simp_all only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
-    (nlinarith)
-
-  have h_zero_base : (x * y * z) - (1 : ℝ) = (0 : ℝ) := by
-    clear * - h_perfect_square
-    simp_all only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, pow_eq_zero_iff]
-
-  have h_final_result : x * y * z = (1 : ℝ) := by
-    clear * - h_zero_base
-    (linarith)
-
-  exact h_final_result
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 320
+    maxGoals := 512
+    enableSimp := false
+    useDefaultSimpSet := false
+    })
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by bound))
+    (add norm 1 (by field_simp [*] at *))
+    (add safe 100 (by ring))
+    (add safe 100 (by field_simp))
+    (add safe 100 (by norm_num))
+    (add safe 100 (by positivity))
+    (add safe 0 (by omega))
+    (add safe 100 (by interval_cases))
+    (add safe 0 (by ext))
+    (add safe 0 (by split))
+    (add safe 100 (by rfl))
+    (add safe 100 (by decide))
+    (add safe 0 (by push_cast))
+    (add safe 100 (by assumption_mod_cast))
+    (add unsafe 10% (by exfalso))
+    (add norm 0 (by grind only [mul_one_div]))
+    (add norm 0 (by grind only [one_div]))
+    (add norm 0 (by grind only [Real.rpow_sub]))
+    (add norm 0 (by grind only [Real.Gamma_add_one]))
+    (add norm 0 (by grind only [two_ne_zero']))
+    (add norm 0 (by grind only [Real.Gamma_one]))
+    (add norm 0 (by grind only [Complex.cpow_add]))
+    (add norm 0 (by grind only [Real.log_div]))
+    (add norm 0 (by grind only [Real.rpow_add_one]))
+    (add norm 0 (by grind only [Real.Gamma_two]))
+    (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+    (add norm 0 (by grind only [Real.rpow_sub']))
+    (add norm 0 (by grind only [Real.doublingGamma]))
+    (add norm 0 (by grind only [mul_comm]))
+    (add safe 0 (by simp only [div_self] at *))
+    (add safe 0 (by simp only [mul_div_assoc] at *))
+    (add safe 0 (by simp only [mul_div_cancel₀] at *))
+    (add safe 0 (by simp only [mul_div] at *))
+    (add safe 0 (by simp only [div_eq_iff] at *))
+    (add safe 0 (by simp only [div_mul_cancel₀] at *))
+    (add safe 0 (by simp only [sub_div] at *))
+    (add safe 0 (by simp only [eq_div_iff] at *))
+    (add safe 0 (by simp only [div_div] at *))
+    (add safe 0 (by simp only [div_eq_one_iff_eq] at *))
+    (add safe 0 (by simp only [mul_div_cancel_right₀] at *))
+    (add safe 0 (by simp only [mul_div_cancel_left₀] at *))
+    (add safe 0 (by simp only [Complex.Gamma_one_half_eq] at *))
+    (add safe 0 (by simp only [mul_div_mul_left] at *))
+    (add safe 0 (by simp only [Real.div_rpow] at *))
+    (add safe 0 (by simp only [add_div] at *))
+    (add safe 0 (by simp only [div_mul] at *))
+    (add safe 0 (by simp only [Complex.ofReal_div] at *))

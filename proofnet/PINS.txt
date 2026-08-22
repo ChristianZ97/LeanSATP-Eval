@@ -1,0 +1,14 @@
+run: workspace/result/qwen36-27b_int4/satp_dsp_proofnet_v427_sbfsb2
+manifest: _batch_sbfsb2.jsonl sha256=6fdb2652e9690ad8ebc145d0ae792b7a0209052604f4dcaf7e1d2ba3e470bc2b
+mode: satpbfsaesop
+toolchain: leanprover/lean4:v4.27.0
+pins: see LeanSATP/deps/.pins (mathlib + aesop identity); verified via `lake env lean` in LeanSATP workspace
+gate: standalone compile + #print axioms allowlist ['Classical.choice', 'Quot.sound', 'propext']
+gate timeout: 120s per file (default)
+published: 53  flagged(_flagged_axioms/): []
+excluded service-dependent: []
+excluded gate-failed: [('Axler_exercise_6_3', 'verdict=invalid rc=1 errors=1'), ('Axler_exercise_5_1', 'verdict=invalid rc=1 errors=1'), ('Ireland-Rosen_exercise_1_30', 'verdict=invalid rc=1 errors=1')]
+rescued (stale-name normalized, re-gated): [] table={'abs_add': 'abs_add_le', 'Real.rpow_nat_cast': 'Real.rpow_natCast', 'Int.mod_self': 'Int.emod_self', 'Real.sqrt_eq_iff_sq_eq': None}
+resumed_complete published (in-row winner provenance verified): []
+dead `<;> sorry` tail stripped (re-gated after strip): []
+note: sketch winners carry the run's file-level `set_option maxHeartbeats 0` pin (run artifact, untouched)

@@ -1,144 +1,1515 @@
+
 import Mathlib
 
-open BigOperators Real Nat Topology Rat
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
+
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
+
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+  | _ => Elab.throwUnsupportedSyntax
+end Google
+
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
+
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
+
+
 set_option maxHeartbeats 0
 
-syntax "∑ " ident " in " term ", " term:67 : term
-syntax "∏ " ident " in " term ", " term:67 : term
-macro_rules
-  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
-  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
-
 theorem numbertheory_4x3m7y3neq2003 (x y : ℤ) : 4 * x ^ 3 - 7 * y ^ 3 ≠ 2003 := by
+  -- Step 1: Assume for contradiction that 4x^3 - 7y^3 = 2003
   intro h_eq
-  have h_step2 : (4 * x ^ 3 - 7 * y ^ 3) % 7 = (2003 : ℤ) % 7 := by
+  have h_mod_eq : (4 * x ^ 3 - 7 * y ^ 3 : ℤ) % 7 = (2003 : ℤ) % 7 := by
     clear * - h_eq
-    simp_all only [Int.reduceMod]
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      maxGoals := 16
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 50% (by nlinarith [Int.odd_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_left]))
+      (add unsafe 50% (by nlinarith [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 50% (by nlinarith [Nat.even_iff]))
+      (add unsafe 50% (by nlinarith [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Int.emod_emod]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod]))
+      (add unsafe 50% (by nlinarith [Int.even_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 50% (by nlinarith [Nat.odd_iff]))
+      (add unsafe 50% (by nlinarith [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
+      (add unsafe 50% (by nlinarith [Int.mul_emod_right]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 50% (by nlinarith [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Nat.gcd.induction]))
+      (add unsafe 50% (by nlinarith [Nat.not_even_iff]))
+      (add unsafe 50% (by nlinarith [ZMod.χ₈'_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Int.ModEq]))
+      (add unsafe 50% (by nlinarith [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod_of_dvd]))
+      (add unsafe 50% (by nlinarith [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 50% (by nlinarith [Int.dvd_iff_emod_eq_zero]))
 
-  have h_step3 : (7 * y ^ 3) % 7 = 0 := by
+  -- Step 2 & 3: 7y^3 ≡ 0 (mod 7)
+  have h_7y3_mod0 : (7 * y ^ 3 : ℤ) % 7 = 0 := by
     clear * -
-    simp_all only [Int.mul_emod_right]
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 1 (by ring_nf at *))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 90% (by positivity))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add safe 0 (by simp_all [Int.emod_zero]))
+      (add safe 0 (by simp_all [Int.emod_def]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.mul_emod_right]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 50% (by nlinarith [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 50% (by nlinarith [Int.even_iff]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
+      (add unsafe 50% (by nlinarith [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 50% (by nlinarith [Int.dvd_iff_emod_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.odd_iff]))
+      (add unsafe 50% (by nlinarith [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_left]))
+      (add unsafe 50% (by nlinarith [Int.emod_emod_of_dvd]))
+      (add unsafe 50% (by nlinarith [Nat.even_iff]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 50% (by nlinarith [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 50% (by nlinarith [Nat.odd_iff]))
 
-  have h_step4 : (4 * x ^ 3) % 7 = (2003 : ℤ) % 7 := by
-    clear * - h_step2 h_step3
-    simp_all only [Int.sub_mul_emod_self_left, Int.reduceMod, Int.mul_emod_right]
+  -- Step 4: Simplify LHS modulo 7 to get 4x^3 mod 7
+  have h_lhs_mod7 : (4 * x ^ 3 - 7 * y ^ 3 : ℤ) % 7 = (4 * x ^ 3 : ℤ) % 7 := by
+    clear * - h_7y3_mod0
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      maxGoals := 16
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 50% (by nlinarith [Int.mul_emod]))
+      (add unsafe 50% (by nlinarith [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Int.mul_emod_right]))
+      (add unsafe 50% (by nlinarith [Int.odd_iff]))
+      (add unsafe 50% (by nlinarith [Int.emod_emod]))
+      (add unsafe 50% (by nlinarith [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
+      (add unsafe 50% (by nlinarith [Int.even_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 50% (by nlinarith [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Int.emod_self]))
+      (add unsafe 50% (by nlinarith [Nat.even_iff]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Int.ModEq]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_left]))
+      (add unsafe 50% (by nlinarith [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 50% (by nlinarith [Int.emod_def]))
+      (add unsafe 50% (by nlinarith [ZMod.χ₈'_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Int.dvd_iff_emod_eq_zero]))
+      (add unsafe 50% (by nlinarith [Nat.odd_iff]))
+      (add unsafe 50% (by nlinarith [Nat.not_even_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Int.sub_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod]))
+      (add unsafe 50% (by nlinarith [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 50% (by nlinarith [Nat.gcd.induction]))
 
-  have h_step5 : (2003 : ℤ) = 286 * 7 + 1 := by
+  -- Step 5 & 6: 2003 ≡ 1 (mod 7)
+  have h_2003_mod1 : (2003 : ℤ) % 7 = 1 := by
     clear * -
-    simp_all only [Int.reduceMul, Int.reduceAdd]
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      maxGoals := 16
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 1 (by ring_nf at *))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 90% (by positivity))
+      (add norm 0 (by grind only [Nat.mod_two_add_succ_mod_two]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Nat.mul_mod_left]))
+      (add unsafe 10% (by grind only [Nat.mul_mod]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 10% (by grind only [Nat.odd_iff]))
+      (add unsafe 10% (by grind only [Nat.even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 10% (by grind only [Nat.mul_mod_mod]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 10% (by grind only [Nat.mod_mod_of_dvd]))
+      (add unsafe 10% (by grind only [Nat.mod_mul_left_mod]))
+      (add unsafe 10% (by grind only [Nat.mod_two_of_bodd]))
+      (add unsafe 10% (by grind only [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [Nat.mod_mod]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Nat.not_even_iff]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mul_left]))
+      (add unsafe 10% (by grind only [Nat.gcd.induction]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_one_mod_four]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mul_mod]))
+      (add unsafe 10% (by grind only [Num.dvd_iff_mod_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 10% (by grind only [ZMod.χ₈'_nat_eq_if_mod_eight]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
 
-  have h_step6 : (2003 : ℤ) % 7 = 1 := by
-    clear * - h_step5
-    simp_all only [Int.reduceMul, Int.reduceAdd, Int.reduceMod]
+  -- Step 7: Therefore, 4x^3 ≡ 1 (mod 7)
+  have h_4x3_mod1 : (4 * x ^ 3 : ℤ) % 7 = 1 := by
+    clear * - h_mod_eq h_lhs_mod7 h_2003_mod1
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 520
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 90% (by positivity))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [Int.emod_lt]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add unsafe 10% (by grind only [Int.emod_emod_of_dvd]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.dvd_iff_emod_eq_zero]))
+      (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [ZNum.mod_to_int]))
+      (add unsafe 10% (by grind only [Int.emod_abs]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod_of_dvd]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
+      (add unsafe 10% (by grind only [Fermat42.not_minimal]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod]))
+      (add unsafe 10% (by grind only [Int.dvd_sub_of_emod_eq]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod]))
+      (add unsafe 50% (by nlinarith [Nat.even_iff]))
+      (add unsafe 50% (by nlinarith [Int.even_iff]))
 
-  have h_step7 : (4 * x ^ 3) % 7 = 1 := by
-    clear * - h_step4 h_step6
-    simp_all only [Int.reduceMod]
-
-  have h_step8 : (2 * (4 * x ^ 3)) % 7 = (2 * 1) % 7 := by
-    clear * - h_step7
-    simp_all only [mul_one, Int.reduceMod]
-    (omega)
-
-  have h_step9 : (8 * x ^ 3) % 7 = 2 % 7 := by
-    clear * - h_step8
-    simp_all only [mul_one, Int.reduceMod]
-    (omega)
-
-  have h_step10 : 8 % 7 = 1 := by
+  -- Step 8, 9, 10: Multiply by 2 (inverse of 4 mod 7, since 4*2=8≡1)
+  -- We want to isolate x^3. Since 4 * 2 = 8 ≡ 1 (mod 7), multiplying by 2 gives x^3.
+  have h_inv4_is2 : ((4 : ℤ) * 2) % 7 = 1 := by
     clear * -
-    simp_all only [reduceMod]
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      maxGoals := 16
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 1 (by ring_nf at *))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Nat.mod_two_add_succ_mod_two]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Nat.mul_mod_left]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Nat.even_iff]))
+      (add unsafe 10% (by grind only [Nat.mul_mod]))
+      (add unsafe 10% (by grind only [Nat.odd_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Nat.not_even_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 50% (by nlinarith [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 10% (by grind only [Nat.mod_two_of_bodd]))
+      (add unsafe 10% (by grind only [Nat.gcd.induction]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod_of_dvd]))
+      (add unsafe 10% (by grind only [ZMod.χ₈'_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod]))
+      (add unsafe 10% (by grind only [Int.neg_emod_two]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mul_left_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mul_left]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
 
-  have h_step11 : (x ^ 3) % 7 = 2 := by
-    clear * - h_step9 h_step10
-    simp_all only [Int.reduceMod, reduceMod]
-    (grind only [Int.ModEq])
+  -- Step 11, 12: Multiply congruence 4x^3 ≡ 1 by 2
+  have h_x3_mod2 : (x ^ 3 : ℤ) % 7 = 2 := by
+    -- Note: In integers, if A % 7 = B % 7, then (k*A) % 7 = (k*B) % 7.
+    -- Here we use that (4*x^3)%7 = 1.
+    -- (2 * 4 * x^3) % 7 = (2 * 1) % 7 => (8 * x^3) % 7 = 2 => (x^3) % 7 = 2.
+    clear * - h_4x3_mod1 h_inv4_is2
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add safe 0 (by simp_all [Int.emod_lt]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [Int.emod_def]))
+      (add safe 0 (by simp_all [Int.emod_emod_of_dvd]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add safe 0 (by simp_all [Int.emod_abs]))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.mod_modEq]))
+      (add safe 0 (by simp_all [Int.emod_zero]))
+      (add safe 0 (by simp_all [ZNum.mod_to_int]))
+      (add safe 0 (by simp_all [Int.emod_lt_of_pos]))
+      (add safe 0 (by simp_all [MulAction.period]))
+      (add safe 0 (by simp_all [Int.natMod]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 50% (by nlinarith [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
+      (add unsafe 50% (by nlinarith [Int.mul_emod_right]))
+      (add unsafe 50% (by nlinarith [Int.dvd_iff_emod_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.add_mul_emod_self]))
+      (add unsafe 50% (by nlinarith [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 50% (by nlinarith [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 50% (by nlinarith [LucasLehmer.sMod_mod]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Int.even_iff]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Int.odd_iff]))
 
-  have h_c0 : (0 : ℤ) ^ 3 = 0 := by
+  -- Steps 14-26: Check all possible cubes modulo 7
+  -- The possible values for x % 7 are 0, 1, 2, 3, 4, 5, 6.
+  -- Let's check x^3 % 7 for each case.
+  -- Case 0: 0^3 = 0
+  have h_cube0 : (0 : ℤ) ^ 3 % 7 = 0 := by
     clear * -
-    simp_all only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow]
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by simp))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 10% (by grind only [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_one_mod_four]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [EuclideanDomain.zero_mod]))
+      (add unsafe 50% (by nlinarith [Nat.odd_iff]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 50% (by nlinarith [Nat.even_iff]))
+      (add unsafe 50% (by nlinarith [jacobiSym.quadratic_reciprocity_one_mod_four']))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_left]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod]))
+      (add unsafe 50% (by nlinarith [jacobiSym.quadratic_reciprocity_three_mod_four]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [EuclideanDomain.mod_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod_of_dvd]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 50% (by nlinarith [Int.odd_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 10% (by grind only [Ordinal.mod_mod_of_dvd]))
+      (add unsafe 50% (by nlinarith [Int.sq_ne_two_mod_four]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Nat.not_even_iff]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_if]))
+      (add unsafe 50% (by nlinarith [Nat.mod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [jacobiSym.at_two]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod]))
 
-  have h_mod0 : 0 % 7 = 0 := by
-    clear * - h_c0
-    simp_all only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, zero_mod]
-
-  have h_c1 : (1 : ℤ) ^ 3 = 1 := by
+  -- Case 1: 1^3 = 1
+  have h_cube1 : (1 : ℤ) ^ 3 % 7 = 1 := by
     clear * -
-    simp only [one_pow] at *
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 120
+      maxNormIterations := 60
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 1 (by ring_nf at *))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [ZMod.neg_one_pow_div_two_of_one_mod_four]))
+      (add norm 0 (by grind only [ZMod.neg_one_pow_div_two_of_three_mod_four]))
+      (add norm 0 (by grind only [Nat.mul_mod_right]))
+      (add norm 0 (by grind only [Nat.mod_two_add_succ_mod_two]))
+      (add norm 0 (by grind only [Int.sq_mod_four_eq_one_of_odd]))
+      (add unsafe 10% (by grind only [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_one_mod_four]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 50% (by nlinarith [Nat.odd_iff]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_left]))
+      (add unsafe 50% (by nlinarith [Nat.even_iff]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [jacobiSym.quadratic_reciprocity_one_mod_four']))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod_of_dvd]))
+      (add unsafe 50% (by nlinarith [Nat.mod_eq_zero_of_dvd]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 50% (by nlinarith [jacobiSym.quadratic_reciprocity_three_mod_four]))
+      (add unsafe 50% (by nlinarith [Nat.not_even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Int.odd_iff]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mul_left_mod]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 50% (by nlinarith [Nat.gcd.induction]))
 
-  have h_mod1 : 1 % 7 = 1 := by
-    clear * - h_c1
-    simp_all only [one_pow, one_mod]
-
-  have h_c2 : (2 : ℤ) ^ 3 = 8 := by
+  -- Case 2: 2^3 = 8 ≡ 1
+  have h_cube2 : (2 : ℤ) ^ 3 % 7 = 1 := by
     clear * -
-    simp_all only [Int.reducePow]
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      maxGoals := 16
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 90% (by positivity))
+      (add norm 0 (by grind only [Nat.mod_two_add_succ_mod_two]))
+      (add norm 0 (by grind only [Nat.two_mul_odd_div_two]))
+      (add norm 0 (by grind only [Nat.two_mul]))
+      (add unsafe 10% (by grind only [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 10% (by grind only [Nat.odd_iff]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Nat.mul_mod]))
+      (add unsafe 10% (by grind only [Nat.even_iff]))
+      (add unsafe 10% (by grind only [Nat.mul_mod_left]))
+      (add unsafe 10% (by grind only [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_one_mod_four]))
+      (add unsafe 10% (by grind only [Nat.mod_mod_of_dvd]))
+      (add unsafe 10% (by grind only [Nat.mod_mod]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [Nat.mod_two_of_bodd]))
+      (add unsafe 10% (by grind only [Nat.not_even_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mul_left]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_one_mod_four']))
+      (add unsafe 50% (by nlinarith [Nat.mod_mul_left_mod]))
+      (add unsafe 10% (by grind only [jacobiSym.at_two]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 10% (by grind only [Nat.gcd.induction]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_if]))
 
-  have h_mod2 : 8 % 7 = 1 := by
-    clear * - h_c2
-    simp_all only [Int.reducePow, reduceMod]
-
-  have h_c3 : (3 : ℤ) ^ 3 = 27 := by
+  -- Case 3: 3^3 = 27 ≡ 6
+  have h_cube3 : (3 : ℤ) ^ 3 % 7 = 6 := by
     clear * -
-    simp_all only [Int.reducePow]
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 60
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 1 (by ring_nf at *))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Nat.mod_two_add_succ_mod_two]))
+      (add norm 0 (by grind only [Nat.mul_mod_right]))
+      (add norm 0 (by grind only [Nat.mul_mod_mod]))
+      (add norm 0 (by grind only [Int.neg_emod_two]))
+      (add norm 0 (by grind only [ZMod.χ₄_nat_eq_if_mod_four]))
+      (add norm 0 (by grind only [Nat.mul_mod_mul_left]))
+      (add unsafe 10% (by grind only [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 10% (by grind only [Nat.even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Nat.odd_iff]))
+      (add unsafe 10% (by grind only [Nat.mul_mod_left]))
+      (add unsafe 10% (by grind only [Nat.mul_mod]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_one_mod_four]))
+      (add unsafe 10% (by grind only [Nat.not_even_iff]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Nat.mod_mod_of_dvd]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod]))
+      (add unsafe 10% (by grind only [ZMod.χ₈'_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mul_left_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_of_bodd]))
 
-  have h_c3_dec : (27 : ℤ) = 3 * 7 + 6 := by
+  -- Case 4: 4^3 = 64 ≡ 1
+  have h_cube4 : (4 : ℤ) ^ 3 % 7 = 1 := by
     clear * -
-    simp_all only [Int.reduceMul, Int.reduceAdd]
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 60
+      maxGoals := 16
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 100 (by simp))
+      (add safe 1 (by ring_nf at *))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Nat.mod_two_add_succ_mod_two]))
+      (add unsafe 10% (by grind only [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_one_mod_four]))
+      (add unsafe 10% (by grind only [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [Nat.mul_mod]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Nat.odd_iff]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_left]))
+      (add unsafe 10% (by grind only [Nat.even_iff]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Nat.mod_mod_of_dvd]))
+      (add unsafe 10% (by grind only [Nat.mod_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_one_mod_four']))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [Nat.gcd.induction]))
+      (add unsafe 10% (by grind only [Nat.not_even_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mul_left_mod]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_if]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_of_bodd]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mul_left]))
+      (add unsafe 50% (by nlinarith [jacobiSym.quadratic_reciprocity_three_mod_four]))
+      (add unsafe 50% (by nlinarith [Nat.mod_eq_zero_of_dvd]))
 
-  have h_mod3 : 27 % 7 = 6 := by
-    clear * - h_c3_dec
-    simp_all only [Int.reduceMul, Int.reduceAdd, reduceMod]
-
-  have h_c4 : (4 : ℤ) ^ 3 = 64 := by
+  -- Case 5: 5^3 = 125 ≡ 6
+  have h_cube5 : (5 : ℤ) ^ 3 % 7 = 6 := by
     clear * -
-    simp_all only [Int.reducePow]
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 1 (by ring_nf at *))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Nat.mod_two_add_succ_mod_two]))
+      (add unsafe 10% (by grind only [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 10% (by grind only [Nat.pow_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_left]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.odd_iff]))
+      (add unsafe 50% (by nlinarith [jacobiSym.quadratic_reciprocity_one_mod_four]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 50% (by nlinarith [Nat.even_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod_of_dvd]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mul_left_mod]))
+      (add unsafe 50% (by nlinarith [Nat.gcd.induction]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mul_left]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.mod_eq_zero_of_dvd]))
+      (add unsafe 50% (by nlinarith [Int.mul_emod]))
+      (add unsafe 50% (by nlinarith [jacobiSym.quadratic_reciprocity_one_mod_four']))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_of_bodd]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 50% (by nlinarith [Nat.not_even_iff]))
+      (add unsafe 50% (by nlinarith [Int.odd_iff]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mul_mod]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 50% (by nlinarith [Num.dvd_iff_mod_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.emod_emod]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_if]))
 
-  have h_c4_dec : (64 : ℤ) = 9 * 7 + 1 := by
+  -- Case 6: 6^3 = 216 ≡ 6
+  have h_cube6 : (6 : ℤ) ^ 3 % 7 = 6 := by
     clear * -
-    simp_all only [Int.reduceMul, Int.reduceAdd]
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 1 (by ring_nf at *))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Nat.mod_two_add_succ_mod_two]))
+      (add unsafe 10% (by grind only [neg_one_pow_eq_pow_mod_two]))
+      (add unsafe 10% (by grind only [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 10% (by grind only [Nat.odd_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_left]))
+      (add unsafe 10% (by grind only [Nat.even_iff]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_one_mod_four]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_right]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod_of_dvd]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mod]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 50% (by nlinarith [Nat.not_even_iff]))
+      (add unsafe 50% (by nlinarith [Nat.mod_mul_left_mod]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.gcd.induction]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_of_bodd]))
+      (add unsafe 50% (by nlinarith [jacobiSym.quadratic_reciprocity_one_mod_four']))
+      (add unsafe 50% (by nlinarith [Nat.mul_mod_mul_left]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 10% (by grind only [jacobiSym.quadratic_reciprocity_if]))
+      (add unsafe 50% (by nlinarith [Int.sq_ne_two_mod_four]))
 
-  have h_mod4 : 64 % 7 = 1 := by
-    clear * - h_c4_dec
-    simp_all only [Int.reduceMul, Int.reduceAdd, reduceMod]
-
-  have h_c5 : (5 : ℤ) ^ 3 = 125 := by
+  -- Step 26: The set of possible residues for x^3 mod 7 is {0, 1, 6}
+  -- We need to show that x^3 % 7 cannot be 2.
+  -- Any integer x satisfies x % 7 ∈ {0, 1, 2, 3, 4, 5, 6}.
+  have h_x_mod7_cases : (x : ℤ) % 7 = 0 ∨ (x : ℤ) % 7 = 1 ∨ (x : ℤ) % 7 = 2 ∨
+    (x : ℤ) % 7 = 3 ∨ (x : ℤ) % 7 = 4 ∨
+    (x : ℤ) % 7 = 5 ∨ (x : ℤ) % 7 = 6 := by
     clear * -
-    simp only [Int.reducePow] at *
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 600
+      maxNormIterations := 320
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 1 (by ring_nf at *))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [Int.dvd_iff_emod_eq_zero]))
+      (add unsafe 10% (by grind only [Int.emod_abs]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.emod_emod_of_dvd]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Nat.mod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 10% (by grind only [ZMod.χ₈'_nat_eq_if_mod_eight]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 10% (by grind only [Int.ofNat_emod]))
+      (add unsafe 10% (by grind only [Fermat42.not_minimal]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [Int.mul_emod_right]))
+      (add unsafe 10% (by grind only [Nat.even_iff]))
+      (add unsafe 10% (by grind only [Int.add_emod]))
+      (add unsafe 10% (by grind only [Int.dvd_sub_of_emod_eq]))
+      (add unsafe 10% (by grind only [ZMod.intCast_mod]))
+      (add unsafe 10% (by grind only [Int.emod_self]))
+      (add unsafe 10% (by grind only [ZNum.mod_to_int]))
+      (add unsafe 10% (by grind only [Nat.mul_mod_mod]))
 
-  have h_c5_dec : (125 : ℤ) = 17 * 7 + 6 := by
-    clear * -
-    simp_all only [Int.reduceMul, Int.reduceAdd]
+  -- Now we derive a contradiction based on h_x3_mod2 saying x^3 ≡ 2 (mod 7)
+  -- but none of the cases allow x^3 ≡ 2 (mod 7).
+  -- If x ≡ 0 (mod 7), then x^3 ≡ 0 (mod 7) != 2
+  have h_case0_contra : ¬((x : ℤ) % 7 = 0) := by
+    intro hx0
+    have hx3 : (x ^ 3 : ℤ) % 7 = 0 := by
+      clear * - hx0 h_cube0
+      simp [pow_succ, Int.mul_emod, hx0]
 
-  have h_mod5 : 125 % 7 = 6 := by
-    clear * - h_c5_dec
-    simp_all only [Int.reduceMul, Int.reduceAdd, reduceMod]
+    clear * - hx3 h_x3_mod2
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by ring_nf))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add safe 0 (by simp_all [Int.emod_emod_of_dvd]))
+      (add safe 0 (by simp_all [Int.emod_zero]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_abs]))
+      (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_lt]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add safe 0 (by simp_all [ZNum.mod_to_int]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 10% (by grind only [Int.dvd_iff_emod_eq_zero]))
+      (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 50% (by nlinarith [Int.mul_emod_right]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 10% (by grind only [EuclideanDomain.zero_mod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [Fermat42.not_minimal]))
 
-  have h_c6 : (6 : ℤ) ^ 3 = 216 := by
-    clear * -
-    simp_all only [Int.reducePow]
+  -- If x ≡ 1 (mod 7), then x^3 ≡ 1 (mod 7) != 2
+  have h_case1_contra : ¬((x : ℤ) % 7 = 1) := by
+    intro hx1
+    have hx3 : (x ^ 3 : ℤ) % 7 = 1 := by
+      clear * - hx1 h_cube1
+      simp_all [pow_three, Int.mul_emod, Int.add_emod, Int.emod_self]
 
-  have h_c6_dec : (216 : ℤ) = 30 * 7 + 6 := by
-    clear * -
-    simp_all only [Int.reduceMul, Int.reduceAdd]
+    clear * - hx3 h_x3_mod2
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by ring_nf))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_emod_of_dvd]))
+      (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add safe 0 (by simp_all [Int.emod_zero]))
+      (add safe 0 (by simp_all [Int.dvd_iff_emod_eq_zero]))
+      (add safe 0 (by simp_all [Int.emod_abs]))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_lt]))
+      (add safe 0 (by simp_all [Int.emod_def]))
+      (add safe 0 (by simp_all [ZNum.mod_to_int]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 10% (by grind only [Int.add_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod_right]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 50% (by nlinarith [EuclideanDomain.zero_mod]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
 
-  have h_mod6 : 216 % 7 = 6 := by
-    clear * - h_c6_dec
-    simp_all only [Int.reduceMul, Int.reduceAdd, reduceMod]
+  -- If x ≡ 2 (mod 7), then x^3 ≡ 1 (mod 7) != 2
+  have h_case2_contra : ¬((x : ℤ) % 7 = 2) := by
+    intro hx2
+    have hx3 : (x ^ 3 : ℤ) % 7 = 1 := by
+      clear * - hx2 h_cube2
+      simp [pow_succ, Int.mul_emod, Int.add_emod, hx2]
 
-  have h_residues : (x ^ 3) % 7 ∈ ({0, 1, 6} : Set ℤ) := by
-    clear * - h_mod0 h_mod1 h_mod2 h_mod3 h_mod4 h_mod5 h_mod6
-    simp [pow_three, Int.mul_emod, h_mod0, h_mod1, h_mod2, h_mod3, h_mod4, h_mod5, h_mod6]
-    have hx := Int.emod_nonneg x (by decide : (7 : ℤ) ≠ 0)
-    have h : x % 7 < 7 := Int.emod_lt _ (by omega)
-    interval_cases hx : x % 7 <;> simp [*, Int.mul_emod, Int.add_emod, Int.emod_emod]
+    clear * - hx3 h_x3_mod2
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by ring_nf))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_emod_of_dvd]))
+      (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add safe 0 (by simp_all [Int.emod_zero]))
+      (add safe 0 (by simp_all [Int.dvd_iff_emod_eq_zero]))
+      (add safe 0 (by simp_all [Int.emod_abs]))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_lt]))
+      (add safe 0 (by simp_all [Int.emod_def]))
+      (add safe 0 (by simp_all [ZNum.mod_to_int]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 10% (by grind only [Int.add_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod_right]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 50% (by nlinarith [EuclideanDomain.zero_mod]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
 
-  have h_not_in : (2 : ℤ) ∉ ({0, 1, 6} : Set ℤ) := by
-    clear * -
-    simp_all only [Set.mem_insert_iff, OfNat.ofNat_ne_zero, OfNat.ofNat_ne_one, Set.mem_singleton_iff, OfNat.ofNat_eq_ofNat, reduceEqDiff, or_self, not_false_eq_true]
+  -- If x ≡ 3 (mod 7), then x^3 ≡ 6 (mod 7) != 2
+  have h_case3_contra : ¬((x : ℤ) % 7 = 3) := by
+    intro hx3_val
+    have hx3 : (x ^ 3 : ℤ) % 7 = 6 := by
+      clear * - hx3_val h_cube3
+      simp [pow_succ, Int.mul_emod, Int.add_emod, hx3_val]
 
-  have h_false : False := by
-    clear * - h_step11 h_residues h_not_in
-    exact h_not_in $ h_step11 ▸ h_residues
+    clear * - hx3 h_x3_mod2
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by ring_nf))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [Int.emod_emod_of_dvd]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+      (add safe 0 (by simp_all [Int.dvd_iff_emod_eq_zero]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add safe 0 (by simp_all [Int.emod_abs]))
+      (add safe 0 (by simp_all [Int.emod_zero]))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_lt]))
+      (add safe 0 (by simp_all [Int.emod_def]))
+      (add safe 0 (by simp_all [ZNum.mod_to_int]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
+      (add unsafe 50% (by nlinarith [Int.mul_emod_right]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
 
-  exact h_false
+  -- If x ≡ 4 (mod 7), then x^3 ≡ 1 (mod 7) != 2
+  have h_case4_contra : ¬((x : ℤ) % 7 = 4) := by
+    intro hx4
+    have hx3 : (x ^ 3 : ℤ) % 7 = 1 := by
+      clear * - hx4 h_cube4
+      simp [pow_three, Int.mul_emod, Int.add_emod, hx4, h_cube4]
+
+    clear * - hx3 h_x3_mod2
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by ring_nf))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_emod_of_dvd]))
+      (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add safe 0 (by simp_all [Int.emod_zero]))
+      (add safe 0 (by simp_all [Int.dvd_iff_emod_eq_zero]))
+      (add safe 0 (by simp_all [Int.emod_abs]))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_lt]))
+      (add safe 0 (by simp_all [Int.emod_def]))
+      (add safe 0 (by simp_all [ZNum.mod_to_int]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 10% (by grind only [Int.add_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod_right]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 50% (by nlinarith [EuclideanDomain.zero_mod]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+
+  -- If x ≡ 5 (mod 7), then x^3 ≡ 6 (mod 7) != 2
+  have h_case5_contra : ¬((x : ℤ) % 7 = 5) := by
+    intro hx5
+    have hx3 : (x ^ 3 : ℤ) % 7 = 6 := by
+      clear * - hx5 h_cube5
+      simp_all [pow_succ, Int.add_emod, Int.mul_emod]
+
+    clear * - hx3 h_x3_mod2
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by ring_nf))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [Int.emod_emod_of_dvd]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+      (add safe 0 (by simp_all [Int.dvd_iff_emod_eq_zero]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add safe 0 (by simp_all [Int.emod_abs]))
+      (add safe 0 (by simp_all [Int.emod_zero]))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_lt]))
+      (add safe 0 (by simp_all [Int.emod_def]))
+      (add safe 0 (by simp_all [ZNum.mod_to_int]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
+      (add unsafe 50% (by nlinarith [Int.mul_emod_right]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+
+  -- If x ≡ 6 (mod 7), then x^3 ≡ 6 (mod 7) != 2
+  have h_case6_contra : ¬((x : ℤ) % 7 = 6) := by
+    intro hx6
+    have hx3 : (x ^ 3 : ℤ) % 7 = 6 := by
+      clear * - hx6 h_cube6
+      have : x % 7 = 6 := hx6
+      simp [pow_succ, Int.add_emod, Int.mul_emod, this]
+
+    clear * - hx3 h_x3_mod2
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by ring_nf))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by simp))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all [Int.emod_self]))
+      (add safe 0 (by simp_all [Int.ModEq]))
+      (add safe 0 (by simp_all [Int.emod_emod_of_dvd]))
+      (add safe 0 (by simp_all [ZMod.intCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+      (add safe 0 (by simp_all [Int.dvd_iff_emod_eq_zero]))
+      (add safe 0 (by simp_all [Int.emod_neg]))
+      (add safe 0 (by simp_all [Int.emod_abs]))
+      (add safe 0 (by simp_all [Int.emod_zero]))
+      (add safe 0 (by simp_all [Int.natCast_mod]))
+      (add safe 0 (by simp_all [Int.emod_lt]))
+      (add safe 0 (by simp_all [Int.emod_def]))
+      (add safe 0 (by simp_all [ZNum.mod_to_int]))
+      (add unsafe 10% (by grind only [Int.emod_emod]))
+      (add unsafe 10% (by grind only [Int.mul_emod]))
+      (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+      (add unsafe 50% (by nlinarith [Int.add_emod]))
+      (add unsafe 50% (by nlinarith [Int.mul_emod_right]))
+      (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+      (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+      (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+      (add unsafe 10% (by grind only [Int.even_iff]))
+      (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+      (add unsafe 10% (by grind only [Int.odd_iff]))
+      (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+      (add unsafe 50% (by nlinarith [Int.ofNat_emod]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_zero]))
+      (add unsafe 50% (by nlinarith [Nat.mod_two_ne_one]))
+      (add unsafe 50% (by nlinarith [Int.emod_two_ne_zero]))
+      (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+      (add unsafe 50% (by nlinarith [Nat.pow_mod]))
+      (add unsafe 10% (by grind only [ZMod.χ₈_nat_eq_if_mod_eight]))
+
+  -- All cases lead to contradiction
+  aesop (config := {
+    maxRuleApplications := 1600
+    maxRuleApplicationDepth := 20
+    maxNormIterations := 520
+    useDefaultSimpSet := false
+    })
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 1 (by push_neg))
+    (add norm 0 (by bound))
+    (add norm 0 (by ring_nf))
+    (add norm 1 (by ext))
+    (add norm 1 (by field_simp [*] at *))
+    (add safe 100 (by ring))
+    (add safe 100 (by norm_num))
+    (add safe 0 (by gcongr))
+    (add safe 100 (by interval_cases))
+    (add safe 0 (by split))
+    (add safe 100 (by simp))
+    (add safe 1 (by ring_nf at *))
+    (add safe 100 (by decide))
+    (add safe 0 (by push_cast))
+    (add safe 100 (by assumption_mod_cast))
+    (add unsafe 90% (by positivity))
+    (add safe 0 (by simp_all [Int.emod_eq_of_lt]))
+    (add safe 0 (by simp_all [Int.natCast_mod]))
+    (add safe 0 (by simp_all [Int.ModEq]))
+    (add safe 0 (by simp_all [Int.emod_def]))
+    (add safe 0 (by simp_all [Int.emod_zero]))
+    (add safe 0 (by simp_all [Int.emod_self]))
+    (add safe 0 (by simp_all [Int.natMod]))
+    (add unsafe 10% (by grind only [Int.emod_lt]))
+    (add unsafe 10% (by grind only [Int.emod_emod_of_dvd]))
+    (add unsafe 10% (by grind only [Int.dvd_iff_emod_eq_zero]))
+    (add unsafe 10% (by grind only [Fermat42.not_minimal]))
+    (add unsafe 10% (by grind only [Int.emod_eq_zero_of_dvd]))
+    (add unsafe 10% (by grind only [Int.mul_emod]))
+    (add unsafe 10% (by grind only [Int.emod_eq_emod_iff_emod_sub_eq_zero]))
+    (add unsafe 10% (by grind only [Int.emod_emod]))
+    (add unsafe 10% (by grind only [ZNum.mod_to_int]))
+    (add unsafe 10% (by grind only [Int.dvd_sub_of_emod_eq]))
+    (add unsafe 10% (by grind only [Int.emod_abs]))
+    (add unsafe 10% (by grind only [Int.emod_two_eq_zero_or_one]))
+    (add unsafe 10% (by grind only [Int.sq_ne_two_mod_four]))
+    (add unsafe 10% (by grind only [ZMod.intCast_mod]))
+    (add unsafe 10% (by grind only [GaussianInt.mod_four_eq_three_of_nat_prime_of_prime]))
+    (add unsafe 10% (by grind only [Int.dvd_of_emod_eq_zero]))
+    (add unsafe 10% (by grind only [Fermat42.exists_odd_minimal]))
+    (add unsafe 10% (by grind only [coprime_sq_sub_sq_sum_of_odd_odd]))
+    (add unsafe 10% (by grind only [Int.emod_two_ne_one]))
+    (add unsafe 10% (by grind only [Int.add_emod]))
+    (add unsafe 10% (by grind only [Int.ofNat_emod]))
+    (add unsafe 10% (by grind only [Nat.mod_mod_of_dvd]))
+    (add unsafe 10% (by grind only [jacobiSym.even_odd]))
+    (add unsafe 10% (by grind only [Int.even_iff]))
+    (add unsafe 10% (by grind only [Int.mul_emod_right]))

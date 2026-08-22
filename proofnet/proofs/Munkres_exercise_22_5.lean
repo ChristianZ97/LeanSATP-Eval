@@ -1,0 +1,395 @@
+
+import Mathlib
+
+open Filter Set TopologicalSpace
+open scoped Topology
+
+
+set_option maxHeartbeats 0
+
+theorem exercise_22_5 {X Y : Type*} [TopologicalSpace X]
+  [TopologicalSpace Y] (p : X → Y) (hp : IsOpenMap p)
+  (A : Set X) (hA : IsOpen A) : IsOpenMap (p ∘ Subtype.val : A → Y) := by
+  let ι : A → X := Subtype.val
+  -- Step 1: Define U as an open set in the subspace topology of A
+  -- We need to show that for any open U in A, (p ∘ ι)(U) is open in Y.
+  intro U hU_open_in_A
+  have step1 : ∃ V : Set X, IsOpen V ∧ U = {x : A | x.val ∈ V} := by
+    clear * - hU_open_in_A
+    rcases hU_open_in_A with ⟨U', hU', rfl⟩
+    exact ⟨_, hU', rfl⟩
+
+  -- Let's extract V from step1
+  obtain ⟨V, hV_open, hU_eq⟩ := step1
+  -- Step 2: Note that ι(U) corresponds to V ∩ A, but since U is defined via V,
+  -- and elements of U are exactly those in V that are also in A (by definition of subspace),
+  -- we have ι(U) = V ∩ A. However, more precisely, ι maps a subtype element to its value in X.
+  -- The image of U under ι is {x.val | x : A, x ∈ U}. Since U = {x : A | x.val ∈ V},
+  -- this image is exactly V ∩ A.
+  have step2 : ι '' U = V ∩ A := by
+    clear * - hU_eq
+    aesop (config := {
+      maxRuleApplications := 40
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by simp))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Subtype.image_preimage_coe]))
+      (add norm 0 (by grind only [Set.image_val_inter]))
+      (add norm 0 (by grind only [Set.image_restrict]))
+      (add norm 0 (by grind only [Subtype.image_preimage_val]))
+      (add norm 0 (by grind only [Subtype.range_coe]))
+      (add norm 0 (by grind only [Set.inter_eq_self_of_subset_right]))
+      (add norm 0 (by grind only [Set.setOf_mem_eq]))
+      (add norm 0 (by grind only [Set.inter_eq_right]))
+      (add norm 0 (by grind only [Subtype.range_val]))
+      (add norm 0 (by grind only [Subtype.preimage_coe_eq_preimage_coe_iff]))
+      (add norm 0 (by grind only [Subtype.coe_injective]))
+      (add norm 0 (by grind only [Set.image_preimage_inter]))
+      (add norm 0 (by grind only [IsOpen.isOpenMap_subtype_val]))
+      (add norm 0 (by grind only [Set.image_preimage_eq_range_inter]))
+      (add norm 0 (by grind only [Set.image_preimage_eq_inter_range]))
+      (add norm 0 (by grind only [embedding_subtype_val]))
+      (add norm 0 (by grind only [Set.inter_eq_left]))
+      (add norm 0 (by grind only [Set.range_restrict]))
+      (add norm 0 (by grind only [Set.image_restrictPreimage]))
+      (add norm 0 (by grind only [Set.inter_self]))
+      (add norm 0 (by grind only [Set.image_inter_preimage]))
+      (add norm 0 (by grind only [MeasurableSet.subtype_image]))
+      (add norm 0 (by grind only [Set.inter_eq_self_of_subset_left]))
+      (add norm 0 (by grind only [Set.inter_comm]))
+      (add norm 0 (by grind only [Set.MapsTo.restrict_commutes]))
+      (add norm 0 (by grind only [Subtype.isCompact_iff]))
+      (add norm 0 (by grind only [smooth_subtype_val]))
+      (add norm 0 (by grind only [Set.image_val_diff]))
+      (add norm 0 (by grind only [IsOpen.openEmbedding_subtype_val]))
+      (add norm 0 (by grind only [Subtype]))
+      (add norm 0 (by grind only [subtype_val_mono]))
+      (add norm 0 (by grind only [Set.inter_assoc]))
+
+  -- Step 3: V is open and A is open, so their intersection is open in X.
+  have step3 : IsOpen (V ∩ A) := by
+    clear * - hV_open hA
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      enableUnfold := false
+      })
+      (add norm 0 (by ring))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 90% (by positivity))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_inter_preimage]))
+      (add norm 0 (by grind only [IsOpen.inter]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_image_source_inter]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_inter_preimage_symm]))
+      (add norm 0 (by grind only [IsOpen.mono]))
+      (add norm 0 (by grind only [IsOpen.trans]))
+      (add norm 0 (by grind only [isOpen_discrete]))
+      (add norm 0 (by grind only [isOpen_iff_of_cover]))
+      (add norm 0 (by grind only [FDerivMeasurableAux.isOpen_B]))
+      (add norm 0 (by grind only [isOpen_extChartAt_preimage']))
+      (add norm 0 (by grind only [isOpenMap_div_right]))
+      (add norm 0 (by grind only [isOpen_iUnion]))
+      (add norm 0 (by grind only [FDerivMeasurableAux.isOpen_A]))
+      (add norm 0 (by grind only [TopologicalSpace.IsTopologicalBasis.isOpen]))
+      (add norm 0 (by grind only [ApproximatesLinearOn.open_image]))
+      (add norm 0 (by grind only [TopologicalSpace.isOpen_generateFrom_of_mem]))
+      (add norm 0 (by grind only [Subgroup.isOpen_of_mem_nhds]))
+      (add norm 0 (by grind only [ChartedSpace.isOpen_iff]))
+      (add norm 0 (by grind only [isOpen_sInter]))
+      (add norm 0 (by grind only [Ideal.isOpen_of_isOpen_subideal]))
+      (add norm 0 (by grind only [Submodule.isOpen_mono]))
+      (add norm 0 (by grind only [OpenSubgroup.isOpen]))
+      (add norm 0 (by grind only [isOpen_iff_inter_of_iSup_eq_top]))
+      (add norm 0 (by grind only [isOpen_iff_mem_nhds]))
+      (add norm 0 (by grind only [isOpenMap_div_left]))
+      (add norm 0 (by grind only [IsOpen]))
+      (add norm 0 (by grind only [isOpen_biUnion]))
+      (add norm 0 (by grind only [IsOpen.smul]))
+      (add norm 0 (by grind only [ultrafilter_isOpen_basic]))
+      (add norm 0 (by grind only [isOpen_iff_eventually]))
+      (add norm 0 (by grind only [isOpen_iff_ball_subset]))
+      (add norm 0 (by grind only [PiNat.isOpen_cylinder]))
+
+  -- Step 4: Therefore, ι(U) is open in X.
+  have step4 : IsOpen (ι '' U) := by
+    clear * - step2 step3
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [IsOpen.isOpenMap_subtype_val]))
+      (add norm 0 (by grind only [Subtype.image_preimage_coe]))
+      (add norm 0 (by grind only [isOpen_induced_iff]))
+      (add norm 0 (by grind only [Set.image_restrict]))
+      (add norm 0 (by grind only [isOpen_induced]))
+      (add norm 0 (by grind only [OnePoint.isOpen_image_coe]))
+      (add norm 0 (by grind only [IsOpen.preimage]))
+      (add norm 0 (by grind only [OpenEmbedding.open_iff_image_open]))
+      (add norm 0 (by grind only [Set.image_preimage_eq_inter_range]))
+      (add norm 0 (by grind only [Set.image_preimage_inter]))
+      (add norm 0 (by grind only [OpenEmbedding.isOpenMap]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_inter_preimage_symm]))
+      (add norm 0 (by grind only [Set.preimage_image_eq]))
+      (add norm 0 (by grind only [isOpen_coinduced]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_image_source_inter]))
+      (add norm 0 (by grind only [WeakSpace.isOpen_of_isOpen]))
+      (add norm 0 (by grind only [Homeomorph.isOpen_preimage]))
+      (add norm 0 (by grind only [Set.image_val_inter]))
+      (add norm 0 (by grind only [Set.image_preimage_eq_range_inter]))
+      (add norm 0 (by grind only [Set.inter_eq_self_of_subset_right]))
+      (add norm 0 (by grind only [OpenSubgroup.coe_toOpens]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_inter_preimage]))
+      (add norm 0 (by grind only [OpenSubgroup.isOpen]))
+      (add norm 0 (by grind only [ApproximatesLinearOn.open_image]))
+      (add norm 0 (by grind only [TopCat.GlueData.fromOpenSubsetsGlue_isOpenMap]))
+      (add norm 0 (by grind only [Homeomorph.isOpen_image]))
+      (add norm 0 (by grind only [OpenSubgroup.toOpens]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_image_iff_of_subset_source]))
+      (add norm 0 (by grind only [isOpen_iff_coe_preimage_of_iSup_eq_top]))
+      (add norm 0 (by grind only [IsOpen.trans]))
+      (add norm 0 (by grind only [Subtype.image_preimage_val]))
+      (add norm 0 (by grind only [isOpen_discrete]))
+
+  -- Step 5: The image of U under p ∘ ι is p(ι(U)).
+  have step5 : (p ∘ ι) '' U = p '' (ι '' U) := by
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 1 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Set.preimage_image_eq]))
+      (add norm 0 (by grind only [Set.image_comp]))
+      (add norm 0 (by grind only [Set.image_preimage_eq_inter_range]))
+      (add norm 0 (by grind only [Set.image_preimage_eq_range_inter]))
+      (add norm 0 (by grind only [Set.image_preimage_inter]))
+      (add norm 0 (by grind only [Set.image_image]))
+      (add norm 0 (by grind only [Set.image_preimage_eq]))
+      (add norm 0 (by grind only [Set.image_id']))
+      (add norm 0 (by grind only [AlgebraicGeometry.PresheafedSpace.GlueData.pullback_base]))
+      (add norm 0 (by grind only [LinearIsometryEquiv.image_eq_preimage]))
+      (add norm 0 (by grind only [Subtype.image_preimage_coe]))
+      (add norm 0 (by grind only [Homeomorph.preimage_symm]))
+      (add norm 0 (by grind only [Set.image_restrict]))
+      (add norm 0 (by grind only [PartialEquiv.image_source_eq_target]))
+      (add norm 0 (by grind only [Set.inter_eq_self_of_subset_right]))
+      (add norm 0 (by grind only [OpenSubgroup.coe_toOpens]))
+      (add norm 0 (by grind only [TopologicalSpace.Opens.carrier_eq_coe]))
+      (add norm 0 (by grind only [Set.EqOn.image_eq]))
+      (add norm 0 (by grind only [TopCat.GlueData.preimage_image_eq_image]))
+      (add norm 0 (by grind only [ModelWithCorners.image_eq]))
+      (add norm 0 (by grind only [Set.preimage_comp]))
+      (add norm 0 (by grind only [isOpenMap_toWeakSpace_symm]))
+      (add norm 0 (by grind only [Homeomorph.image_symm]))
+      (add norm 0 (by grind only [Ideal.Quotient.quotient_ring_saturate]))
+      (add norm 0 (by grind only [SeparationQuotient.preimage_image_mk_open]))
+      (add norm 0 (by grind only [TopologicalSpace.Opens.map_obj]))
+      (add norm 0 (by grind only [Diffeomorph.image_eq_preimage]))
+      (add norm 0 (by grind only [Flow.image_eq_preimage]))
+      (add norm 0 (by grind only [LinearEquiv.image_eq_preimage]))
+      (add norm 0 (by grind only [Set.image_eq_range]))
+      (add norm 0 (by grind only [Set.image_inter_preimage]))
+      (add norm 0 (by grind only [TopologicalSpace.Opens.map_coe]))
+
+  -- Step 6: Since ι(U) is open in X and p is an open map, p(ι(U)) is open in Y.
+  have step6 : IsOpen (p '' (ι '' U)) := by
+    clear * - hp step4
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 1 (by norm_num [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [OnePoint.isOpen_image_coe]))
+      (add norm 0 (by grind only [OpenEmbedding.isOpenMap]))
+      (add norm 0 (by grind only [IsOpen.isOpenMap_subtype_val]))
+      (add norm 0 (by grind only [OpenEmbedding.open_iff_image_open]))
+      (add norm 0 (by grind only [isOpen_induced_iff]))
+      (add norm 0 (by grind only [Homeomorph.isOpen_preimage]))
+      (add norm 0 (by grind only [WeakSpace.isOpen_of_isOpen]))
+      (add norm 0 (by grind only [Homeomorph.isOpen_image]))
+      (add norm 0 (by grind only [isOpen_induced]))
+      (add norm 0 (by grind only [isOpen_coinduced]))
+      (add norm 0 (by grind only [ApproximatesLinearOn.open_image]))
+      (add norm 0 (by grind only [isOpenMap_mul_left]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_image_source_inter]))
+      (add norm 0 (by grind only [TopCat.GlueData.fromOpenSubsetsGlue_isOpenMap]))
+      (add norm 0 (by grind only [IsOpen.preimage]))
+      (add norm 0 (by grind only [OpenSubgroup.isOpen]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_image_iff_of_subset_source]))
+      (add norm 0 (by grind only [OpenSubgroup.toOpens]))
+      (add norm 0 (by grind only [isOpenMap_div_right]))
+      (add norm 0 (by grind only [isOpenMap_smul]))
+      (add norm 0 (by grind only [isOpen_iff_coe_preimage_of_iSup_eq_top]))
+      (add norm 0 (by grind only [isOpen_induced_eq]))
+      (add norm 0 (by grind only [Set.preimage_image_eq]))
+      (add norm 0 (by grind only [isOpenMap_toWeakSpace_symm]))
+      (add norm 0 (by grind only [OpenSubgroup.coe_toOpens]))
+      (add norm 0 (by grind only [AlgebraicGeometry.Scheme.GlueData.isOpen_iff]))
+      (add norm 0 (by grind only [IsOpen.trans]))
+      (add norm 0 (by grind only [isOpenMap_div_left]))
+      (add norm 0 (by grind only [TopCat.GlueData.isOpen_iff]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_image_of_subset_source]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_inter_preimage]))
+      (add norm 0 (by grind only [isOpen_discrete]))
+
+  -- Step 7: Therefore, (p ∘ ι)(U) is open in Y.
+  have step7 : IsOpen ((p ∘ ι) '' U) := by
+    clear * - step5 step6
+    aesop (config := {
+      maxRuleApplications := 40
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 1 (by norm_num [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [OnePoint.isOpen_image_coe]))
+      (add norm 0 (by grind only [isOpenMap_toWeakSpace_symm]))
+      (add norm 0 (by grind only [Set.preimage_image_eq]))
+      (add norm 0 (by grind only [Homeomorph.isOpen_image]))
+      (add norm 0 (by grind only [OpenEmbedding.isOpenMap]))
+      (add norm 0 (by grind only [OpenEmbedding.open_iff_image_open]))
+      (add norm 0 (by grind only [isOpenMap_mul_left]))
+      (add norm 0 (by grind only [WeakSpace.isOpen_of_isOpen]))
+      (add norm 0 (by grind only [isOpen_induced_iff]))
+      (add norm 0 (by grind only [Set.image_comp]))
+      (add norm 0 (by grind only [Homeomorph.isOpen_preimage]))
+      (add norm 0 (by grind only [OpenSubgroup.coe_toOpens]))
+      (add norm 0 (by grind only [Set.image_image]))
+      (add norm 0 (by grind only [TopCat.GlueData.fromOpenSubsetsGlue_isOpenMap]))
+      (add norm 0 (by grind only [isOpenMap_smul]))
+      (add norm 0 (by grind only [Homeomorph.preimage_symm]))
+      (add norm 0 (by grind only [IsOpen.isOpenMap_subtype_val]))
+      (add norm 0 (by grind only [isOpen_coinduced]))
+      (add norm 0 (by grind only [ApproximatesLinearOn.open_image]))
+      (add norm 0 (by grind only [isOpen_induced_eq]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_image_iff_of_subset_source]))
+      (add norm 0 (by grind only [LinearIsometryEquiv.image_eq_preimage]))
+      (add norm 0 (by grind only [Set.image_id']))
+      (add norm 0 (by grind only [Set.EqOn.image_eq]))
+      (add norm 0 (by grind only [OpenSubgroup.toOpens]))
+      (add norm 0 (by grind only [Homeomorph.image_symm]))
+      (add norm 0 (by grind only [Set.image_eq_range]))
+      (add norm 0 (by grind only [PartialHomeomorph.isOpen_image_source_inter]))
+      (add norm 0 (by grind only [SpectrumRestricts.image]))
+      (add norm 0 (by grind only [ModelWithCorners.image_eq]))
+      (add norm 0 (by grind only [isOpen_induced]))
+      (add norm 0 (by grind only [Flow.isInvariant_iff_image_eq]))
+
+  exact step7

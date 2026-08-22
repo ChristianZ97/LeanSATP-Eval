@@ -1,80 +1,94 @@
 import Mathlib
 
-open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
 
-syntax "∑ " ident " in " term ", " term:67 : term
-syntax "∏ " ident " in " term ", " term:67 : term
-macro_rules
-  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
-  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
 
-theorem amc12a_2021_p9 : (∏ k in Finset.range 7, (2 ^ 2 ^ k + 3 ^ 2 ^ k)) = 3 ^ 128 - 2 ^ 128 := by
-  let P := ∏ k in Finset.range 7, (2 ^ 2 ^ k + 3 ^ 2 ^ k)
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+  | _ => Elab.throwUnsupportedSyntax
+end Google
 
-  have h_expansion : P = ((2:ℕ)^(1) + (3:ℕ)^(1)) * ((2:ℕ)^(2) + (3:ℕ)^(2)) * ((2:ℕ)^(4) + (3:ℕ)^(4)) * ((2:ℕ)^(8) + (3:ℕ)^(8)) * ((2:ℕ)^(16) + (3:ℕ)^(16)) * ((2:ℕ)^(32) + (3:ℕ)^(32)) * ((2:ℕ)^(64) + (3:ℕ)^(64)) := by
-    clear * -
-    simp_all only [pow_one, reduceAdd, reducePow, reduceMul, P]
-    (bound )
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
 
-  have h_factor_introduction : P = ((3:ℕ) - (2:ℕ)) * ((2:ℕ)^(1) + (3:ℕ)^(1)) * ((2:ℕ)^(2) + (3:ℕ)^(2)) * ((2:ℕ)^(4) + (3:ℕ)^(4)) * ((2:ℕ)^(8) + (3:ℕ)^(8)) * ((2:ℕ)^(16) + (3:ℕ)^(16)) * ((2:ℕ)^(32) + (3:ℕ)^(32)) * ((2:ℕ)^(64) + (3:ℕ)^(64)) := by
-    clear * - h_expansion
-    simp_all only [pow_one, reduceAdd, reducePow, reduceMul, reduceSub, one_mul, P]
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
 
-  have h_identity_1 : ((3:ℕ) - (2:ℕ)) * ((3:ℕ)^(1) + (2:ℕ)^(1)) = (3:ℕ)^(2) - (2:ℕ)^(2) := by
-    clear * -
-    (omega)
 
-  have h_combined_1 : P = ((3:ℕ)^(2) - (2:ℕ)^(2)) * ((2:ℕ)^(2) + (3:ℕ)^(2)) * ((2:ℕ)^(4) + (3:ℕ)^(4)) * ((2:ℕ)^(8) + (3:ℕ)^(8)) * ((2:ℕ)^(16) + (3:ℕ)^(16)) * ((2:ℕ)^(32) + (3:ℕ)^(32)) * ((2:ℕ)^(64) + (3:ℕ)^(64)) := by
-    clear * - h_factor_introduction h_identity_1
-    simp_all only [reduceSub, pow_one, reduceAdd, one_mul, reducePow, reduceMul, P]
+theorem amc12a_2021_p9 : ∏ k ∈ Finset.range 7, (2 ^ 2 ^ k + 3 ^ 2 ^ k) = 3 ^ 128 - 2 ^ 128 := by
 
-  have h_identity_2 : ((3:ℕ)^(2) - (2:ℕ)^(2)) * ((3:ℕ)^(2) + (2:ℕ)^(2)) = (3:ℕ)^(4) - (2:ℕ)^(4) := by
-    clear * -
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul]
-
-  have h_combined_2 : P = ((3:ℕ)^(4) - (2:ℕ)^(4)) * ((2:ℕ)^(4) + (3:ℕ)^(4)) * ((2:ℕ)^(8) + (3:ℕ)^(8)) * ((2:ℕ)^(16) + (3:ℕ)^(16)) * ((2:ℕ)^(32) + (3:ℕ)^(32)) * ((2:ℕ)^(64) + (3:ℕ)^(64)) := by
-    clear * - h_combined_1 h_identity_2
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul, P]
-
-  have h_identity_3 : ((3:ℕ)^(4) - (2:ℕ)^(4)) * ((3:ℕ)^(4) + (2:ℕ)^(4)) = (3:ℕ)^(8) - (2:ℕ)^(8) := by
-    clear * -
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul]
-
-  have h_combined_3 : P = ((3:ℕ)^(8) - (2:ℕ)^(8)) * ((2:ℕ)^(8) + (3:ℕ)^(8)) * ((2:ℕ)^(16) + (3:ℕ)^(16)) * ((2:ℕ)^(32) + (3:ℕ)^(32)) * ((2:ℕ)^(64) + (3:ℕ)^(64)) := by
-    clear * - h_combined_2 h_identity_3
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul, P]
-
-  have h_identity_4 : ((3:ℕ)^(8) - (2:ℕ)^(8)) * ((3:ℕ)^(8) + (2:ℕ)^(8)) = (3:ℕ)^(16) - (2:ℕ)^(16) := by
-    clear * -
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul]
-
-  have h_combined_4 : P = ((3:ℕ)^(16) - (2:ℕ)^(16)) * ((2:ℕ)^(16) + (3:ℕ)^(16)) * ((2:ℕ)^(32) + (3:ℕ)^(32)) * ((2:ℕ)^(64) + (3:ℕ)^(64)) := by
-    clear * - h_combined_3 h_identity_4
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul, P]
-
-  have h_identity_5 : ((3:ℕ)^(16) - (2:ℕ)^(16)) * ((3:ℕ)^(16) + (2:ℕ)^(16)) = (3:ℕ)^(32) - (2:ℕ)^(32) := by
-    clear * -
-    (omega)
-
-  have h_combined_5 : P = ((3:ℕ)^(32) - (2:ℕ)^(32)) * ((2:ℕ)^(32) + (3:ℕ)^(32)) * ((2:ℕ)^(64) + (3:ℕ)^(64)) := by
-    clear * - h_combined_4 h_identity_5
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul, P]
-
-  have h_identity_6 : ((3:ℕ)^(32) - (2:ℕ)^(32)) * ((3:ℕ)^(32) + (2:ℕ)^(32)) = (3:ℕ)^(64) - (2:ℕ)^(64) := by
-    clear * -
-    (omega)
-
-  have h_combined_6 : P = ((3:ℕ)^(64) - (2:ℕ)^(64)) * ((2:ℕ)^(64) + (3:ℕ)^(64)) := by
-    clear * - h_combined_5 h_identity_6
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul, P]
-
-  have h_identity_7 : ((3:ℕ)^(64) - (2:ℕ)^(64)) * ((3:ℕ)^(64) + (2:ℕ)^(64)) = (3:ℕ)^(128) - (2:ℕ)^(128) := by
-    clear * -
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul]
-
-  have h_final : P = (3:ℕ)^(128) - (2:ℕ)^(128) := by
-    clear * - h_combined_6 h_identity_7
-    simp_all only [reducePow, reduceSub, reduceAdd, reduceMul, P]
-
-  exact h_final
+  aesop (config := {
+    maxRuleApplications := 1600
+    maxRuleApplicationDepth := 380
+    maxNormIterations := 320
+    enableSimp := false
+    enableUnfold := false
+    })
+    (add norm 0 (by ring))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by positivity))
+    (add norm 0 (by bound))
+    (add norm 0 (by ring_nf))
+    (add norm 1 (by simp))
+    (add norm 1 (by field_simp [*] at *))
+    (add safe 100 (by field_simp))
+    (add safe 100 (by norm_num))
+    (add safe 100 (by omega))
+    (add safe 100 (by push_neg))
+    (add safe 100 (by interval_cases))
+    (add safe 0 (by split))
+    (add safe 100 (by exfalso))
+    (add safe 100 (by simp_all))
+    (add safe 100 (by ring_nf at *))
+    (add safe 100 (by decide))
+    (add safe 0 (by push_cast))
+    (add safe 100 (by assumption_mod_cast))
+    (add norm 0 (by grind only [Finset.prod_range_succ]))
+    (add norm 0 (by grind only [Finset.prod_range_succ']))
+    (add norm 0 (by grind only [Finset.prod_range_succ_comm]))
+    (add norm 0 (by grind only [Nat.choose_self]))
+    (add norm 0 (by grind only [Finset.prod_range_zero]))
+    (add norm 0 (by grind only [tsub_zero]))
+    (add norm 0 (by grind only [LiouvilleNumber.partialSum]))
+    (add norm 0 (by grind only [Finset.prod_range_one]))
+    (add norm 0 (by grind only [Finset.prod_range]))
+    (add norm 0 (by grind only [Finset.range_succ]))
+    (add norm 0 (by grind only [Finset.card_range]))
+    (add norm 0 (by grind only [geom_sum₂_with_one]))
+    (add norm 0 (by grind only [add_pow]))
+    (add norm 0 (by grind only [Nat.choose_zero_right]))
+    (add norm 0 (by grind only [ZetaAsymptotics.term_sum]))
+    (add norm 0 (by grind only [sum_bernoulli]))
+    (add norm 0 (by grind only [geom_sum_mul_add]))
+    (add norm 0 (by grind only [Finset.range_add_one]))
+    (add norm 0 (by grind only [Finset.range_zero]))
+    (add norm 0 (by grind only [Nat.prod_range_succ_factorial]))
+    (add norm 0 (by grind only [WittVector.frobeniusPolyAux_eq]))
+    (add norm 0 (by grind only [Nat.choose_one_right]))
+    (add norm 0 (by grind only [Nat.factorial]))
+    (add norm 0 (by grind only [tsub_self]))
+    (add norm 0 (by grind only [bernsteinPolynomial.sum]))
+    (add norm 0 (by grind only [Nat.choose_succ_self_right]))
+    (add norm 0 (by grind only [Nat.prod_range_factorial_succ]))
+    (add norm 0 (by grind only [pow_one]))
+    (add norm 0 (by grind only [sum_range_pow]))
+    (add norm 0 (by grind only [wittPolynomial_eq_sum_C_mul_X_pow]))
+    (add norm 0 (by grind only [mul_geom_sum]))
+    (add safe 0 (by simp only [Finset.range_one] at *))

@@ -60,6 +60,7 @@ single run has to be chosen. Per benchmark:
 
 ```bash
 git clone https://github.com/ChristianZ97/LeanSATP
+cd LeanSATP && ./setup.sh
 lake env lean /path/to/minif2f/proofs/mathd_algebra_478.lean
 ```
 

@@ -3,221 +3,278 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem induction_11div10tonmn1ton (n : ℕ) : 11 ∣ 10 ^ n - (-1 : ℤ) ^ n := by
-  have h1 : (10 : ℤ) = (11 : ℤ) + (-1 : ℤ) := by
+  have h_step1 : (10 : ℤ) ^ n - (-1 : ℤ) ^ n = ((10 : ℤ) - (-1 : ℤ)) * (∑ i in Finset.range n, (10 : ℤ) ^ (n - 1 - i) * (-1 : ℤ) ^ i) := by
+    clear * -
+    induction' n with n ih <;> simp [Finset.sum_range_succ']
+    simp [pow_succ, mul_add, mul_comm, mul_left_comm]
+    induction' n with bn bih
+    · simp [-Nat.succ_eq_add_one]
+    · cases' bn with bn <;> simp_all [Finset.sum_range_succ'] <;> ring_nf at * <;> omega
+
+  have h_step2 : (10 : ℤ) - (-1 : ℤ) = 11 := by
     clear * -
     aesop (config := {
-    maxGoals                := 64
-    })
-    (add safe 2 (by ring))
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by linarith))
-    (add unsafe 100% (by ring_nf))
-    (add unsafe 100% (by ring_nf at *))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 100% (by split))
-    (add unsafe 90% (by bound))
-    (add unsafe 90% (by ext))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by nlinarith))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 90% (by simp))
-    (add unsafe 80% (by interval_cases))
-    (add unsafe 70% (by exfalso))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 30% (by first | apply EReal.coe_neg | rw [EReal.coe_neg] | simp only [EReal.coe_neg]))
-    (add unsafe 30% (by first | apply EReal.neg_bot | rw [EReal.neg_bot] | simp only [EReal.neg_bot]))
-    (add unsafe 30% (by first | apply EReal.neg_top | rw [EReal.neg_top] | simp only [EReal.neg_top]))
-    (add unsafe 30% (by first | apply inv_neg_one | rw [inv_neg_one] | simp only [inv_neg_one]))
-    (add unsafe 10% (by first | apply EReal.inv_bot | rw [EReal.inv_bot] | simp only [EReal.inv_bot]))
-    (add unsafe 10% (by first | apply EReal.inv_top | rw [EReal.inv_top] | simp only [EReal.inv_top]))
-    (add unsafe 10% (by first | apply Pell.Solution₁.y_inv | rw [Pell.Solution₁.y_inv] | simp only [Pell.Solution₁.y_inv]))
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      maxGoals := 64
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by ring_nf))
+      (add unsafe 50% (by norm_cast))
+      (add unsafe 90% (by simp_all))
+      (add norm 100 (by rw [one_ne_zero]))
+      (add norm 100 (by rw [ArithmeticFunction.vonMangoldt_apply_one]))
+      (add norm 100 (by rw [ArithmeticFunction.moebius_apply_prime]))
+      (add safe 0 (by simp only [ArithmeticFunction.moebius_apply_one]))
+      (add safe 0 (by simp only [Nat.factorial_one]))
+      (add safe 0 (by simp only [ArithmeticFunction.one_apply]))
+      (add safe 0 (by simp only [ArithmeticFunction.one_one]))
+      (add safe 0 (by simp only [ArithmeticFunction.one_apply_ne]))
+      (add safe 0 (by simp only [ArithmeticFunction.natCoe_one]))
+      (add safe 0 (by simp only [DihedralGroup.reciprocalFactors_one]))
+      (add safe 0 (by simp only [ArithmeticFunction.const_one_eq_zeta]))
+      (add safe 100 (by rw [← Int.ofNat_one]))
+      (add safe 0 (by simp only [QuaternionAlgebra.coe_one]))
+      (add safe 0 (by simp only [ArithmeticFunction.one_eq_delta]))
+      (add safe 0 (by simp only [MulChar.map_one]))
+      (add safe 100 (by rw [← Int.natCast_one]))
+      (add safe 0 (by simp only [ArithmeticFunction.intCoe_one]))
+      (add safe 0 (by simp only [LSeries.one_convolution_eq_zeta_convolution]))
+      (add unsafe 10% (by push_cast [goldenRatio] at *))
+      (add unsafe 50% (by simp_rw [bernoulli_one]))
+      (add unsafe 50% (by simp_rw [QuaternionAlgebra.one_re]))
+      (add unsafe 50% (by simp_rw [Nat.floor_one]))
+      (add unsafe 90% (by rw [MulChar.one_apply] at *))
+      (add unsafe 10% (by positivity [Quaternion.coe_one]))
+      (add unsafe 10% (by push_cast [ZNum.cast_one] at *))
+      (add unsafe 10% (by push_cast [IsPrimitiveRoot.eq_neg_one_of_two_right] at *))
+      (add unsafe 50% (by simp_rw [Unitization.snd_one]))
+      (add unsafe 50% (by simp_rw [Padic.coe_one]))
+      (add unsafe 10% (by push_cast [Nat.cast_one] at *))
+      (add unsafe 50% (by simp_rw [Real.one_rpow]))
+      (add unsafe 10% (by push_cast [WeierstrassCurve.preΨ_one] at *))
+      (add unsafe 10% (by push_cast [ZetaAsymptotics.term_sum_one] at *))
 
-  have h2 : (10 : ℤ) ^ n = ((11 : ℤ) + (-1 : ℤ)) ^ n := by
-    clear * - h1
+  have h_step3 : (10 : ℤ) ^ n - (-1 : ℤ) ^ n = 11 * (∑ i in Finset.range n, (10 : ℤ) ^ (n - 1 - i) * (-1 : ℤ) ^ i) := by
+    clear * - h_step1 h_step2
     aesop (config := {
-    maxNormIterations       := 120
-    })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplications := 400
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 30
+      maxGoals := 64
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by simp_all))
+      (add norm 100 (by simp only [mul_comm] at *))
+      (add norm 100 (by simp only [mul_assoc] at *))
+      (add norm 100 (by simp only [mul_one] at *))
+      (add norm 0 (by grind only [div_eq_mul_inv]))
+      (add norm 0 (by grind only [pow_add]))
+      (add norm 100 (by simp only [one_mul] at *))
+      (add norm 0 (by grind only [sub_eq_add]))
+      (add norm 0 (by grind only [div_inv_eq_mul]))
+      (add norm 100 (by simp only [mul_right_comm] at *))
+      (add norm 0 (by grind only [Finset.prod_range_succ]))
+      (add norm 0 (by grind only [neg_div]))
+      (add norm 100 (by simp only [mul_left_comm] at *))
+      (add norm 0 (by grind only [mul_div_cancel_right]))
+      (add safe 0 (by rw [← neg_mul]))
+      (add unsafe 10% (by push_cast [mul_div_assoc] at *))
+      (add unsafe 10% (by rw [neg_pow]))
+      (add unsafe 10% (by rw [neg_one_sq]))
+      (add unsafe 10% (by rw [Even.neg_one_pow]))
+      (add unsafe 10% (by rw [mul_pow]))
+      (add unsafe 10% (by rw [one_pow]))
+      (add unsafe 10% (by push_cast [mul_neg_one] at *))
+      (add unsafe 10% (by push_cast [mul_div] at *))
+      (add unsafe 10% (by push_cast [div_self] at *))
+      (add unsafe 10% (by push_cast [div_div] at *))
+      (add unsafe 10% (by push_cast [mul_neg] at *))
+      (add unsafe 10% (by rw [neg_sq]))
+      (add unsafe 10% (by push_cast [div_eq_iff] at *))
+      (add unsafe 10% (by push_cast [eq_div_iff] at *))
+      (add unsafe 10% (by rw [pow_mul]))
+      (add unsafe 10% (by rw [neg_one_mul]))
+      (add unsafe 10% (by push_cast [div_mul] at *))
+      (add unsafe 10% (by rw [LucasLehmer.X.ω]))
 
-  have h3 : ((11 : ℤ) + (-1 : ℤ)) ^ n = ∑ k in Finset.range (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) := by
-    clear * -
-    simp_all only [Int.reduceNeg, Int.reduceAdd]
-    have A := (add_pow 11 (-1) n).symm
-    simp_all only [Int.reduceNeg, Int.reduceAdd]
-    nth_rewrite 1 [← A]
-    simp_all only [Int.reduceNeg]
-    simp [← A, mul_comm, mul_assoc, mul_left_comm, ← mul_add]
+  let k : ℤ := ∑ i in Finset.range n, (10 : ℤ) ^ (n - 1 - i) * (-1 : ℤ) ^ i
 
-  have h4 : ((11 : ℤ) + (-1 : ℤ)) ^ n = (Nat.choose n 0 : ℤ) * (11 : ℤ) ^ 0 * (-1 : ℤ) ^ n + ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) := by
-    clear * - h3
-    simp_all only [Int.reduceNeg, Int.reduceAdd, choose_zero_right, Nat.cast_one, pow_zero, mul_one, one_mul]
-    simp [Finset.sum_Ico_eq_sub, ← h3]
-
-  have h5 : (Nat.choose n 0 : ℤ) * (11 : ℤ) ^ 0 * (-1 : ℤ) ^ n = (-1 : ℤ) ^ n := by
-    clear * -
+  have h_step4 : (10 : ℤ) ^ n - (-1 : ℤ) ^ n = 11 * k := by
+    clear * - h_step3
     aesop (config := {
-    maxNormIterations       := 120
-    maxGoals                := 64
-    })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Subspace.quotAnnihilatorEquiv_apply | rw [Subspace.quotAnnihilatorEquiv_apply] | simp only [Subspace.quotAnnihilatorEquiv_apply]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplications := 400
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      maxGoals := 64
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 0 (by interval_cases))
+      (add norm 0 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp))
+      (add norm 0 (by ring_nf at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by split))
+      (add unsafe 10% (by ring_nf))
+      (add unsafe 90% (by simp_all))
+      (add norm 0 (by rw [← geom_sum₂_mul]))
+      (add norm 0 (by rw [← geom_sum_mul_neg]))
+      (add norm 0 (by rw [← Finset.prod_mul_distrib]))
+      (add norm 0 (by rw [← Finset.sum_mul]))
+      (add norm 100 (by simp only [mul_assoc] at *))
+      (add norm 1 (by simp_all only [geom_sum_mul_add]))
+      (add norm 0 (by rw [← geom_sum₂_mul_add]))
+      (add norm 0 (by rw [← MvPolynomial.NewtonIdentities.esymm_to_weight]))
+      (add norm 0 (by rw [← pow_two_pow_sub_pow_two_pow]))
+      (add norm 0 (by grind only [numDerangements_sum]))
+      (add safe 0 (by nlinarith [add_pow]))
+      (add safe 100 (by simp_rw [mul_comm]))
+      (add safe 0 (by simp_rw [Finset.prod_range_succ_div_prod]))
+      (add safe 0 (by nlinarith [ZetaAsymptotics.term_sum]))
+      (add safe 0 (by nlinarith [Finset.prod_range_succ_comm]))
+      (add safe 0 (by simp_rw [geom_sum_eq]))
+      (add unsafe 10% (by push_cast [mul_geom_sum] at *))
+      (add unsafe 10% (by push_cast [geom_sum_mul] at *))
+      (add unsafe 10% (by push_cast [Finset.prod_range_succ] at *))
+      (add unsafe 10% (by push_cast [Finset.prod_range] at *))
+      (add unsafe 10% (by simp_all only [Finset.mul_sum]))
+      (add unsafe 10% (by push_cast [Finset.prod_div_distrib] at *))
+      (add unsafe 10% (by push_cast [Finset.prod_range_succ'] at *))
+      (add unsafe 90% (by rw [← Finset.card_range] at *))
+      (add unsafe 10% (by push_cast [sub_eq_add] at *))
+      (add unsafe 10% (by simp_all only [mul_neg_geom_sum]))
+      (add unsafe 10% (by push_cast [Finset.prod_Ico_eq_div] at *))
+      (add unsafe 10% (by simp_all only [Finset.prod]))
+      (add unsafe 10% (by simp_all only [Finset.prod_const]))
+      (add unsafe 10% (by simp_all only [Finset.range]))
+      (add unsafe 90% (by rw [← LiouvilleNumber.partialSum] at *))
+      (add unsafe 10% (by push_cast [div_eq_iff_eq_mul] at *))
 
-  have h6 : (10 : ℤ) ^ n = (-1 : ℤ) ^ n + ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) := by
-    clear * - h2 h4 h5
+  have h_step5 : 11 ∣ (10 : ℤ) ^ n - (-1 : ℤ) ^ n := by
+    clear * - h_step4
     aesop (config := {
-    maxNormIterations       := 120
-    })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Subspace.quotAnnihilatorEquiv_apply | rw [Subspace.quotAnnihilatorEquiv_apply] | simp only [Subspace.quotAnnihilatorEquiv_apply]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      maxGoals := 1024
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by ring_nf))
+      (add safe 0 (by simp_all))
+      (add norm 0 (by grind only [dvd_sub]))
+      (add norm 1 (by simp_all only [dvd_add]))
+      (add norm 1 (by simp_all only [dvd_mul_left]))
+      (add norm 0 (by grind only [legendreSym.prime_dvd_of_eq_neg_one]))
+      (add norm 1 (by simp_all only [dvd_mul_right]))
+      (add norm 0 (by grind only [sub_dvd_pow_sub_pow]))
+      (add norm 1 (by simp_all only [IsUnit.dvd_mul_left]))
+      (add norm 1 (by simp_all only [IsUnit.dvd_mul_right]))
+      (add norm 0 (by grind only [Int.Prime.dvd_pow']))
+      (add norm 1 (by simp_all only [mul_dvd_mul_iff_left]))
+      (add safe 0 (by simp_all [odd_sq_dvd_geom_sum₂_sub]))
+      (add safe 0 (by simp_all [UniqueFactorizationMonoid.dvd_of_dvd_mul_right_of_no_prime_factors]))
+      (add safe 1 (by rw [Polynomial.X_pow_sub_one_mul_cyclotomic_dvd_X_pow_sub_one_of_dvd]))
+      (add unsafe 10% (by push_cast [jacobiSym.prime_dvd_of_eq_neg_one] at *))
+      (add unsafe 10% (by solve_by_elim [Prime.dvd_of_pow_dvd_pow_mul_pow_of_square_not_dvd]))
+      (add unsafe 10% (by solve_by_elim [dvd_mul_of_dvd_left]))
+      (add unsafe 10% (by solve_by_elim [dvd_mul_of_dvd_right]))
+      (add unsafe 10% (by solve_by_elim [IsCyclotomicExtension.Rat.Three.lambda_pow_four_dvd_cube_sub_one_of_dvd_sub_one]))
+      (add unsafe 10% (by simp_all only [Nat.Prime.not_dvd_one]))
+      (add unsafe 50% (by simp_rw [mul_dvd_mul_left]))
+      (add unsafe 10% (by push_cast [Int.natCast_dvd_natCast] at *))
+      (add unsafe 10% (by solve_by_elim [IsCyclotomicExtension.Rat.Three.lambda_pow_four_dvd_cube_add_one_of_dvd_add_one]))
+      (add unsafe 10% (by simp_all only [Finset.dvd_sum]))
+      (add unsafe 50% (by simp_rw [mul_dvd_mul]))
+      (add unsafe 10% (by solve_by_elim [Squarefree.pow_dvd_of_squarefree_of_pow_succ_dvd_mul_right]))
+      (add unsafe 10% (by simp_rw [Squarefree.pow_dvd_of_squarefree_of_pow_succ_dvd_mul_left]))
+      (add unsafe 50% (by simp_rw [IsCyclotomicExtension.Rat.Three.lambda_dvd_mul_sub_one_mul_sub_eta_add_one]))
+      (add unsafe 10% (by push_cast [PadicInt.pow_p_dvd_int_iff] at *))
+      (add unsafe 10% (by solve_by_elim [sq_dvd_add_pow_sub_sub]))
+      (add unsafe 50% (by simp_rw [PadicInt.norm_sub_modPart_aux]))
+      (add unsafe 50% (by simp_rw [Nat.Coprime.mul_dvd_of_dvd_of_dvd]))
+      (add unsafe 10% (by solve_by_elim [Commute.pow_dvd_add_pow_of_pow_eq_zero_left]))
 
-  have h7 : (10 : ℤ) ^ n - (-1 : ℤ) ^ n = ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) := by
-    clear * - h6
-    aesop (config := {
-    maxNormIterations       := 120
-    })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
-
-  have h8 : ∀ k ∈ Finset.Ico 1 (n + 1), (11 : ℤ) ^ k = (11 : ℤ) * (11 : ℤ) ^ (k - 1) := by
-    clear * -
-    simp_all
-    intro k _ hk2
-    cases k <;> simp [pow_succ]
-    · simp_all
-    · simp_all
-      rw [mul_comm]
-
-  have h9 : ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) = ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) * (11 : ℤ) ^ (k - 1) * (-1 : ℤ) ^ (n - k) := by
-    clear * - h8
-    simp_all
-    refine' Finset.sum_congr rfl _
-    simp_all
-    simp [mul_assoc, mul_left_comm] <;> intros <;> aesop
-
-  have h10 : ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) * (11 : ℤ) ^ (k - 1) * (-1 : ℤ) ^ (n - k) = (11 : ℤ) * ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ (k - 1) * (-1 : ℤ) ^ (n - k) := by
-    clear * - h9
-    clear h9
-    simp [Finset.mul_sum, mul_assoc, Nat.cast_comm]
-
-  have h11 : (10 : ℤ) ^ n - (-1 : ℤ) ^ n = (11 : ℤ) * ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ (k - 1) * (-1 : ℤ) ^ (n - k) := by
-    clear * - h7 h9 h10
-    aesop (config := {
-    maxNormIterations       := 120
-    })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
-
-  have h12 : ∃ (m : ℤ), (10 : ℤ) ^ n - (-1 : ℤ) ^ n = (11 : ℤ) * m := by
-    clear * - h11
-    aesop (config := {
-    maxNormIterations       := 120
-    })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
-
-  have h13 : 11 ∣ 10 ^ n - (-1 : ℤ) ^ n := by
-    clear * - h12
-    aesop (config := {
-    maxNormIterations       := 120
-    })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
-
-  exact h13
+  exact h_step5

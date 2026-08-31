@@ -1,24 +1,75 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- A line $\ell$ passes through the points $B(7,-1)$ and $C(-1,7)$.  The equation of this line can be written in the form $y=mx+b$; compute $m+b$. Show that it is 5.-/
 
 theorem mathd_algebra_142 (m b : ℝ) (h₀ : m * 7 + b = -1) (h₁ : m * -1 + b = 7) : m + b = 5 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 800
+    maxGoals := 128
+    enableSimp := false
+    })
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 100 (by abel))
+    (add norm 100 (by push_neg))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 0 (by rfl))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 0 (by omega))
+    (add safe 0 (by simp_all))
+    (add safe 0 (by field_simp [*] at *))
+    (add norm 0 (by grind only [mul_neg]))
+    (add norm 0 (by grind only [neg_mul]))
+    (add norm 0 (by grind only [mul_neg_one]))
+    (add norm 0 (by grind only [neg_one_mul]))
+    (add norm 0 (by grind only [Complex.I_mul_I]))
+    (add norm 0 (by grind only [mul_inv]))
+    (add norm 0 (by grind only [mul_eq_one_iff_eq_inv]))
+    (add norm 0 (by grind only [mul_left_inv]))
+    (add norm 0 (by grind only [div_inv_eq_mul]))
+    (add norm 0 (by grind only [Complex.I_sq]))
+    (add norm 0 (by grind only [Quaternion.star_imJ]))
+    (add norm 0 (by grind only [QuaternionAlgebra.mul_imJ]))
+    (add norm 100 (by simp only [mul_assoc] at *))
+    (add norm 0 (by grind only [Complex.inv_I]))
+    (add norm 0 (by grind only [Quaternion.star_imI]))
+    (add norm 0 (by grind only [neg_eq]))
+    (add norm 0 (by grind only [neg_eq_neg_one_mul]))
+    (add norm 0 (by grind only [neg_mul_neg]))
+    (add norm 0 (by grind only [neg_mul_eq_neg_mul]))
+    (add norm 0 (by grind only [Quaternion.neg_imI]))
+    (add norm 0 (by grind only [mul_right_inv]))
+    (add norm 0 (by grind only [Quaternion.neg_imJ]))
+    (add norm 0 (by grind only [eq_inv_iff_mul_eq_one]))
+    (add norm 0 (by grind only [Real.Angle.coe_two_pi]))
+    (add norm 0 (by grind only [mul_inv_rev]))
+    (add norm 0 (by grind only [HurwitzZeta.jacobiTheta₂''_neg_left]))
+    (add norm 0 (by grind only [WeierstrassCurve.ψ_neg]))
+    (add norm 0 (by grind only [QuaternionAlgebra.neg_imI]))
+    (add safe 1 (by linarith [Quaternion.mul_imJ]))
+    (add safe 1 (by linarith [Quaternion.mul_imI]))
+    (add unsafe 50% (by simp_all [jacobiTheta₂_neg_left]))
+    (add unsafe 50% (by simp_all [Complex.I]))

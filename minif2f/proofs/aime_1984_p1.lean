@@ -3,52 +3,70 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem aime_1984_p1 (u : ℕ → ℚ) (h₀ : ∀ n, u (n + 1) = u n + 1)
     (h₁ : (∑ k in Finset.range 98, u k.succ) = 137) :
     (∑ k in Finset.range 49, u (2 * k.succ)) = 93 := by
-  let S_even := ∑ k in Finset.range 49, u (2 * k.succ)
-  let S_odd := ∑ k in Finset.range 49, u (2 * k + 1)
-
-  have h_split_sum : (∑ k in Finset.range 98, u k.succ) = S_even + S_odd := by
-    clear * -
-    simp_all only [succ_eq_add_one, S_even, S_odd]
-    simp only [Finset.sum_range_succ, mul_add]
-    simp_all only [Finset.range_zero, Finset.sum_empty, zero_add, reduceAdd, mul_one, mul_zero, reduceMul]
-    ring_nf <;> abel
-
-  have h_pointwise_relation : ∀ k ∈ Finset.range 49, u (2 * k.succ) = u (2 * k + 1) + 1 := by
+  have h_general_term : ∀ k : ℕ, u (k + 1) = u 1 + (k : ℚ) := by
     clear * - h₀
-    simp_all only [Finset.mem_range, succ_eq_add_one]
-    any_goals intros; simp_all [mul_add, h₀]
+    intro O
+    induction' O with D IH <;> simp_all <;> linarith
 
-  have h_sum_relation : S_even = S_odd + (49 : ℚ) := by
-    clear * - h_pointwise_relation h_split_sum
-    simp_all only [succ_eq_add_one, Finset.mem_range, S_even, S_odd]
-    simp (config := { decide := true }) only [Finset.sum_range_succ, h_pointwise_relation]
-    simp_all only [Finset.range_zero, Finset.sum_empty, mul_zero, zero_add, mul_one, reduceAdd, reduceMul]
-    linarith <;> norm_cast <;> ring
+  have h_sum_first_98_expansion : (∑ k in Finset.range 98, u k.succ) = (∑ k in Finset.range 98, (u 1 + (k : ℚ))) := by
+    clear * - h_general_term
+    congr 1 with v
+    simpa [succ_eq_add_one] using h_general_term v
 
-  have h_odd_in_terms_of_even : S_odd = S_even - (49 : ℚ) := by
-    clear * - h_sum_relation
-    simp_all only [succ_eq_add_one, add_sub_cancel_right, S_even, S_odd]
+  have h_sum_first_98_split : (∑ k in Finset.range 98, (u 1 + (k : ℚ))) = (98 : ℚ) * u 1 + (∑ k in Finset.range 98, (k : ℚ)) := by
+    clear * -
+    simp [Finset.sum_add_distrib, Finset.sum_range_id]
 
-  have h_substitute_sum : (137 : ℚ) = S_even + (S_even - (49 : ℚ)) := by
-    clear * - h₁ h_split_sum h_odd_in_terms_of_even
-    simp_all only [succ_eq_add_one, S_even, S_odd]
+  have h_sum_int_calc : (∑ k in Finset.range 98, (k : ℚ)) = (4753 : ℚ) := by
+    clear * -
+    (bound )
 
-  have h_arith_1 : (137 : ℚ) = (2 : ℚ) * S_even - (49 : ℚ) := by
-    clear * - h_substitute_sum
-    simp_all only [succ_eq_add_one, S_even]
-    (nlinarith)
+  have h_eq_u1 : (98 : ℚ) * u 1 + 4753 = 137 := by
+    clear * - h₁ h_sum_first_98_expansion h_sum_first_98_split h_sum_int_calc
+    (linarith)
 
-  have h_arith_2 : (186 : ℚ) = (2 : ℚ) * S_even := by
-    clear * - h_arith_1
-    simp_all only [succ_eq_add_one, S_even]
-    (nlinarith)
+  have h_u1_coefficient : (98 : ℚ) * u 1 = -4616 := by
+    clear * - h_eq_u1
+    (linarith)
 
-  have h_arith_3 : (93 : ℚ) = S_even := by
-    clear * - h_arith_2
-    simp_all only [succ_eq_add_one, S_even]
-    (nlinarith)
+  have h_u1_simplified : (49 : ℚ) * u 1 = -2308 := by
+    clear * - h_u1_coefficient
+    (linarith)
 
-  exact h_arith_3.symm
+  have h_sum_even_terms_expansion : (∑ k in Finset.range 49, u (2 * k.succ)) = (∑ k in Finset.range 49, (u 1 + 2 * (k : ℚ) + 1)) := by
+    clear * - h_general_term
+    refine' Finset.sum_congr rfl fun k hk => _
+    have := h_general_term (2 * k.succ)
+    have := h_general_term (2 * k + 1)
+    norm_num [mul_add] at * <;> linarith
+
+  have h_sum_even_terms_split : (∑ k in Finset.range 49, (u 1 + 2 * (k : ℚ) + 1)) = (49 : ℚ) * u 1 + (∑ k in Finset.range 49, (2 * (k : ℚ) + 1)) := by
+    clear * -
+    classical simp [Finset.sum_add_distrib]
+    first
+    | ring
+    | simp
+
+  have h_sum_odds_calc : (∑ k in Finset.range 49, (2 * (k : ℚ) + 1)) = (2401 : ℚ) := by
+    clear * -
+    (bound )
+
+  have h_target_sum_expr : (∑ k in Finset.range 49, u (2 * k.succ)) = (49 : ℚ) * u 1 + 2401 := by
+    clear * - h_sum_even_terms_expansion h_sum_even_terms_split h_sum_odds_calc
+    (linarith)
+
+  have h_final_result : (∑ k in Finset.range 49, u (2 * k.succ)) = 93 := by
+    clear * - h_target_sum_expr h_u1_simplified
+    simp_all only [succ_eq_add_one]
+    (linarith)
+
+  exact h_final_result

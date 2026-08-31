@@ -1,26 +1,74 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- The Fibonacci sequence is the sequence 1, 1, 2, 3, 5, $\ldots$ where each term is the sum of the previous two terms. What is the remainder when the $100^{\mathrm{th}}$ term of the sequence is divided by 4? Show that it is 3.-/
 
 theorem mathd_numbertheory_483 (a : ℕ → ℕ) (h₀ : a 1 = 1) (h₁ : a 2 = 1)
     (h₂ : ∀ n, a (n + 2) = a (n + 1) + a n) : a 100 % 4 = 3 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Matroid.Indep.ssubset_ground | rw [Matroid.Indep.ssubset_ground] | simp only [Matroid.Indep.ssubset_ground]))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 520
+    maxGoals := 1024
+    enableUnfold := false
+    })
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 1 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add norm 0 (by grind only [Nat.mod_mod]))
+    (add norm 100 (by linarith [Nat.mul_mod]))
+    (add norm 0 (by grind only [Nat.add_mod]))
+    (add norm 0 (by grind only [Nat.add_mod_left]))
+    (add norm 0 (by grind only [Nat.mod_mod_of_dvd]))
+    (add norm 0 (by grind only [Nat.mod_eq_zero_of_dvd]))
+    (add norm 0 (by grind only [Nat.mod_two_add_succ_mod_two]))
+    (add norm 100 (by linarith [neg_one_pow_eq_pow_mod_two]))
+    (add norm 0 (by grind only [Nat.dvd_iff_mod_eq_zero]))
+    (add norm 100 (by linarith [Nat.mul_mod_left]))
+    (add norm 0 (by grind only [Nat.mul_add_mod]))
+    (add norm 0 (by grind only [Nat.ModEq]))
+    (add norm 0 (by grind only [Num.dvd_iff_mod_eq_zero]))
+    (add norm 0 (by grind only [Nat.one_mod_of_ne_one]))
+    (add norm 0 (by grind only [Num.mod_to_nat]))
+    (add norm 0 (by grind only [Nat.mod_add_div]))
+    (add norm 0 (by grind only [Nat.mod_self]))
+    (add norm 100 (by linarith [Nat.mod_two_of_bodd]))
+    (add norm 0 (by grind only [Nat.add_mod_mod]))
+    (add safe 1 (by rw [Nat.mod_mul_left_mod]))
+    (add safe 1 (by rw [Nat.mul_mod_mod]))
+    (add safe 1 (by rw [Nat.mod_mul_mod]))
+    (add safe 1 (by rw [Nat.mod_mul_right_mod]))
+    (add safe 1 (by rw [Nat.mul_mod_mul_left]))
+    (add safe 1 (by rw [Nat.mul_mod_right]))
+    (add safe 1 (by rw [Nat.add_mul_mod_self_left]))
+    (add unsafe 50% (by simp_rw [Nat.pow_mod]))
+    (add unsafe 10% (by push_cast [Nat.odd_iff] at *))
+    (add unsafe 50% (by simp_rw [Nat.gcd.induction]))
+    (add unsafe 10% (by push_cast [Nat.mod_two_ne_zero] at *))
+    (add unsafe 10% (by push_cast [Nat.even_iff] at *))
+    (add unsafe 10% (by push_cast [Nat.mod_two_ne_one] at *))

@@ -3,97 +3,126 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem mathd_numbertheory_495 (a b : ℕ) (h₀ : 0 < a ∧ 0 < b) (h₁ : a % 10 = 2) (h₂ : b % 10 = 4)
     (h₃ : Nat.gcd a b = 6) : 108 ≤ Nat.lcm a b := by
-  have h_lcm_prod : Nat.lcm a b * Nat.gcd a b = a * b := by
+  have h_lcm_mul_gcd : Nat.lcm a b * Nat.gcd a b = a * b := by
     clear * -
-    nth_rw 1 [← Nat.gcd_mul_lcm a b]
-    rw [mul_comm]
+    simp_all only [lcm_mul_gcd]
 
-  have h_lcm_eq : Nat.lcm a b = (a * b) / 6 := by
-    clear * - h_lcm_prod h₃
-    simp_all only
-    (omega)
-
-  have h_6_dvd_a : 6 ∣ a := by
-    clear * - h₃
-    have := h₃ ▸ Nat.gcd_dvd_left a b
+  have h_lcm_times_6 : Nat.lcm a b * 6 = a * b := by
+    clear * - h₃ h_lcm_mul_gcd
     simp_all only
 
-  have h_6_dvd_b : 6 ∣ b := by
-    clear * - h₃
-    have : a.gcd b = 6 := h₃
-    simp_all only
-    have : 6 = a.gcd b
-    · simp_all only
-    · simp_all only
-      apply Nat.gcd_dvd_right
-
-  have h_a_mod_6 : a % 6 = 0 := by
-    clear * - h_6_dvd_a
-    (omega)
-
-  have h_b_mod_6 : b % 6 = 0 := by
-    clear * - h_6_dvd_b
-    (omega)
-
-  have h_a_ge_12 : 12 ≤ a := by
-    clear * - h₁ h_a_mod_6
-    (omega)
-
-  have h_b_ge_24 : 24 ≤ b := by
-    clear * - h₂ h_b_mod_6
-    (omega)
-
-  have h_a_cases : a = 12 ∨ 42 ≤ a := by
-    clear * - h₁ h_a_mod_6
-    (omega)
-
-  have h_b_cases : b = 24 ∨ 54 ≤ b := by
-    clear * - h₂ h_b_mod_6
-    (omega)
-
-  have h_gcd_12_24 : Nat.gcd 12 24 = 12 := by
+  have h_gcd_div_a : Nat.gcd a b ∣ a := by
     clear * -
-    simp_all only [reduceGcd]
+    apply Nat.gcd_dvd_left
 
-  have h_not_12_24 : ¬ (a = 12 ∧ b = 24) := by
-    clear * - h_gcd_12_24 h₃
-    simp_all only [reduceGcd, not_and]
-    intro a_1
-    subst a_1
-    apply Aesop.BuiltinRules.not_intro
-    intro a
-    subst a
-    simp_all only [reduceGcd, reduceEqDiff]
+  have h_6_div_a : 6 ∣ a := by
+    clear * - h₃ h_gcd_div_a
+    simp_all only
 
-  have h_if_a_12_then_b_54 : a = 12 → 54 ≤ b := by
-    clear * - h_b_cases h_not_12_24
-    intro a_1
-    subst a_1
-    simp_all only [true_and, false_or]
+  have h_gcd_div_b : Nat.gcd a b ∣ b := by
+    clear * -
+    rw [Nat.gcd_comm]
+    rw [gcd_comm]
+    rw [Nat.gcd_comm]
+    apply Nat.gcd_dvd_left
 
-  have h_case_1 : a = 12 → 108 ≤ Nat.lcm a b := by
-    clear * - h_if_a_12_then_b_54 h_lcm_eq
-    intro a_1
-    subst a_1
-    simp_all only [forall_const]
+  have h_6_div_b : 6 ∣ b := by
+    clear * - h₃ h_gcd_div_b
+    simp_all only
+
+  let u : ℕ := a / 6
+  let v : ℕ := b / 6
+  have h_a_eq_6u : a = 6 * u := by
+    clear * - h_6_div_a
+    simp_all only [u]
     (omega)
 
-  have h_case_2 : 42 ≤ a → 108 ≤ Nat.lcm a b := by
-    clear * - h_b_ge_24 h_lcm_eq
-    simp_all only
-    exact fun h_42_le_a ↦ by
-      rw [Nat.le_div_iff_mul_le (by norm_num), mul_comm]
-      nlinarith
+  have h_b_eq_6v : b = 6 * v := by
+    clear * - h_6_div_b
+    simp_all only [v]
+    (omega)
+
+  have h_ab_eq_36uv : a * b = 36 * u * v := by
+    clear * - h_a_eq_6u h_b_eq_6v
+    rewrite [h_a_eq_6u, h_b_eq_6v] <;> (ring)
+
+  have h_u_mod_5 : u % 5 = 2 := by
+    clear * - h_a_eq_6u h₁
+    rewrite [h_a_eq_6u, Nat.mul_mod] at h₁
+    revert h₁ u <;> omega
+
+  have h_v_mod_5 : v % 5 = 4 := by
+    clear * - h_b_eq_6v h₂
+    omega
+
+  have h_u_pos : 0 < u := by
+    clear * - h₀ h_a_eq_6u
+    valid
+
+  have h_v_pos : 0 < v := by
+    clear * - h₀ h_b_eq_6v
+    cases h₀ with
+    | intro _ h₁ => omega
+
+  have h_gcd_uv : Nat.gcd u v = 1 := by
+    clear * - h₃ h_a_eq_6u h_b_eq_6v
+    by_contra
+    have h_gcd : a.gcd b = 6 * (u.gcd v)
+    · simp_all [Nat.gcd_mul_left, Nat.gcd_comm]
+    · simp_all
+
+  have h_u_ge_2 : 2 ≤ u := by
+    clear * - h_u_pos h_u_mod_5
+    simp_all only [Nat.div_pos_iff, ofNat_pos, true_and, u]
+    (omega)
+
+  have h_v_ge_4 : 4 ≤ v := by
+    clear * - h_v_pos h_v_mod_5
+    simp_all only [Nat.div_pos_iff, ofNat_pos, true_and, v]
+    (omega)
+
+  have h_u_cases : u = 2 ∨ 7 ≤ u := by
+    clear * - h_u_ge_2 h_u_mod_5
+    simp_all only [u]
+    (omega)
+
+  have h_u2_imp_v_ge_9 : u = 2 → 9 ≤ v := by
+    clear * - h_gcd_uv h_v_mod_5 h_v_pos
+    intros h_u_eq_2
+    by_contra h_lt_9
+    interval_cases v <;> simp_all (config := { decide := true })
+
+  have h_u7_imp_uv_ge_28 : 7 ≤ u → 28 ≤ u * v := by
+    clear * - h_v_ge_4
+    intro a_1
+    simp_all only [v, u]
+    (nlinarith)
+
+  have h_uv_ge_18 : 18 ≤ u * v := by
+    clear * - h_u_cases h_u2_imp_v_ge_9 h_u7_imp_uv_ge_28
+    simp_all only [u, v]
+    (grind only [le_of_mul_le_mul_left])
+
+  have h_ab_ge_648 : 648 ≤ a * b := by
+    clear * - h_ab_eq_36uv h_uv_ge_18
+    simp only [u, v] at *
+    (linarith)
+
+  have h_lcm_times_6_ge_648 : Nat.lcm a b * 6 ≥ 648 := by
+    clear * - h_lcm_times_6 h_ab_ge_648
+    simp_all only [ge_iff_le]
 
   have h_final : 108 ≤ Nat.lcm a b := by
-    clear * - h_a_cases h_case_1 h_case_2
-    simp_all only
-    cases h_a_cases with
-    | inl h =>
-      subst h
-      simp_all only [forall_const, reduceLeDiff, implies_true]
-    | inr h_1 => simp_all only [forall_const]
+    clear * - h_lcm_times_6_ge_648
+    simp_all only [ge_iff_le]
+    (linarith)
 
   exact h_final

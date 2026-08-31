@@ -1,25 +1,77 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- In an arithmetic sequence, the 7th term is 30, and the 11th term is 60. What is the 21st term of this sequence? Show that it is 135.-/
 
 theorem mathd_algebra_354 (a d : ℝ) (h₀ : a + 6 * d = 30) (h₁ : a + 10 * d = 60) :
     a + 20 * d = 135 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Matroid.Indep.ssubset_ground | rw [Matroid.Indep.ssubset_ground] | simp only [Matroid.Indep.ssubset_ground]))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 220
+    maxNormIterations := 60
+    maxGoals := 128
+    enableSimp := false
+    }) (rule_sets := [-builtin])
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by simp))
+    (add norm 100 (by ring_nf at *))
+    (add norm 1 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 0 (by rfl))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 1 (by norm_cast))
+    (add safe 1 (by ring_nf))
+    (add safe 0 (by simp_all))
+    (add norm 0 (by grind only [two_mul]))
+    (add norm 0 (by grind only [zero_lt_two]))
+    (add norm 0 (by grind only [mul_two]))
+    (add norm 0 (by grind only [Real.pi_pos]))
+    (add norm 0 (by grind only [Quaternion.self_add_star]))
+    (add norm 0 (by grind only [Real.sq_sqrt]))
+    (add norm 0 (by grind only [sq_add_sq_mul]))
+    (add norm 0 (by grind only [mul_add_mul]))
+    (add norm 0 (by grind only [mul_nonneg_iff_of_pos_right]))
+    (add safe 1 (by linarith [zero_lt_two']))
+    (add safe 1 (by simp_all [Quaternion.star_add_self]))
+    (add safe 1 (by linarith [mul_le_mul_left]))
+    (add safe 1 (by linarith [mul_le_mul_right]))
+    (add unsafe 90% (by grind only [mul_lt_mul_left]))
+    (add unsafe 10% (by push_cast [two_ne_zero] at *))
+    (add unsafe 10% (by push_cast [sq_pos_of_pos] at *))
+    (add unsafe 90% (by grind only [mul_lt_mul_right]))
+    (add unsafe 10% (by push_cast [two_ne_zero'] at *))
+    (add unsafe 90% (by grind only [pow_two]))
+    (add unsafe 90% (by grind only [mul_pos_iff_of_pos_left]))
+    (add unsafe 90% (by grind only [one_half_pos]))
+    (add unsafe 50% (by simp_all [div_lt_iff]))
+    (add unsafe 90% (by grind only [EisensteinSeries.r1]))
+    (add unsafe 50% (by simp_all [div_lt_iff']))
+    (add unsafe 50% (by rw [← mul_div_cancel₀] at *))
+    (add unsafe 10% (by push_cast [sq_sub_sq] at *))
+    (add unsafe 50% (by simp_all [lt_div_iff]))
+    (add unsafe 90% (by grind only [Real.pi_div_two_pos]))
+    (add unsafe 90% (by grind only [mul_lt_mul_of_pos_left]))
+    (add unsafe 90% (by grind only [Real.sqrt_pos]))
+    (add unsafe 50% (by simp_all [lt_div_iff']))
+    (add unsafe 90% (by grind only [Real.Gamma_two]))

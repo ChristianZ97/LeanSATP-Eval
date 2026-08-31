@@ -3,49 +3,47 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem mathd_algebra_756 (a b : ℝ) (h₀ : (2 : ℝ) ^ a = 32) (h₁ : a ^ b = 125) : b ^ a = 243 := by
   have h₂ : (32 : ℝ) = (2 : ℝ) ^ 5 := by
     clear * -
-    (ring)
+    (linarith)
 
   have h₃ : a = 5 := by
     clear * - h₀ h₂
-    simp_all only
-    have ha := congr_arg Real.log h₀
-    simp_all only [Real.log_pow, Nat.cast_ofNat]
-    apply_fun Real.log at h₀
-    simp_all only [Real.log_pow, Nat.cast_ofNat]
-    field_simp [Real.log_rpow zero_lt_two] at h₀
-    exact h₀.elim (fun h ↦ h) <| by norm_num
+    have := congr_arg Real.log h₀
+    simp [Real.log_rpow, h₂] at this <;> norm_num at this <;> linarith
 
   have h₅ : (5 : ℝ) ^ b = 125 := by
     clear * - h₁ h₃
-    subst h₃
-    simp_all only
+    (bound )
 
   have h₆ : (125 : ℝ) = (5 : ℝ) ^ 3 := by
     clear * -
-    (ring)
+    (linarith)
 
   have h₇ : b = 3 := by
     clear * - h₅ h₆
-    simp_all only
-    apply_fun fun x => Real.log x at h₅
-    simp_all only [Real.log_pow, Nat.cast_ofNat]
-    simp [Real.log_rpow, mul_comm] at h₅
-    exact h₅.resolve_right (by norm_num)
+    apply_fun Real.log at h₅
+    simp_all [Real.log_rpow, h₆]
+    exact h₅.resolve_right <| by norm_num
 
   have h₈ : b ^ a = (3 : ℝ) ^ 5 := by
     clear * - h₃ h₇
-    subst h₃ h₇
-    (nlinarith)
+    simp_all only [rpow_ofNat]
 
   have h₉ : (3 : ℝ) ^ 5 = 243 := by
     clear * -
-    (ring)
+    (linarith)
 
   have h₁₀ : b ^ a = 243 := by
     clear * - h₈ h₉
-    simp_all only
+    (ring)
+    (nlinarith)
 
   exact h₁₀

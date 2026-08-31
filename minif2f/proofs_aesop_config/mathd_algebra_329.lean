@@ -1,23 +1,74 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- In a rectangular coordinate system, the line $3y = x$ intersects the line $2x + 5y = 11$ at point $A$. What is the sum of the coordinates of point $A$? Show that it is 4.-/
 
 theorem mathd_algebra_329 (x y : ℝ) (h₀ : 3 * y = x) (h₁ : 2 * x + 5 * y = 11) : x + y = 4 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Matroid.Indep.ssubset_ground | rw [Matroid.Indep.ssubset_ground] | simp only [Matroid.Indep.ssubset_ground]))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 220
+    maxNormIterations := 60
+    maxGoals := 16
+    enableUnfold := false
+    }) (rule_sets := [-builtin])
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 1 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 0 (by rfl))
+    (add norm 100 (by decide))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 0 (by simp_all))
+    (add norm 0 (by grind only [two_mul]))
+    (add norm 0 (by grind only [Quaternion.star_add_self]))
+    (add norm 0 (by grind only [Quaternion.self_add_star]))
+    (add norm 0 (by grind only [mul_two]))
+    (add norm 0 (by grind only [mul_add_mul]))
+    (add norm 100 (by simp only [mul_comm] at *))
+    (add norm 0 (by grind only [QuaternionAlgebra.self_add_star]))
+    (add norm 0 (by grind only [sq_add_sq_mul]))
+    (add norm 0 (by grind only [zero_lt_two]))
+    (add norm 0 (by grind only [Quaternion.star_add_self']))
+    (add norm 0 (by grind only [Quaternion.self_add_star']))
+    (add norm 0 (by grind only [Pell.eq_of_xn_modEq_lem2]))
+    (add norm 0 (by grind only [Polynomial.natDegree_mul_mirror]))
+    (add norm 0 (by grind only [Real.sq_sqrt]))
+    (add norm 100 (by simp only [mul_left_comm] at *))
+    (add norm 0 (by grind only [QuaternionAlgebra.star_add_self]))
+    (add norm 0 (by grind only [Polynomial.natTrailingDegree_mul_mirror]))
+    (add norm 0 (by grind only [Complex.two_sinh]))
+    (add norm 0 (by grind only [EisensteinSeries.r1]))
+    (add norm 0 (by grind only [Surreal.double_powHalf_succ_eq_powHalf]))
+    (add norm 0 (by grind only [Quaternion.star_eq_two_re_sub]))
+    (add norm 100 (by simp only [mul_right_comm] at *))
+    (add safe 1 (by linarith [zero_lt_two']))
+    (add safe 100 (by rw [two_ne_zero'] at *))
+    (add safe 100 (by grind only [Zsqrtd.divides_sq_eq_zero_z]))
+    (add unsafe 90% (by grind only [pow_two]))
+    (add unsafe 10% (by push_cast [two_ne_zero] at *))
+    (add unsafe 90% (by grind only [Real.sin_two_mul]))
+    (add unsafe 90% (by grind only [Real.two_mul_arctan_sub_pi]))
+    (add unsafe 90% (by grind only [Real.Angle.coe_two_pi]))
+    (add unsafe 90% (by grind only [Complex.two_cosh]))
+    (add unsafe 90% (by grind only [Real.two_mul_arctan_add_pi]))

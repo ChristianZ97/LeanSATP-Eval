@@ -3,81 +3,129 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem imo_1964_p2 (a b c : ℝ) (h₀ : 0 < a ∧ 0 < b ∧ 0 < c) (h₁ : c < a + b) (h₂ : b < a + c)
     (h₃ : a < b + c) :
     a ^ 2 * (b + c - a) + b ^ 2 * (c + a - b) + c ^ 2 * (a + b - c) ≤ 3 * a * b * c := by
-  have h_diff_poly :
-    3 * a * b * c - (a ^ 2 * (b + c - a) + b ^ 2 * (c + a - b) + c ^ 2 * (a + b - c)) =
-    a ^ 3 + b ^ 3 + c ^ 3 + 3 * a * b * c - (a ^ 2 * b + a * b ^ 2 + b ^ 2 * c + b * c ^ 2 + c ^ 2 * a + c * a ^ 2) := by
-    clear * -
-    (nlinarith)
+  let x := (b + c - a) / (2 : ℝ)
+  let y := (c + a - b) / (2 : ℝ)
+  let z := (a + b - c) / (2 : ℝ)
 
-  have h_poly_fact :
-    a ^ 3 + b ^ 3 + c ^ 3 + 3 * a * b * c - (a ^ 2 * b + a * b ^ 2 + b ^ 2 * c + b * c ^ 2 + c ^ 2 * a + c * a ^ 2) =
-    a * (a - b) * (a - c) + b * (b - c) * (b - a) + c * (c - a) * (c - b) := by
-    clear * -
-    (nlinarith)
-
-  have h_fact_sos :
-    a * (a - b) * (a - c) + b * (b - c) * (b - a) + c * (c - a) * (c - b) =
-    (1:ℝ) / 2 * ((a + b - c) * (a - b) ^ 2 + (b + c - a) * (b - c) ^ 2 + (c + a - b) * (c - a) ^ 2) := by
-    clear * -
-    simp_all only [one_div]
-    (field_simp)
-    (nlinarith)
-
-  have h_diff_sos :
-    3 * a * b * c - (a ^ 2 * (b + c - a) + b ^ 2 * (c + a - b) + c ^ 2 * (a + b - c)) =
-    (1:ℝ) / 2 * ((a + b - c) * (a - b) ^ 2 + (b + c - a) * (b - c) ^ 2 + (c + a - b) * (c - a) ^ 2) := by
-    clear * - h_diff_poly h_poly_fact h_fact_sos
-    simp_all only [one_div]
-
-  have h_t1_coeff_pos : 0 < a + b - c := by
-    clear * - h₁
-    simp_all only [sub_pos]
-
-  have h_t1_sq_nonneg : 0 ≤ (a - b) ^ 2 := by
-    clear * -
-    (nlinarith)
-
-  have h_t1_nonneg : (1:ℝ) / 2 * (a + b - c) * (a - b) ^ 2 ≥ 0 := by
-    clear * - h_t1_coeff_pos h_t1_sq_nonneg
-    simp_all only [sub_pos, one_div, ge_iff_le, inv_pos, ofNat_pos, mul_pos_iff_of_pos_left, mul_nonneg_iff_of_pos_left]
-
-  have h_t2_coeff_pos : 0 < b + c - a := by
+  have hx_pos : 0 < x := by
     clear * - h₃
-    simp_all only [sub_pos]
+    simp only [x] at *
+    (linarith)
 
-  have h_t2_sq_nonneg : 0 ≤ (b - c) ^ 2 := by
-    clear * -
-    (nlinarith)
-
-  have h_t2_nonneg : (1:ℝ) / 2 * (b + c - a) * (b - c) ^ 2 ≥ 0 := by
-    clear * - h_t2_coeff_pos h_t2_sq_nonneg
-    simp_all only [sub_pos, one_div, ge_iff_le, inv_pos, ofNat_pos, mul_pos_iff_of_pos_left, mul_nonneg_iff_of_pos_left]
-
-  have h_t3_coeff_pos : 0 < c + a - b := by
+  have hy_pos : 0 < y := by
     clear * - h₂
-    simp_all only [sub_pos]
-    (nlinarith)
+    simp only [y] at *
+    (linarith)
 
-  have h_t3_sq_nonneg : 0 ≤ (c - a) ^ 2 := by
+  have hz_pos : 0 < z := by
+    clear * - h₁
+    simp only [z] at *
+    (linarith)
+
+  have ha_eq : a = y + z := by
+    clear * - hx_pos hy_pos hz_pos
+    (grind only [mul_div_cancel_left])
+
+  have hb_eq : b = x + z := by
+    clear * - hx_pos hy_pos hz_pos
+    (grind only [mul_div_cancel_left])
+
+  have hc_eq : c = x + y := by
+    clear * - hx_pos hy_pos hz_pos
+    (grind only [mul_div_cancel_left])
+
+  have t1_exp : b + c - a = 2 * x := by
+    clear * - ha_eq hb_eq hc_eq
+    (linarith)
+
+  have t1_subst : a ^ 2 * (b + c - a) = (y + z) ^ 2 * (2 * x) := by
+    clear * - ha_eq t1_exp
+    (grind only [sum_eight_sq_mul_sum_eight_sq])
+
+  have t2_exp : c + a - b = 2 * y := by
+    clear * - ha_eq hb_eq hc_eq
+    (linarith)
+
+  have t2_subst : b ^ 2 * (c + a - b) = (x + z) ^ 2 * (2 * y) := by
+    clear * - hb_eq t2_exp
+    (grind only [sum_eight_sq_mul_sum_eight_sq])
+
+  have t3_exp : a + b - c = 2 * z := by
+    clear * - ha_eq hb_eq hc_eq
+    (linarith)
+
+  have t3_subst : c ^ 2 * (a + b - c) = (x + y) ^ 2 * (2 * z) := by
+    clear * - hc_eq t3_exp
+    (grind only [sum_eight_sq_mul_sum_eight_sq])
+
+  have lhs_sum : a ^ 2 * (b + c - a) + b ^ 2 * (c + a - b) + c ^ 2 * (a + b - c) =
+      (y + z) ^ 2 * (2 * x) + (x + z) ^ 2 * (2 * y) + (x + y) ^ 2 * (2 * z) := by
+    clear * - t1_subst t2_subst t3_subst
+    (linarith)
+
+  have lhs_factor : (y + z) ^ 2 * (2 * x) + (x + z) ^ 2 * (2 * y) + (x + y) ^ 2 * (2 * z) =
+      2 * (x * (y + z) ^ 2 + y * (x + z) ^ 2 + z * (x + y) ^ 2) := by
+    clear * - lhs_sum
+    (linarith)
+
+  have rhs_subst : 3 * a * b * c = 3 * (y + z) * (x + z) * (x + y) := by
+    clear * - ha_eq hb_eq hc_eq
+    (grind only [mul_div_assoc])
+
+  have step_12_1 : x * (y + z) ^ 2 = x * y ^ 2 + 2 * x * y * z + x * z ^ 2 := by
     clear * -
-    (nlinarith)
+    (linarith)
 
-  have h_t3_nonneg : (1:ℝ) / 2 * (c + a - b) * (c - a) ^ 2 ≥ 0 := by
-    clear * - h_t3_coeff_pos h_t3_sq_nonneg
-    simp_all only [sub_pos, one_div, ge_iff_le, inv_pos, ofNat_pos, mul_pos_iff_of_pos_left, mul_nonneg_iff_of_pos_left]
+  have step_12_2 : y * (x + z) ^ 2 = y * x ^ 2 + 2 * x * y * z + y * z ^ 2 := by
+    clear * -
+    (linarith)
 
-  have h_sos_sum_nonneg :
-    (1:ℝ) / 2 * ((a + b - c) * (a - b) ^ 2 + (b + c - a) * (b - c) ^ 2 + (c + a - b) * (c - a) ^ 2) ≥ 0 := by
-    clear * - h_t1_nonneg h_t2_nonneg h_t3_nonneg
-    simp_all only [one_div, ge_iff_le, inv_pos, ofNat_pos, mul_nonneg_iff_of_pos_left]
-    (nlinarith)
+  have step_12_3 : z * (x + y) ^ 2 = z * x ^ 2 + 2 * x * y * z + z * y ^ 2 := by
+    clear * -
+    (linarith)
 
-  have h_D_ge_zero :
-    3 * a * b * c - (a ^ 2 * (b + c - a) + b ^ 2 * (c + a - b) + c ^ 2 * (a + b - c)) ≥ 0 := by
-    clear * - h_diff_sos h_sos_sum_nonneg
-    simp_all only [one_div, ge_iff_le, inv_pos, ofNat_pos, mul_nonneg_iff_of_pos_left]
+  have sum_parts : x * (y + z) ^ 2 + y * (x + z) ^ 2 + z * (x + y) ^ 2 =
+      (x * y ^ 2 + x * z ^ 2 + y * x ^ 2 + y * z ^ 2 + z * x ^ 2 + z * y ^ 2) + 6 * x * y * z := by
+    clear * - step_12_1 step_12_2 step_12_3
+    simp_all only [x, y, z]
+    (linarith)
 
-  linarith
+  have lhs_final : 2 * (x * (y + z) ^ 2 + y * (x + z) ^ 2 + z * (x + y) ^ 2) =
+      2 * (x * y ^ 2 + x * z ^ 2 + y * x ^ 2 + y * z ^ 2 + z * x ^ 2 + z * y ^ 2) + 12 * x * y * z := by
+    clear * - sum_parts
+    (linarith)
+
+  have prod_identity : (x + y) * (y + z) * (z + x) =
+      (x * y ^ 2 + x * z ^ 2 + y * x ^ 2 + y * z ^ 2 + z * x ^ 2 + z * y ^ 2) + 2 * x * y * z := by
+    clear * -
+    (linarith)
+
+  have rhs_final : 3 * (y + z) * (x + z) * (x + y) =
+      3 * (x * y ^ 2 + x * z ^ 2 + y * x ^ 2 + y * z ^ 2 + z * x ^ 2 + z * y ^ 2) + 6 * x * y * z := by
+    clear * - prod_identity
+    (linarith)
+
+  have am_gm_step : x * y ^ 2 + x * z ^ 2 + y * x ^ 2 + y * z ^ 2 + z * x ^ 2 + z * y ^ 2 ≥ 6 * x * y * z := by
+    clear * - hx_pos hy_pos hz_pos
+    nlinarith [sq_nonneg (x - y), sq_nonneg (x - z), sq_nonneg (y - z)]
+
+  have inequality_proof :
+      2 * (x * y ^ 2 + x * z ^ 2 + y * x ^ 2 + y * z ^ 2 + z * x ^ 2 + z * y ^ 2) + 12 * x * y * z ≤
+      3 * (x * y ^ 2 + x * z ^ 2 + y * x ^ 2 + y * z ^ 2 + z * x ^ 2 + z * y ^ 2) + 6 * x * y * z := by
+    clear * - am_gm_step
+    simp only [ge_iff_le, x, y, z] at *
+    (linarith)
+
+  exact by
+    clear * - lhs_final rhs_final inequality_proof
+    simp only [ge_iff_le, x, y, z] at *
+    (linarith)

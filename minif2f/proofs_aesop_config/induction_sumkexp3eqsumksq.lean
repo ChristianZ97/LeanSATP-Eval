@@ -3,349 +3,550 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem induction_sumkexp3eqsumksq (n : ℕ) :
     (∑ k in Finset.range n, k ^ 3) = (∑ k in Finset.range n, k) ^ 2 := by
-  induction n with
-  | zero =>
-    have h1 : (∑ k in Finset.range 0, k ^ 3) = 0 := by
-      clear * -
-      aesop (config := {
-      maxNormIterations       := 120
-      maxGoals                := 64
+  let m : ℕ := n - 1
+
+  have h1 : (∑ k in Finset.range n, k : ℚ) = ((m : ℚ) * (m + 1)) / 2 := by
+    clear * -
+    induction' n with base step
+    · norm_num
+    · simp_all [Finset.sum_range_succ']
+      cases' base with base <;> simp [Finset.sum_add_distrib, step, m] <;> ring
+
+  have h2 : ((m : ℚ) * (m + 1)) / 2 = ((n - 1 : ℚ) * n) / 2 := by
+    clear * - m
+    cases n <;> simp [m]
+
+  have h3 : (∑ k in Finset.range n, k : ℚ) = ((n - 1 : ℚ) * (n : ℚ)) / 2 := by
+    clear * - h1 h2
+    aesop (config := {
+      maxRuleApplicationDepth := 120
+      maxNormIterations := 60
+      maxGoals := 256
+      useDefaultSimpSet := false
       })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by exfalso))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by ring_nf at *))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by bound))
-      (add unsafe 90% (by ext))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by linarith))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 90% (by simp))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 30% (by first | apply Ideal.Quotient.mk_eq_mk_iff_sub_mem | rw [Ideal.Quotient.mk_eq_mk_iff_sub_mem] | simp only [Ideal.Quotient.mk_eq_mk_iff_sub_mem]))
-      (add unsafe 30% (by first | apply LieModuleHom.coe_linear_mk | rw [LieModuleHom.coe_linear_mk] | simp only [LieModuleHom.coe_linear_mk]))
-      (add unsafe 30% (by first | apply Quaternion.imI_nnratCast | rw [Quaternion.imI_nnratCast] | simp only [Quaternion.imI_nnratCast]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by bound))
+      (add norm 0 (by interval_cases))
+      (add norm 0 (by ext))
+      (add norm 0 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by ring_nf at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add safe 0 (by ring_nf))
+      (add unsafe 90% (by simp_all))
+      (add norm 100 (by simp only [mul_comm] at *))
+      (add norm 0 (by rw [← geom_sum_mul]))
+      (add norm 100 (by simp only [mul_right_comm] at *))
+      (add norm 100 (by simp only [mul_assoc] at *))
+      (add norm 100 (by nlinarith [Real.BohrMollerup.f_add_nat_eq]))
+      (add norm 100 (by simp only [mul_left_comm] at *))
+      (add safe 0 (by simp only [Finset.prod_range_succ']))
+      (add safe 0 (by simp only [Finset.prod_range_succ]))
+      (add safe 0 (by simp_rw [mul_geom_sum]))
+      (add safe 0 (by simp_rw [Finset.prod_range_succ_div_prod]))
+      (add safe 0 (by simp_rw [Finset.prod_Ico_eq_div]))
+      (add safe 1 (by rw [Finset.sum_range_id]))
+      (add safe 1 (by simp [add_pow] at *))
+      (add safe 0 (by simp_rw [binomial_sum_eq]))
+      (add safe 0 (by simp_rw [Finset.Nat.prod_antidiagonal_eq_prod_range_succ]))
+      (add safe 0 (by simp_rw [bernsteinPolynomial.sum_mul_smul]))
+      (add safe 0 (by rw [div_eq_iff_eq_mul]))
+      (add safe 100 (by simp_all [mul_div]))
+      (add unsafe 10% (by simp_all only [Finset.prod_range]))
+      (add unsafe 10% (by simp_all only [Finset.mul_sum]))
+      (add unsafe 10% (by simp_all only [Finset.card_range]))
+      (add unsafe 10% (by simp_all only [Finset.prod_mul_distrib]))
+      (add unsafe 10% (by simp_all only [Nat.cast_sum]))
+      (add unsafe 10% (by simp_all only [Finset.prod_div_distrib]))
+      (add unsafe 10% (by simp_all only [Finset.sum_mul]))
+      (add unsafe 10% (by simp_all only [numDerangements_sum]))
+      (add unsafe 10% (by simp_all only [ZetaAsymptotics.term_sum]))
+      (add unsafe 10% (by simp_all only [Finset.range]))
+      (add unsafe 10% (by simp_all only [Finset.prod]))
+      (add unsafe 10% (by simp_all only [Finset.prod_const]))
+      (add unsafe 10% (by simp_all only [nsmul_eq_mul]))
+      (add unsafe 10% (by simp_all only [intervalIntegral.sum_integral_adjacent_intervals]))
 
-    have h2 : (∑ k in Finset.range 0, k) = 0 := by
-      clear * -
-      aesop (config := {
-      maxNormIterations       := 120
-      maxGoals                := 64
+  have h4 : ((∑ k in Finset.range n, k : ℚ) ^ 2) = (((n - 1 : ℚ) * (n : ℚ)) / 2) ^ 2 := by
+    clear * - h3
+    aesop (config := {
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      maxGoals := 1024
       })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by exfalso))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by ring_nf at *))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by bound))
-      (add unsafe 90% (by ext))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by linarith))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 90% (by simp))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 30% (by first | apply DoubleCentralizer.zero_toProd | rw [DoubleCentralizer.zero_toProd] | simp only [DoubleCentralizer.zero_toProd]))
-      (add unsafe 30% (by first | apply LieModuleHom.coe_linear_mk | rw [LieModuleHom.coe_linear_mk] | simp only [LieModuleHom.coe_linear_mk]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      (add norm 100 (by ring))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by zify))
+      (add norm 0 (by bound))
+      (add norm 0 (by interval_cases))
+      (add norm 0 (by ext))
+      (add norm 0 (by split))
+      (add norm 0 (by simp))
+      (add norm 0 (by ring_nf at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 0 (by assumption_mod_cast))
+      (add safe 1 (by exfalso))
+      (add unsafe 50% (by field_simp))
+      (add unsafe 50% (by abel))
+      (add unsafe 10% (by ring_nf))
+      (add unsafe 90% (by simp_all))
+      (add unsafe 50% (by norm_cast at *))
+      (add norm 0 (by rw [← Finset.prod_pow]))
+      (add norm 0 (by rw [← pow_two_pow_sub_pow_two_pow]))
+      (add norm 0 (by rw [← geom_sum_mul]))
+      (add norm 100 (by rw [← mul_pow]))
+      (add norm 0 (by rw [← Finset.prod_pow_eq_pow_sum]))
+      (add safe 0 (by simp_rw [summable_powerSeries_of_norm_lt]))
+      (add safe 0 (by simp_rw [Finset.prod_range_succ_div_prod]))
+      (add safe 0 (by simp_rw [Finset.Nat.prod_antidiagonal_eq_prod_range_succ]))
+      (add safe 1 (by rw [Finset.sum_range_id]))
+      (add unsafe 10% (by simp_all only [Finset.card_range]))
+      (add unsafe 10% (by simp_all only [Finset.prod_range]))
+      (add unsafe 10% (by simp_all only [Finset.mul_sum]))
+      (add unsafe 10% (by simp_all only [Nat.cast_sum]))
+      (add unsafe 10% (by simp_all only [Finset.prod_mul_distrib]))
+      (add unsafe 10% (by simp_all only [Finset.sum_mul]))
+      (add unsafe 10% (by simp_all only [Finset.prod_const]))
+      (add unsafe 10% (by simp_all only [mul_geom_sum]))
+      (add unsafe 10% (by simp_all only [Finset.prod_range_succ']))
+      (add unsafe 10% (by simp_all only [Finset.prod_div_distrib]))
+      (add unsafe 10% (by simp_all only [add_pow]))
+      (add unsafe 10% (by simp_all only [bernsteinPolynomial.variance]))
+      (add unsafe 10% (by simp_all only [Finset.prod_range_succ]))
+      (add unsafe 10% (by simp_all only [Finset.prod]))
+      (add unsafe 10% (by simp_all only [numDerangements_sum]))
+      (add unsafe 10% (by simp_all only [bernsteinPolynomial.sum_smul]))
+      (add unsafe 10% (by simp_all only [bernsteinPolynomial.sum_mul_smul]))
+      (add unsafe 10% (by simp_all only [Finset.range]))
+      (add unsafe 10% (by simp_all only [nsmul_eq_mul]))
+      (add unsafe 10% (by simp_all only [ZetaAsymptotics.term_sum]))
+      (add unsafe 10% (by simp_all only [Nat.cast_prod]))
+      (add unsafe 10% (by simp_all only [Rat.cast_sum]))
+      (add unsafe 10% (by simp_all only [Finset.prod_le_prod']))
 
-    have h3 : (∑ k in Finset.range 0, k) ^ 2 = 0 ^ 2 := by
-      clear * - h2
-      aesop (config := {
-      maxNormIterations       := 120
-      maxGoals                := 64
+  have h5 : (((n - 1 : ℚ) * (n : ℚ)) / 2) ^ 2 = (((n - 1 : ℚ) * (n : ℚ)) ^ 2) / 4 := by
+    clear * -
+    aesop (config := {
+      maxRuleApplications := 400
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 128
       })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply Quaternion.imI_nnratCast | rw [Quaternion.imI_nnratCast] | simp only [Quaternion.imI_nnratCast]))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 100 (by abel))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by omega))
+      (add safe 1 (by zify))
+      (add safe 0 (by ring_nf))
+      (add safe 0 (by simp_all))
+      (add norm 0 (by grind only [mul_div]))
+      (add norm 100 (by rw [← mul_pow]))
+      (add norm 1 (by rw [← eq_div_iff_mul_eq]))
+      (add norm 0 (by norm_num [tsub_div] at *))
+      (add norm 0 (by grind only [CircleDeg1Lift.transnumAuxSeq]))
+      (add norm 0 (by grind only [SzemerediRegularity.m_pos]))
+      (add safe 0 (by rw [← mul_div_cancel_left₀]))
+      (add safe 0 (by rw [div_pow] at *))
+      (add safe 0 (by rw [← mul_div_cancel_right₀]))
+      (add safe 0 (by rw [← mul_div_mul_left]))
+      (add safe 0 (by rw [mul_div_assoc] at *))
+      (add safe 0 (by rw [mul_div_cancel₀] at *))
+      (add safe 0 (by rw [← div_mul_cancel₀]))
+      (add safe 0 (by grind only [eq_div_iff]))
+      (add safe 0 (by rw [← div_eq_iff]))
+      (add safe 0 (by rw [← mul_div_mul_right]))
+      (add safe 0 (by simp_rw [div_div]))
+      (add safe 0 (by simp_rw [add_div]))
+      (add safe 0 (by simp [mul_div_right_comm] at *))
+      (add safe 100 (by rw [two_ne_zero'] at *))
+      (add safe 0 (by simp [mul_div_assoc'] at *))
+      (add safe 0 (by rw [← div_eq_one_iff_eq]))
+      (add safe 0 (by simp_rw [div_right_comm]))
+      (add safe 0 (by simp_rw [mul_one_div]))
+      (add safe 0 (by simp [mul_div_left_comm] at *))
+      (add safe 0 (by simp [div_mul_eq_mul_div] at *))
+      (add safe 0 (by simp_all [two_ne_zero]))
+      (add safe 0 (by rw [← div_left_inj']))
+      (add safe 100 (by simp [sq_sub_sq] at *))
+      (add unsafe 10% (by simp_all only [div_self]))
+      (add unsafe 90% (by simp_all [sub_div]))
+      (add unsafe 10% (by simp_all only [SzemerediRegularity.card_chunk]))
 
-    have h4 : 0 ^ 2 = 0 := by
-      clear * -
-      aesop (config := {
-      maxNormIterations       := 160
-      enableUnfold            := false
+  have h6 : (((n - 1 : ℚ) * (n : ℚ)) ^ 2) / 4 = ((n - 1 : ℚ) ^ 2 * (n : ℚ) ^ 2) / 4 := by
+    clear * -
+    aesop (config := {
+      maxRuleApplications := 400
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 512
       })
-      (add safe 2 (by ring))
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by ring_nf))
-      (add unsafe 100% (by ring_nf at *))
-      (add unsafe 100% (by split))
-      (add unsafe 90% (by bound))
-      (add unsafe 90% (by ext))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by linarith))
-      (add unsafe 90% (by simp))
-      (add unsafe 70% (by nlinarith))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 40% (by first | apply Real.sq_sqrt | rw [Real.sq_sqrt] | simp only [Real.sq_sqrt]))
-      (add unsafe 30% (by first | apply sq_eq_zero_iff | rw [sq_eq_zero_iff] | simp only [sq_eq_zero_iff]))
-      (add unsafe 10% (by first | apply ArithmeticFunction.moebius_sq | rw [ArithmeticFunction.moebius_sq] | simp only [ArithmeticFunction.moebius_sq]))
-      (add unsafe 10% (by first | apply MulZeroClass | rw [MulZeroClass] | simp only [MulZeroClass]))
-      (add unsafe 10% (by first | apply sq_sub_sq | rw [sq_sub_sq] | simp only [sq_sub_sq]))
-      (add unsafe 10% (by first | apply two_ne_zero | rw [two_ne_zero] | simp only [two_ne_zero]))
-      (add unsafe 10% (by first | apply zero_pow | rw [zero_pow] | simp only [zero_pow]))
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 100 (by abel))
+      (add norm 100 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by omega))
+      (add safe 1 (by zify))
+      (add safe 0 (by ring_nf))
+      (add unsafe 90% (by simp_all))
+      (add norm 0 (by simp only [sub_div] at *))
+      (add norm 100 (by rw [← mul_pow]))
+      (add norm 0 (by simp only [tsub_div] at *))
+      (add norm 100 (by rw [CircleDeg1Lift.transnumAuxSeq]))
+      (add safe 0 (by rw [← mul_div_cancel_left₀]))
+      (add safe 0 (by rw [mul_div_assoc] at *))
+      (add safe 0 (by rw [← mul_div_cancel_right₀]))
+      (add safe 0 (by rw [mul_div] at *))
+      (add safe 0 (by rw [← mul_div_mul_left]))
+      (add safe 0 (by rw [mul_div_cancel₀] at *))
+      (add safe 1 (by rw [← div_eq_iff]))
+      (add safe 0 (by rw [div_pow] at *))
+      (add safe 0 (by simp_rw [div_div]))
+      (add safe 100 (by rw [two_ne_zero'] at *))
+      (add safe 0 (by simp [mul_div_right_comm] at *))
+      (add safe 0 (by simp [mul_div_mul_right] at *))
+      (add safe 0 (by rw [← div_eq_one_iff_eq]))
+      (add safe 0 (by simp [mul_div_assoc'] at *))
+      (add safe 0 (by simp [div_right_comm] at *))
+      (add safe 0 (by simp_all [div_mul]))
+      (add safe 0 (by simp [div_mul_eq_mul_div] at *))
+      (add safe 0 (by simp_rw [mul_one_div]))
+      (add safe 0 (by simp [mul_div_left_comm] at *))
+      (add safe 0 (by rw [← div_left_inj']))
+      (add safe 0 (by grind only [Quaternion.coe_div]))
+      (add unsafe 10% (by push_cast [eq_div_iff] at *))
+      (add unsafe 10% (by simp_all only [div_self]))
+      (add unsafe 10% (by simp_all only [div_mul_cancel₀]))
+      (add unsafe 50% (by simp only [eq_div_iff_mul_eq] at *))
+      (add unsafe 10% (by rw [← add_div] at *))
+      (add unsafe 50% (by simp only [div_eq_iff_mul_eq] at *))
+      (add unsafe 10% (by simp_all only [SzemerediRegularity.card_chunk]))
 
-    have h5 : (∑ k in Finset.range 0, k ^ 3) = (∑ k in Finset.range 0, k) ^ 2 := by
-      clear * - h1 h3 h4
-      aesop (config := {
-      maxNormIterations       := 120
-      maxGoals                := 64
+  have h_sum_sq_res : ((∑ k in Finset.range n, k : ℚ) ^ 2) = ((n - 1 : ℚ) ^ 2 * (n : ℚ) ^ 2) / 4 := by
+    clear * - h4 h5 h6
+    aesop (config := {
+      maxRuleApplications := 400
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 256
       })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Subspace.quotAnnihilatorEquiv_apply | rw [Subspace.quotAnnihilatorEquiv_apply] | simp only [Subspace.quotAnnihilatorEquiv_apply]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by bound))
+      (add norm 0 (by interval_cases))
+      (add norm 0 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp))
+      (add norm 0 (by ring_nf at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by ring_nf))
+      (add unsafe 90% (by simp_all))
+      (add norm 0 (by rw [← pow_two_pow_sub_pow_two_pow]))
+      (add norm 100 (by rw [← mul_pow]))
+      (add norm 0 (by rw [← geom_sum_mul]))
+      (add norm 0 (by rw [← geom_sum₂_mul]))
+      (add norm 1 (by rw [← eq_div_iff_mul_eq]))
+      (add norm 0 (by rw [← Finset.prod_pow]))
+      (add safe 0 (by simp_rw [summable_powerSeries_of_norm_lt]))
+      (add safe 0 (by simp_rw [Finset.prod_range_succ_div_prod]))
+      (add safe 0 (by grind only [eq_div_iff]))
+      (add safe 0 (by simp [SzemerediRegularity.mul_sq_le_sum_sq] at *))
+      (add safe 1 (by rw [geom_sum₂_self]))
+      (add safe 0 (by simp_rw [bernsteinPolynomial.sum_mul_smul]))
+      (add safe 1 (by rw [Finset.sum_range_id]))
+      (add unsafe 10% (by simp_all only [mul_geom_sum]))
+      (add unsafe 10% (by simp_all only [Finset.card_range]))
+      (add unsafe 10% (by simp_all only [Finset.mul_sum]))
+      (add unsafe 10% (by simp_all only [Finset.prod_range]))
+      (add unsafe 10% (by simp_all only [Finset.prod_mul_distrib]))
+      (add unsafe 10% (by simp_all only [Nat.cast_sum]))
+      (add unsafe 10% (by simp_all only [Finset.sum_mul]))
+      (add unsafe 10% (by simp_all only [Finset.prod_div_distrib]))
+      (add unsafe 10% (by simp_all only [Finset.prod_const]))
+      (add unsafe 10% (by rw [div_pow] at *))
+      (add unsafe 10% (by simp_all only [Finset.prod_range_succ']))
+      (add unsafe 10% (by simp_all only [Finset.prod_range_succ]))
+      (add unsafe 10% (by simp_all only [bernsteinPolynomial.variance]))
+      (add unsafe 10% (by simp_all only [numDerangements_sum]))
+      (add unsafe 10% (by simp_all only [Nat.cast_mul]))
+      (add unsafe 10% (by simp_all only [add_pow]))
+      (add unsafe 10% (by simp_all only [Finset.range]))
+      (add unsafe 10% (by simp_all only [Rat.cast_sum]))
+      (add unsafe 10% (by simp_all only [Finset.prod]))
 
-    exact h5
+  have h7 : (∑ k in Finset.range n, k ^ 3 : ℚ) = ((n - 1 : ℚ) * (n : ℚ) / 2) ^ 2 := by
+    clear * -
+    induction n <;> simp [Finset.sum_range_succ, *]
+    induction ‹ℕ› <;> simp [Finset.sum] at * <;> ring
 
-  | succ n ih =>
-    have h7 : (∑ k in Finset.range (n + 1), k ^ 3) = (∑ k in Finset.range n, k ^ 3) + n ^ 3 := by
-      clear * -
-      apply Finset.sum_range_succ
-
-    have h8 : (∑ k in Finset.range (n + 1), k ^ 3) = (∑ k in Finset.range n, k) ^ 2 + n ^ 3 := by
-      clear * - h7 ih
-      aesop (config := {
-      maxNormIterations       := 120
+  have h8 : ((n - 1 : ℚ) * (n : ℚ) / 2) ^ 2 = ((n - 1 : ℚ) ^ 2 * (n : ℚ) ^ 2) / 4 := by
+    clear * - h5 h6
+    aesop (config := {
+      maxRuleApplications := 400
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 512
       })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by omega))
+      (add safe 0 (by ring_nf))
+      (add safe 0 (by simp_all))
+      (add norm 1 (by field_simp [mul_div_cancel_left₀] at *))
+      (add norm 1 (by rw [← eq_div_iff_mul_eq]))
+      (add norm 100 (by rw [← mul_pow]))
+      (add norm 0 (by grind only [mul_div]))
+      (add norm 0 (by grind only [div_left_inj']))
+      (add norm 0 (by grind only [div_eq_iff_mul_eq]))
+      (add norm 0 (by grind only [CircleDeg1Lift.transnumAuxSeq]))
+      (add norm 0 (by grind only [Complex.natCast_mul_natCast_cpow]))
+      (add norm 100 (by rw [← pow_ne_zero]))
+      (add norm 0 (by grind only [CircleDeg1Lift.transnumAuxSeq_def]))
+      (add norm 0 (by simp only [sub_div] at *))
+      (add norm 0 (by grind only [euler_four_squares]))
+      (add norm 0 (by grind only [Int.mul_ediv_cancel']))
+      (add safe 0 (by rw [div_pow] at *))
+      (add safe 0 (by rw [← mul_div_cancel_right₀]))
+      (add safe 0 (by rw [mul_div_cancel₀] at *))
+      (add safe 0 (by rw [← mul_div_mul_left]))
+      (add safe 0 (by rw [mul_div_assoc] at *))
+      (add safe 100 (by rw [two_ne_zero'] at *))
+      (add safe 100 (by simp [sq_sub_sq] at *))
+      (add safe 0 (by simp_all [two_ne_zero]))
+      (add safe 0 (by simp_rw [div_div]))
+      (add safe 0 (by simp [mul_div_mul_right] at *))
+      (add safe 0 (by rw [← div_eq_one_iff_eq]))
+      (add safe 0 (by simp [mul_div_right_comm] at *))
+      (add unsafe 50% (by simp only [eq_div_iff] at *))
+      (add unsafe 10% (by simp_all only [div_mul_cancel₀]))
+      (add unsafe 50% (by simp only [div_eq_iff] at *))
+      (add unsafe 10% (by simp_all only [div_self]))
+      (add unsafe 10% (by simp_all only [SzemerediRegularity.card_chunk]))
+      (add unsafe 50% (by simp_all [add_div]))
+      (add unsafe 10% (by simp_all only [Int.card_box]))
 
-    have h9 : (∑ k in Finset.range (n + 1), k) = (∑ k in Finset.range n, k) + n := by
-      clear * -
-      rw [Finset.sum_range_succ, eq_comm]
-
-    have h10 : ((∑ k in Finset.range n, k) + n) ^ 2 = (∑ k in Finset.range n, k) ^ 2 + 2 * n * (∑ k in Finset.range n, k) + n ^ 2 := by
-      clear * -
-      aesop (config := {
-      maxNormIterations       := 120
+  have h_cubes_res : (∑ k in Finset.range n, k ^ 3 : ℚ) = ((n - 1 : ℚ) ^ 2 * (n : ℚ) ^ 2) / 4 := by
+    clear * - h7 h8
+    aesop (config := {
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 512
       })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply DoubleCentralizer.zero_toProd | rw [DoubleCentralizer.zero_toProd] | simp only [DoubleCentralizer.zero_toProd]))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by bound))
+      (add norm 0 (by interval_cases))
+      (add norm 0 (by ext))
+      (add norm 0 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp))
+      (add norm 0 (by ring_nf at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by ring_nf))
+      (add unsafe 90% (by simp_all))
+      (add norm 1 (by rw [← eq_div_iff_mul_eq]))
+      (add norm 100 (by rw [← mul_pow]))
+      (add norm 0 (by rw [← geom_sum_mul]))
+      (add safe 0 (by rw [mul_div] at *))
+      (add safe 0 (by rw [← mul_div_cancel_right₀]))
+      (add safe 0 (by grind only [div_eq_iff]))
+      (add safe 0 (by simp [Finset.sum_div] at *))
+      (add safe 0 (by simp_rw [pow_two_pow_sub_pow_two_pow]))
+      (add safe 0 (by simp [SzemerediRegularity.mul_sq_le_sum_sq] at *))
+      (add safe 1 (by rw [← mul_div_cancel₀] at *))
+      (add safe 1 (by rw [Finset.sum_range_id]))
+      (add safe 0 (by simp_rw [div_div]))
+      (add unsafe 10% (by simp_all only [Nat.cast_sum]))
+      (add unsafe 10% (by simp_all only [Finset.card_range]))
+      (add unsafe 10% (by simp_all only [Nat.cast_mul]))
+      (add unsafe 10% (by simp_all only [Finset.prod_mul_distrib]))
+      (add unsafe 10% (by simp_all only [Finset.mul_sum]))
+      (add unsafe 10% (by simp_all only [Finset.prod_range]))
+      (add unsafe 10% (by simp_all only [mul_div_assoc]))
+      (add unsafe 50% (by simp only [eq_div_iff] at *))
+      (add unsafe 10% (by simp_all only [mul_geom_sum]))
+      (add unsafe 10% (by simp_all only [mul_div_cancel_left₀]))
+      (add unsafe 10% (by simp_all only [Finset.sum_mul]))
+      (add unsafe 10% (by simp_all only [Finset.prod_range_succ']))
+      (add unsafe 10% (by simp_all only [Finset.prod_range_succ]))
+      (add unsafe 10% (by simp_all only [commProb]))
+      (add unsafe 10% (by rw [div_pow] at *))
+      (add unsafe 10% (by simp_all only [Finset.prod_div_distrib]))
+      (add unsafe 10% (by simp_all only [numDerangements_sum]))
+      (add unsafe 10% (by simp_all only [Finset.prod_const]))
+      (add unsafe 10% (by simp_all only [nsmul_eq_mul]))
+      (add unsafe 10% (by simp_all only [Rat.cast_sum]))
 
-    have h11 : (∑ k in Finset.range n, k) = n * (n - (1 : ℕ)) / (2 : ℕ) := by
-      clear * -
-      induction n <;> simp [Finset.range_succ, *] at *
-      induction ‹ℕ›
-      ·
-        simp_all only [Finset.range_zero, Finset.sum_empty, _root_.zero_le, Nat.sub_eq_zero_of_le, mul_zero, Nat.zero_div,
-          add_zero, zero_add]
-      · simp_all only [add_tsub_cancel_right]
-        open Nat in ring_nf at * <;> omega
-
-    have h12 : 2 * n * (∑ k in Finset.range n, k) = 2 * n * (n * (n - (1 : ℕ)) / (2 : ℕ)) := by
-      clear * - h11
-      aesop (config := {
-      maxNormIterations       := 120
+  have h9 : (∑ k in Finset.range n, k ^ 3 : ℚ) = ((∑ k in Finset.range n, k : ℚ) ^ 2) := by
+    clear * - h_cubes_res h_sum_sq_res
+    aesop (config := {
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      maxGoals := 1024
       })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      (add norm 0 (by ring))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 100 (by zify))
+      (add norm 0 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 0 (by interval_cases))
+      (add norm 0 (by ring_nf))
+      (add norm 0 (by ext))
+      (add norm 0 (by split))
+      (add norm 0 (by simp))
+      (add norm 0 (by ring_nf at *))
+      (add norm 0 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 0 (by assumption_mod_cast))
+      (add safe 1 (by abel))
+      (add safe 1 (by exfalso))
+      (add safe 1 (by rfl))
+      (add unsafe 50% (by field_simp))
+      (add unsafe 90% (by simp_all))
+      (add unsafe 50% (by norm_cast at *))
+      (add norm 100 (by nlinarith [Finset.prod_range_succ']))
+      (add norm 100 (by nlinarith [Finset.prod_range_succ]))
+      (add norm 0 (by rw [← geom_sum_mul]))
+      (add norm 0 (by rw [← Finset.prod_pow]))
+      (add norm 100 (by nlinarith [geom_sum_mul_add]))
+      (add safe 0 (by simp_rw [summable_powerSeries_of_norm_lt]))
+      (add safe 0 (by simp_rw [Finset.prod_range_succ_div_prod]))
+      (add safe 0 (by simp_rw [bernsteinPolynomial.sum_mul_smul]))
+      (add safe 0 (by simp_rw [Finset.Nat.prod_antidiagonal_eq_prod_range_succ]))
+      (add safe 0 (by simp_rw [sum_range_pow]))
+      (add safe 0 (by simp_rw [summable_powerSeries_of_norm_lt_one]))
+      (add safe 1 (by simp [add_pow] at *))
+      (add safe 0 (by simp_rw [binomial_sum_eq]))
+      (add safe 0 (by simp_rw [Finset.sum_range_reflect]))
+      (add safe 1 (by rw [Finset.sum_range_id]))
+      (add safe 0 (by simp_rw [Finset.prod_range_div_prod_range]))
+      (add unsafe 10% (by simp_all only [Finset.card_range]))
+      (add unsafe 10% (by simp_all only [Finset.prod_range]))
+      (add unsafe 10% (by simp_all only [Finset.mul_sum]))
+      (add unsafe 10% (by simp_all only [Nat.cast_sum]))
+      (add unsafe 10% (by simp_all only [Finset.sum_mul]))
+      (add unsafe 10% (by simp_all only [Finset.prod_mul_distrib]))
+      (add unsafe 10% (by simp_all only [mul_geom_sum]))
+      (add unsafe 10% (by simp_all only [Finset.range]))
+      (add unsafe 10% (by simp_all only [numDerangements_sum]))
+      (add unsafe 10% (by simp_all only [bernsteinPolynomial.sum_smul]))
+      (add unsafe 10% (by simp_all only [ZetaAsymptotics.term_sum]))
+      (add unsafe 10% (by simp_all only [Finset.prod_const]))
+      (add unsafe 10% (by simp_all only [Finset.prod_le_prod']))
+      (add unsafe 10% (by simp_all only [Rat.cast_sum]))
+      (add unsafe 10% (by simp_all only [intervalIntegral.sum_integral_adjacent_intervals]))
+      (add unsafe 10% (by simp_all only [Finset.prod]))
 
-    have h13 : 2 * n * (n * (n - (1 : ℕ)) / (2 : ℕ)) = n * (n * (n - (1 : ℕ))) := by
-      clear * -
-      cases n <;> simp [mul_assoc, mul_comm, mul_left_comm]
-      rw [Nat.mul_div_cancel']
-      · linarith only
-      · obtain ⟨k, rfl⟩ | ⟨k, rfl⟩ := Nat.even_or_odd ‹_› <;> ring_nf <;> omega
+  have h_final : (∑ k in Finset.range n, k ^ 3) = (∑ k in Finset.range n, k) ^ 2 := by
+    clear * - h9
+    convert h9
+    norm_cast at *
+    simp only [Nat.cast_sum, Nat.cast_pow]
+    norm_cast at *
+    simp [← @Nat.cast_inj ℚ, h9]
 
-    have h14 : n * (n * (n - (1 : ℕ))) = n ^ 3 - (n ^ 2 : ℕ) := by
-      clear * -
-      cases' n with n n
-      ·
-        simp_all only [_root_.zero_le, Nat.sub_eq_zero_of_le, mul_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true,
-          zero_pow, tsub_self]
-      · simp_all only [add_tsub_cancel_right]
-        induction' n with n ih
-        · simp_all only [zero_add, mul_zero, one_pow, tsub_self]
-        · ring_nf
-          omega
-
-    have h15 : 2 * n * (∑ k in Finset.range n, k) = n ^ 3 - (n ^ 2 : ℕ) := by
-      clear * - h11 h12 h13 h14
-      aesop (config := {
-      maxNormIterations       := 120
-      })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
-
-    have h16 : ((∑ k in Finset.range n, k) + n) ^ 2 = (∑ k in Finset.range n, k) ^ 2 + (n ^ 3 - (n ^ 2 : ℕ)) + n ^ 2 := by
-      clear * - h10 h15
-      aesop (config := {
-      maxNormIterations       := 120
-      })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
-
-    have h17 : (n ^ 3 - (n ^ 2 : ℕ)) + n ^ 2 = n ^ 3 := by
-      clear * -
-      simp [pow_succ, sub_add_cancel]
-      induction n <;> simp_all
-
-    have h18 : ((∑ k in Finset.range n, k) + n) ^ 2 = (∑ k in Finset.range n, k) ^ 2 + n ^ 3 := by
-      clear * - h16 h17
-      aesop (config := {
-      maxNormIterations       := 120
-      })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
-
-    have h19 : (∑ k in Finset.range (n + 1), k) ^ 2 = (∑ k in Finset.range n, k) ^ 2 + n ^ 3 := by
-      clear * - h9 h18
-      aesop (config := {
-      maxNormIterations       := 120
-      })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
-
-    have h20 : (∑ k in Finset.range (n + 1), k ^ 3) = (∑ k in Finset.range (n + 1), k) ^ 2 := by
-      clear * - h8 h19
-      aesop (config := {
-      maxNormIterations       := 120
-      })
-      (add safe 4 (by field_simp))
-      (add safe 4 (by push_neg))
-      (add unsafe 100% (by nlinarith))
-      (add unsafe 100% (by simp_all))
-      (add unsafe 90% (by field_simp [*] at *))
-      (add unsafe 90% (by norm_num [*] at *))
-      (add unsafe 80% (by gcongr))
-      (add unsafe 80% (by linarith))
-      (add unsafe 70% (by bound))
-      (add unsafe 70% (by norm_cast at *))
-      (add unsafe 70% (by omega))
-      (add unsafe 70% (by positivity))
-      (add unsafe 70% (by ring_nf at *))
-      (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-      (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
-
-    exact h20
+  exact h_final

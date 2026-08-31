@@ -1,23 +1,73 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- Find the radius of the circle with equation $x^2 + 8x + y^2 - 6y = 0$. Show that it is 5.-/
 
 theorem mathd_algebra_107 (x y : ℝ) (h₀ : x ^ 2 + 8 * x + y ^ 2 - 6 * y = 0) :
     (x + 4) ^ 2 + (y - 3) ^ 2 = 5 ^ 2 := by
 
-    aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+  aesop (config := {
+    maxRuleApplicationDepth := 220
+    maxNormIterations := 520
+    maxGoals := 64
+    }) (rule_sets := [-builtin])
+    (add norm 100 (by ring))
+    (add norm 100 (by field_simp))
+    (add norm 100 (by norm_num))
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by omega))
+    (add norm 100 (by abel))
+    (add norm 100 (by zify))
+    (add norm 100 (by bound))
+    (add norm 100 (by interval_cases))
+    (add norm 100 (by ext))
+    (add norm 100 (by split))
+    (add norm 100 (by exfalso))
+    (add norm 100 (by ring_nf at *))
+    (add norm 100 (by field_simp [*] at *))
+    (add norm 100 (by norm_num [*] at *))
+    (add norm 100 (by norm_cast at *))
+    (add norm 100 (by rfl))
+    (add norm 100 (by push_cast))
+    (add norm 100 (by assumption_mod_cast))
+    (add safe 1 (by ring_nf))
+    (add safe 0 (by simp_all))
+    (add norm 1 (by field_simp [euler_four_squares] at *))
+    (add norm 0 (by grind only [sq_add_sq_mul]))
+    (add norm 1 (by field_simp [Real.rpow_two] at *))
+    (add norm 0 (by rw [← sq_add_sq_mul_sq_add_sq]))
+    (add norm 0 (by rw [← sq_add_mul_sq_mul_sq_add_mul_sq]))
+    (add norm 1 (by field_simp [gaussSum_sq] at *))
+    (add safe 100 (by simp [Pell.Solution₁.prop_x] at *))
+    (add safe 1 (by rw [norm_add_sq_real]))
+    (add unsafe 10% (by push_cast [sq_sub_sq] at *))
+    (add unsafe 10% (by push_cast [pow_two] at *))
+    (add unsafe 10% (by push_cast [Real.sq_sqrt] at *))
+    (add unsafe 10% (by push_cast [ArithmeticFunction.moebius_sq] at *))
+    (add unsafe 10% (by push_cast [sq_abs] at *))
+    (add unsafe 10% (by push_cast [QuaternionGroup.xa_sq] at *))
+    (add unsafe 10% (by push_cast [sq_eq_sq] at *))
+    (add unsafe 10% (by push_cast [Pell.Solution₁.prop] at *))
+    (add unsafe 10% (by push_cast [sub_sq] at *))
+    (add unsafe 10% (by push_cast [two_ne_zero] at *))
+    (add unsafe 10% (by push_cast [CoxeterSystem.simple_sq] at *))
+    (add unsafe 10% (by push_cast [Real.sqrt_sq] at *))
+    (add unsafe 10% (by push_cast [mul_pow] at *))
+    (add unsafe 10% (by push_cast [Pell.Solution₁.prop_y] at *))
+    (add unsafe 10% (by push_cast [integral_id] at *))
+    (add unsafe 10% (by push_cast [sq_pos_of_pos] at *))
+    (add unsafe 10% (by push_cast [sq_nonneg] at *))
+    (add unsafe 10% (by push_cast [EuclideanSpace.norm_eq] at *))
+    (add unsafe 10% (by push_cast [sq_eq_zero_iff] at *))
+    (add unsafe 10% (by push_cast [even_two] at *))
+    (add unsafe 10% (by push_cast [add_sq] at *))
+    (add unsafe 10% (by push_cast [div_pow] at *))
+    (add unsafe 10% (by push_cast [quadraticChar_sq_one] at *))
+    (add unsafe 10% (by push_cast [ArithmeticFunction.moebius_sq_eq_one_of_squarefree] at *))

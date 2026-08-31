@@ -3,216 +3,490 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem amc12b_2021_p18 (z : ℂ)
     (h₀ : 12 * Complex.normSq z = 2 * Complex.normSq (z + 2) + Complex.normSq (z ^ 2 + 1) + 31) :
     z + 6 / z = -2 := by
-  let x : ℝ := z.re
-  let y : ℝ := z.im
-  have h1 : Complex.normSq z = x^2 + y^2 := by
-    clear * -
-    simp_all only [x, y]
-    simp [Complex.normSq, x, y]
-    ring
+  have h_expand_1 : Complex.normSq (z + 2) = Complex.normSq z + 4 * Complex.re z + 4 := by
+    clear * - h₀
+    simp [Complex.normSq, sq, add_mul] at h₀
+    simp [Complex.normSq, Complex.add_re, Complex.add_im, h₀] <;> nlinarith
 
-  have h2 : Complex.normSq (z + 2) = (x + 2)^2 + y^2 := by
-    clear * - h1
-    simp_all only [x, y]
-    simp [Complex.normSq_apply, pow_two, add_mul]
+  have h_expand_2 : Complex.normSq (z ^ 2 + 1) = Complex.normSq z ^ 2 + 2 * Complex.re (z ^ 2) + 1 := by
+    clear * - h₀
+    simp [sq, Complex.normSq]
+    symm <;> ring
 
-  have h3 : Complex.re (z ^ 2) = x^2 - y^2 := by
-    clear * -
-    simp_all only [x, y]
-    simp [sq, x, y, Complex.add_re, Complex.add_im, Complex.mul_re, Complex.mul_im]
-
-  have h4 : Complex.im (z ^ 2) = 2 * x * y := by
-    clear * -
-    simp_all only [x, y]
-    simp [sq, x, y, mul_add, add_mul, mul_comm]
-    linear_combination 2 * (x * y)
-
-  have h5 : Complex.normSq (z ^ 2 + 1) = (x^2 - y^2 + 1)^2 + (2 * x * y)^2 := by
-    clear * - h3 h4
-    simp_all only [x, y]
-    rw [Complex.normSq_apply, sq, sq]
-    simp_all only [Complex.add_re, Complex.mul_re, Complex.one_re, Complex.add_im, Complex.mul_im, Complex.one_im,
-      add_zero]
-    ring
-
-  have h6 : (12 : ℝ) * (x^2 + y^2) = (2 : ℝ) * ((x + 2)^2 + y^2) + ((x^2 - y^2 + 1)^2 + (2 * x * y)^2) + 31 := by
-    clear * - h₀ h1 h2 h5
+  have h_poly_eq : (Complex.normSq z) ^ 2 - 10 * Complex.normSq z + 8 * Complex.re z + 2 * Complex.re (z ^ 2) + 40 = 0 := by
+    clear * - h₀ h_expand_1 h_expand_2
     aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Matroid.Indep.ssubset_ground | rw [Matroid.Indep.ssubset_ground] | simp only [Matroid.Indep.ssubset_ground]))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 30
+      maxGoals := 256
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by ring_nf))
+      (add safe 0 (by simp_all))
+      (add norm 1 (by grind only [Quaternion.sub_re]))
+      (add norm 100 (by simp_all only [Complex.add_re]))
+      (add norm 1 (by grind only [QuaternionAlgebra.sub_re]))
+      (add norm 100 (by simp_all only [UpperHalfPlane.coe_re]))
+      (add norm 100 (by rw [Complex.sub_re]))
+      (add norm 0 (by simp_all [Complex.re_ofReal_mul]))
+      (add norm 100 (by rw [Complex.div_ofNat_re]))
+      (add norm 0 (by simp_all [Quaternion.re_exp]))
+      (add norm 100 (by simp_all only [Quaternion.neg_re]))
+      (add norm 100 (by rw [Complex.re_eq_abs]))
+      (add norm 0 (by grind only [Complex.neg_re]))
+      (add norm 0 (by grind only [Quaternion.sub_self_re]))
+      (add norm 0 (by grind only [Complex]))
+      (add norm 100 (by simp_all only [Quaternion.coeComplex_re]))
+      (add norm 100 (by rw [ModularGroup.re_T_zpow_smul]))
+      (add norm 0 (by grind only [Quaternion.sq_eq_neg_normSq]))
+      (add norm 100 (by rw [← Complex.abs_cpow_eq_rpow_re_of_nonneg]))
+      (add norm 100 (by simp_all only [Quaternion.add_re]))
+      (add norm 100 (by rw [GaussianInt.toComplex_div_re]))
+      (add norm 100 (by rw [Complex.Gammaℝ_ne_zero_of_re_pos]))
+      (add norm 0 (by grind only [Quaternion.natCast_re]))
+      (add norm 0 (by grind only [Complex.I_re]))
+      (add safe 1 (by rw [← UpperHalfPlane.re]))
+      (add safe 1 (by rw [← Quaternion.star_re]))
+      (add safe 0 (by nlinarith [QuaternionAlgebra.reₗ]))
+      (add safe 1 (by rw [UpperHalfPlane.center_re]))
+      (add unsafe 50% (by simp_rw [Complex.one_re]))
+      (add unsafe 50% (by simp_rw [Complex.ofReal_re]))
+      (add unsafe 50% (by simp [Quaternion.coe_re] at *))
+      (add unsafe 50% (by simp_rw [MeasureTheory.ComplexMeasure.re]))
+      (add unsafe 50% (by simp_rw [Quaternion.one_re]))
+      (add unsafe 50% (by simp_rw [Complex.zero_re]))
 
-  have h7 : (x^2 + y^2 - 6)^2 + (4 : ℝ) * (x + 1)^2 = 0 := by
-    clear * - h6
+  have h_sum_sq_identity : (Complex.normSq z - 6) ^ 2 + (2 * Complex.re z + 2) ^ 2 = 0 := by
+    clear * - h_poly_eq
+    simp [Complex.normSq, sq, add_mul, mul_add] at *
+    ring_nf at * <;> try linarith
+
+  have h_norm_cond : Complex.normSq z - 6 = 0 := by
+    clear * - h_sum_sq_identity
     aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Matroid.Indep.ssubset_ground | rw [Matroid.Indep.ssubset_ground] | simp only [Matroid.Indep.ssubset_ground]))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 128
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by simp))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by ring_nf))
+      (add safe 0 (by split))
+      (add safe 0 (by field_simp [*] at *))
+      (add unsafe 90% (by simp_all))
+      (add norm 0 (by grind only [Quaternion.sq_eq_neg_normSq]))
+      (add norm 0 (by grind only [Quaternion.sq_eq_normSq]))
+      (add norm 0 (by grind only [sq_eq_zero_iff]))
+      (add norm 0 (by grind only [Complex.sq_abs]))
+      (add norm 0 (by grind only [Quaternion.normSq_eq_zero]))
+      (add norm 0 (by grind only [sq_eq_sq]))
+      (add norm 0 (by grind only [Quaternion.normSq_le_zero]))
+      (add norm 0 (by simp [legendreSym.eq_one_of_sq_sub_mul_sq_eq_zero] at *))
+      (add norm 0 (by grind only [sq_add_sq_mul]))
+      (add norm 0 (by grind only [Quaternion.im_sq]))
+      (add norm 0 (by grind only [Complex.normSq_eq_abs]))
+      (add norm 0 (by grind only [Quaternion.normSq_def]))
+      (add norm 0 (by grind only [Quaternion.normSq_nonneg]))
+      (add norm 0 (by grind only [Real.sq_sqrt]))
+      (add norm 0 (by simp [legendreSym.eq_one_of_sq_sub_mul_sq_eq_zero'] at *))
+      (add norm 0 (by grind only [Complex.abs_apply]))
+      (add norm 100 (by rw [Quaternion.sub_re]))
+      (add norm 0 (by grind only [UpperHalfPlane.c_mul_im_sq_le_normSq_denom]))
+      (add norm 0 (by grind only [sq_eq_one_iff]))
+      (add norm 0 (by grind only [Complex.normSq_eq_norm_sq]))
+      (add norm 0 (by grind only [Complex.abs_def]))
+      (add norm 0 (by grind only [Quaternion.normSq_def']))
+      (add safe 0 (by simp_all [two_ne_zero]))
+      (add safe 0 (by simp_all [EisensteinSeries.r1]))
+      (add safe 1 (by rw [GaussianInt.normSq_div_sub_div_lt_one]))
+      (add unsafe 10% (by push_cast [sq_sub_sq] at *))
+      (add unsafe 90% (by grind only [pow_two]))
+      (add unsafe 10% (by push_cast [sq_pos_of_pos] at *))
+      (add unsafe 90% (by unfold sq_abs))
+      (add unsafe 10% (by push_cast [integral_id] at *))
+      (add unsafe 90% (by grind only [Real.rpow_two]))
+      (add unsafe 50% (by simp_all [Pell.Solution₁.prop]))
 
-  have h8 : x^2 + y^2 - 6 = 0 := by
-    clear * - h7
+  have h_re_cond : 2 * Complex.re z + 2 = 0 := by
+    clear * - h_sum_sq_identity
     aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplicationDepth := 220
+      maxNormIterations := 60
+      maxGoals := 128
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by simp))
+      (add norm 0 (by simp_all))
+      (add norm 100 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by ring_nf))
+      (add norm 0 (by grind only [Quaternion.sq_eq_neg_normSq]))
+      (add norm 0 (by grind only [sq_eq_zero_iff]))
+      (add norm 0 (by grind only [sq_eq_sq]))
+      (add norm 0 (by grind only [Quaternion.sq_eq_normSq]))
+      (add norm 0 (by grind only [sq_add_sq_mul]))
+      (add norm 0 (by grind only [sq_eq_one_iff]))
+      (add norm 0 (by grind only [euler_four_squares]))
+      (add norm 0 (by grind only [sq_eq_sq_iff_eq_or_eq_neg]))
+      (add norm 0 (by simp [legendreSym.eq_one_of_sq_sub_mul_sq_eq_zero] at *))
+      (add norm 0 (by grind only [Complex.sq_abs]))
+      (add norm 0 (by grind only [CoxeterSystem.simple_sq]))
+      (add norm 1 (by simp_all only [ArithmeticFunction.moebius_sq]))
+      (add norm 0 (by grind only [Real.sqrt_eq_iff_sq_eq]))
+      (add norm 0 (by grind only [Pell.Solution₁.prop_x]))
+      (add norm 0 (by simp [legendreSym.eq_one_of_sq_sub_mul_sq_eq_zero'] at *))
+      (add norm 100 (by grind only [Quaternion.star_re]))
+      (add safe 0 (by simp_all [pow_two]))
+      (add safe 0 (by simp_all [EisensteinSeries.r1]))
+      (add safe 1 (by simp_all [Quaternion.star_eq_neg]))
+      (add safe 0 (by simp_all [Int.sq_of_gcd_eq_one]))
+      (add unsafe 10% (by push_cast [two_ne_zero] at *))
+      (add unsafe 10% (by push_cast [sq_sub_sq] at *))
+      (add unsafe 10% (by push_cast [sq_pos_of_pos] at *))
+      (add unsafe 10% (by simp only [eq_or_eq_neg_of_sq_eq_sq] at *))
+      (add unsafe 10% (by positivity [gaussSum_sq]))
+      (add unsafe 90% (by unfold Real.sq_sqrt))
+      (add unsafe 90% (by unfold sq_abs))
+      (add unsafe 90% (by grind only [Real.rpow_two]))
+      (add unsafe 90% (by simp [sq_nonneg] at *))
+      (add unsafe 50% (by simp_all [Pell.Solution₁.prop]))
+      (add unsafe 90% (by unfold sq_eq_sq_iff_abs_eq_abs))
+      (add unsafe 90% (by unfold sq_lt_sq))
 
-  have h9 : x + 1 = 0 := by
-    clear * - h7
+  have h_norm_val : Complex.normSq z = 6 := by
+    clear * - h_norm_cond
     aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 128
+      enableUnfold := false
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 0 (by ring_nf))
+      (add safe 0 (by simp_all))
+      (add norm 0 (by grind only [Quaternion.sq_eq_neg_normSq]))
+      (add norm 0 (by grind only [Quaternion.normSq_div]))
+      (add norm 0 (by grind only [Quaternion.sq_eq_normSq]))
+      (add norm 0 (by grind only [div_self']))
+      (add norm 0 (by grind only [div_eq_one]))
+      (add norm 0 (by grind only [Quaternion.normSq_nonneg]))
+      (add norm 0 (by grind only [Quaternion.normSq_def]))
+      (add norm 0 (by grind only [Complex.normSq_mk]))
+      (add norm 0 (by grind only [Quaternion.normSq_le_zero]))
+      (add norm 0 (by grind only [Complex.normSq_eq_abs]))
+      (add norm 0 (by grind only [Complex.normSq_eq_norm_sq]))
+      (add norm 0 (by grind only [RCLike.normSq]))
+      (add norm 0 (by grind only [UpperHalfPlane.normSq_pos]))
+      (add norm 0 (by grind only [GaussianInt.normSq_div_sub_div_lt_one]))
+      (add norm 0 (by grind only [Complex.normSq]))
+      (add norm 0 (by grind only [Quaternion.normSq_eq_zero]))
+      (add norm 0 (by grind only [Quaternion.normSq_star]))
+      (add norm 0 (by grind only [Quaternion.normSq_def']))
+      (add norm 0 (by grind only [Complex.normSq_nonneg]))
+      (add norm 0 (by grind only [RCLike.normSq_conj]))
+      (add norm 0 (by grind only [Complex.sq_abs]))
+      (add norm 0 (by grind only [Quaternion.coe_sub]))
+      (add norm 0 (by grind only [Quaternion.normSq_neg]))
+      (add norm 0 (by grind only [Quaternion.normSq_eq_norm_mul_self]))
+      (add norm 0 (by grind only [Orientation.normSq_kahler]))
+      (add norm 0 (by grind only [Complex.normSq_pos]))
+      (add norm 0 (by grind only [Complex.normSq_neg]))
+      (add norm 0 (by grind only [Complex.normSq_conj]))
+      (add norm 0 (by grind only [sub_div]))
+      (add norm 0 (by grind only [Complex.abs_def]))
+      (add norm 0 (by grind only [RCLike.normSq_nonneg]))
+      (add unsafe 10% (by push_cast [QuaternionGroup.a_mul_xa] at *))
 
-  have h10 : x = -(1 : ℝ) := by
-    clear * - h9
+  have h_re_val : Complex.re z = -1 := by
+    clear * - h_re_cond
     aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Subspace.quotAnnihilatorEquiv_apply | rw [Subspace.quotAnnihilatorEquiv_apply] | simp only [Subspace.quotAnnihilatorEquiv_apply]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 128
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by ring_nf))
+      (add safe 0 (by simp_all))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 1 (by norm_num [Quaternion.star_add_self] at *))
+      (add norm 0 (by grind only [Quaternion.self_add_star]))
+      (add norm 1 (by norm_num [Polynomial.natTrailingDegree_mul_mirror] at *))
+      (add norm 100 (by simp only [eq_or_eq_neg_of_sq_eq_sq] at *))
+      (add norm 0 (by grind only [Polynomial.natDegree_mul_mirror]))
+      (add norm 0 (by grind only [mul_two]))
+      (add norm 0 (by grind only [Quaternion.sq_eq_neg_normSq]))
+      (add norm 0 (by grind only [Quaternion.self_add_star']))
+      (add norm 0 (by grind only [sq_add_sq_mul]))
+      (add norm 0 (by grind only [Quaternion.star_add_self']))
+      (add norm 0 (by grind only [sq_eq_sq_iff_eq_or_eq_neg]))
+      (add norm 0 (by grind only [even_two]))
+      (add norm 0 (by grind only [sq_eq_one_iff]))
+      (add norm 0 (by grind only [Int.cast_ofNat]))
+      (add norm 100 (by grind only [Quaternion.star_re]))
+      (add norm 0 (by grind only [Pell.eq_of_xn_modEq_lem2]))
+      (add norm 0 (by grind only [CoxeterSystem.simple_sq]))
+      (add safe 0 (by simp_all [pow_two]))
+      (add safe 0 (by simp_all [CharTwo.two_eq_zero]))
+      (add safe 0 (by simp_all [Nat.cast_two]))
+      (add safe 1 (by simp_all [Quaternion.star_eq_two_re_sub]))
+      (add safe 1 (by simp_all [Quaternion.star_eq_neg]))
+      (add unsafe 10% (by push_cast [two_ne_zero] at *))
+      (add unsafe 90% (by grind only [Int.cast_two]))
+      (add unsafe 90% (by grind only [Nat.factorial_two]))
+      (add unsafe 90% (by grind only [Complex.cpow_two]))
+      (add unsafe 90% (by grind only [Real.rpow_two]))
+      (add unsafe 90% (by grind only [Real.two_mul_arctan_sub_pi]))
+      (add unsafe 50% (by simp_all [gaussSum_sq]))
+      (add unsafe 90% (by grind only [CoxeterSystem.IsReflection.pow_two]))
+      (add unsafe 90% (by grind only [one_add_one_eq_two]))
 
-  have h11 : x^2 + y^2 = 6 := by
-    clear * - h8 h10
+  have h_conj_sum : z + star z = -(2 : ℂ) := by
+    clear * - h_re_val
+    simp [Complex.ext_iff, h_re_val] <;> ring
+
+  have h_z_nonzero : z ≠ 0 := by
+    clear * - h_norm_val
     aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Matroid.Indep.ssubset_ground | rw [Matroid.Indep.ssubset_ground] | simp only [Matroid.Indep.ssubset_ground]))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      enableUnfold := false
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by simp))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by norm_cast))
+      (add safe 1 (by ring_nf))
+      (add safe 0 (by field_simp [*] at *))
+      (add norm 1 (by simp_all [Quaternion.normSq_ne_zero]))
+      (add norm 0 (by grind only [Quaternion.normSq_eq_zero]))
+      (add norm 0 (by simp [div_ne_zero] at *))
+      (add norm 0 (by grind only [Real.pi_ne_zero]))
+      (add norm 0 (by grind only [Quaternion.sq_eq_neg_normSq]))
+      (add norm 0 (by simp [mul_ne_zero] at *))
+      (add norm 0 (by grind only [Quaternion.sq_eq_normSq]))
+      (add norm 0 (by simp [Complex.ofReal_ne_zero] at *))
+      (add norm 0 (by grind only [Quaternion.normSq_le_zero]))
+      (add norm 0 (by grind only [Quaternion.normSq_nonneg]))
+      (add norm 0 (by grind only [UpperHalfPlane.normSq_pos]))
+      (add norm 0 (by simp [ne_zero_of_mem_circle] at *))
+      (add norm 0 (by grind only [Quaternion.normSq_def]))
+      (add norm 0 (by grind only [Complex.normSq_eq_abs]))
+      (add norm 0 (by grind only [div_ne_one]))
+      (add norm 0 (by grind only [div_ne_one_of_ne]))
+      (add norm 0 (by simp [map_ne_zero] at *))
+      (add norm 0 (by grind only [Complex.ofReal_eq_zero]))
+      (add norm 0 (by grind only [Quaternion.star_mul_self]))
+      (add norm 0 (by grind only [Complex.normSq_mk]))
+      (add norm 1 (by simp_all [inv_ne_zero]))
+      (add norm 0 (by grind only [Quaternion.normSq_star]))
+      (add norm 0 (by grind only [GaussianInt.toComplex_eq_zero]))
+      (add norm 0 (by grind only [Complex.normSq_nonneg]))
+      (add norm 0 (by grind only [Complex.normSq]))
+      (add safe 1 (by rw [UpperHalfPlane.normSq_ne_zero]))
+      (add safe 1 (by simp_all [Complex.ofReal_inj]))
+      (add safe 1 (by rw [UpperHalfPlane.normSq_denom_ne_zero]))
+      (add unsafe 90% (by grind only [Complex.normSq_pos]))
+      (add unsafe 90% (by grind only [EisensteinSeries.div_max_sq_ge_one]))
+      (add unsafe 90% (by grind only [RCLike.normSq_pos]))
+      (add unsafe 50% (by simp_all [Quaternion.normSq_coe]))
 
-  have h12 : z ≠ 0 := by
-    clear * - h11
+  have h_inv_formula : star z = (6 : ℂ) / z := by
+    clear * - h_norm_val h_z_nonzero
+    have h_conj := h_norm_val
+    field_simp [Complex.ext_iff, h_z_nonzero, h_conj]
+    aesop  (add norm simp [Complex.normSq])
+    simp_all [Complex.ext_iff, mul_comm]
+
+  have h_result : z + (6 : ℂ) / z = -(2 : ℂ) := by
+    clear * - h_conj_sum h_inv_formula
     aesop (config := {
-    maxNormIterations       := 120
-  })
-    (add safe 4 (by field_simp))
-    (add safe 4 (by push_neg))
-    (add unsafe 100% (by nlinarith))
-    (add unsafe 100% (by simp_all))
-    (add unsafe 90% (by field_simp [*] at *))
-    (add unsafe 90% (by norm_num [*] at *))
-    (add unsafe 80% (by gcongr))
-    (add unsafe 80% (by linarith))
-    (add unsafe 70% (by bound))
-    (add unsafe 70% (by norm_cast at *))
-    (add unsafe 70% (by omega))
-    (add unsafe 70% (by positivity))
-    (add unsafe 70% (by ring_nf at *))
-    (add unsafe 30% (by first | apply Submodule.coe_sub | rw [Submodule.coe_sub] | simp only [Submodule.coe_sub]))
-    (add unsafe 30% (by first | apply Zspan.quotientEquiv_apply_mk | rw [Zspan.quotientEquiv_apply_mk] | simp only [Zspan.quotientEquiv_apply_mk]))
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 60
+      maxGoals := 128
+      enableSimp := false
+      })
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by ring_nf))
+      (add safe 0 (by simp_all))
+      (add safe 0 (by field_simp [*] at *))
+      (add norm 0 (by grind only [two_ne_zero']))
+      (add norm 0 (by grind only [mul_div_assoc]))
+      (add norm 0 (by grind only [mul_div]))
+      (add norm 0 (by grind only [div_div]))
+      (add norm 100 (by apply div_self))
+      (add norm 0 (by grind only [half_add_self]))
+      (add norm 0 (by grind only [div_mul]))
+      (add norm 0 (by grind only [eq_div_iff]))
+      (add norm 0 (by grind only [mul_div_cancel_left₀]))
+      (add norm 0 (by grind only [div_eq_iff]))
+      (add norm 0 (by grind only [mul_div_cancel_right₀]))
+      (add norm 0 (by grind only [add_self_div_two]))
+      (add norm 0 (by grind only [mul_div_cancel_left]))
+      (add norm 0 (by grind only [goldenConj]))
+      (add norm 0 (by simp only [sub_div] at *))
+      (add norm 0 (by grind only [mul_div_cancel_right]))
+      (add norm 0 (by grind only [Quaternion.star_add_self]))
+      (add norm 0 (by grind only [mul_div_mul_left]))
+      (add norm 100 (by grind only [div_mul_cancel₀]))
+      (add norm 0 (by grind only [Quaternion.self_add_star]))
+      (add norm 0 (by grind only [QuaternionAlgebra.self_add_star]))
+      (add norm 0 (by grind only [div_eq_one_iff_eq]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [QuaternionAlgebra.star_add_self]))
+      (add norm 0 (by grind only [QuaternionAlgebra.self_add_star']))
+      (add norm 0 (by grind only [div_add_div_same]))
+      (add norm 0 (by grind only [add_halves]))
+      (add norm 0 (by grind only [Quaternion.star_add_self']))
+      (add safe 0 (by simp_all [two_ne_zero]))
+      (add unsafe 50% (by simp_all [add_div]))
+      (add unsafe 50% (by simp_all [mul_div_cancel₀]))
+      (add unsafe 50% (by simp_all [Complex.arctan]))
 
-  have h13 : Complex.re (z ^ 2 + 2 * z + 6) = 0 := by
-    clear * - h10 h11
-    simp_all only [even_two, Even.neg_pow, one_pow, Complex.add_re, Complex.mul_re, Complex.re_ofNat, mul_neg, mul_one,
-      Complex.im_ofNat, zero_mul, sub_zero, x, y]
-    simp [sq, h10, h11]
-    nlinarith [h11]
-
-  have h14 : Complex.im (z ^ 2 + 2 * z + 6) = 0 := by
-    clear * - h10 h11
-    simp_all only [even_two, Even.neg_pow, one_pow, Complex.add_im, Complex.mul_im, Complex.re_ofNat, Complex.im_ofNat,
-      mul_neg, mul_one, neg_zero, add_zero, x, y]
-    simp [sq, h10, h11]
-    nlinarith [sq_nonneg (z.im - 1)]
-
-  have h15 : z ^ 2 + 2 * z + 6 = 0 := by
-    clear * - h13 h14
-    simp_all only [Complex.add_re, Complex.mul_re, Complex.re_ofNat, Complex.im_ofNat, zero_mul, sub_zero, Complex.add_im,
-      Complex.mul_im, add_zero]
-    revert h13 h14 z
-    aesop (add simp [Complex.ext_iff])
-
-  have h16 : z + (6 : ℂ) / z = -(2 : ℂ) := by
-    clear * - h12 h15
-    simp_all only [ne_eq]
-    field_simp [sq, h12, h15]
-    linear_combination h15
-
-  exact h16
+  exact h_result

@@ -1,7 +1,13 @@
 import Mathlib
 open BigOperators Real Nat Topology Rat
+
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
 /-- What is the remainder when $2000+2001+2002+2003+2004+2005+2006$ is divided by $7$? Show that it is 0.-/
 
 theorem mathd_numbertheory_345 : (2000 + 2001 + 2002 + 2003 + 2004 + 2005 + 2006) % 7 = 0 := by
 
-    simp_all only [reduceAdd, reduceMod]
+  simp_all only [reduceAdd, reduceMod]

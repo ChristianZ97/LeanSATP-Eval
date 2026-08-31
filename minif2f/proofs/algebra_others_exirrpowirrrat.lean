@@ -3,85 +3,751 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem algebra_others_exirrpowirrrat : ∃ a b, Irrational a ∧ Irrational b ∧ ¬Irrational (a ^ b) := by
   let a : ℝ := Real.sqrt 2
   have h_a_irr : Irrational a := by
     clear * -
-    simp_all only [a]
-    apply irrational_sqrt_two
+    aesop (config := {
+      maxRuleApplications := 2400
+      maxRuleApplicationDepth := 120
+      maxNormIterations := 60
+      maxGoals := 32
+      enableUnfold := false
+      useDefaultSimpSet := false
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 1 (by bound))
+      (add norm 100 (by ring_nf))
+      (add norm 0 (by ext))
+      (add norm 0 (by simp_all))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by push_cast))
+      (add safe 1 (by abel))
+      (add safe 1 (by zify))
+      (add safe 0 (by split))
+      (add safe 1 (by exfalso))
+      (add safe 1 (by norm_cast at *))
+      (add unsafe 90% (by ring))
+      (add unsafe 90% (by omega))
+      (add unsafe 90% (by ring_nf at *))
+      (add unsafe 10% (by rfl))
+      (add norm 1 (by simp_all [zero_lt_two]))
+      (add norm 0 (by apply Real.sqrt_pos))
+      (add norm 0 (by solve_by_elim [sq_pos_of_pos]))
+      (add norm 0 (by apply Real.sqrt))
+      (add norm 0 (by grind only [integral_gaussian]))
+      (add norm 0 (by grind only [Real.mul_self_sqrt]))
+      (add norm 0 (by grind only [irrational_sqrt_two]))
+      (add norm 0 (by grind only [Real.sqrt_mul]))
+      (add norm 100 (by rw [← pow_pos]))
+      (add norm 0 (by simp only [ArithmeticFunction.moebius_sq] at *))
+      (add norm 0 (by grind only [Real.sqrt_mul']))
+      (add norm 0 (by grind only [Real.sqrt_mul_self]))
+      (add safe 0 (by push_cast [Real.sq_sqrt] at *))
+      (add safe 1 (by rw [Real.sqrt_eq_rpow]))
+      (add safe 0 (by simp_all [two_ne_zero]))
+      (add safe 0 (by nlinarith [Real.rpow_natCast]))
+      (add safe 100 (by simp_rw [Real.sqrt_sq_eq_abs]))
+      (add safe 1 (by rw [Real.sqrt_nonneg]))
+      (add safe 100 (by simp_rw [Real.sqrt_eq_iff_sq_eq]))
+      (add safe 100 (by simp_rw [Irrational]))
+      (add safe 1 (by rw [Real.sqrt_inv]))
+      (add safe 0 (by simp_all [pow_two]))
+      (add safe 0 (by simp_all [Real.rpow_two]))
+      (add safe 0 (by field_simp [GaussianInt.sq_add_sq_of_nat_prime_of_not_irreducible] at *))
+      (add safe 1 (by push_cast [sq_nonneg] at *))
+      (add unsafe 90% (by unfold Real.sqrt_sq))
+      (add unsafe 90% (by solve_by_elim [Real.log_pow]))
+      (add unsafe 90% (by unfold sq_abs))
+      (add unsafe 10% (by apply Behrend.nValue))
+      (add unsafe 90% (by norm_num [Behrend.nValue_pos] at *))
+      (add unsafe 50% (by rw [irrational_nrt_of_notint_nrt] at *))
+      (add unsafe 50% (by rw [Nat.cast_pos] at *))
 
   have h_a_pos : (0 : ℝ) < a := by
     clear * -
-    simp only [Real.sqrt_pos, ofNat_pos, a] at *
+    aesop (config := {
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      maxGoals := 32
+      useSimpAll := false
+      enableUnfold := false
+      useDefaultSimpSet := false
+      }) (rule_sets := [-builtin])
+      (add norm 0 (by ring))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 1 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by abel))
+      (add norm 0 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 0 (by interval_cases))
+      (add norm 100 (by ring_nf))
+      (add norm 0 (by ext))
+      (add norm 0 (by simp))
+      (add norm 0 (by ring_nf at *))
+      (add norm 0 (by decide))
+      (add safe 0 (by norm_num))
+      (add safe 0 (by norm_cast))
+      (add safe 0 (by zify))
+      (add safe 1 (by split))
+      (add safe 0 (by exfalso))
+      (add safe 1 (by simp_all))
+      (add safe 0 (by norm_cast at *))
+      (add safe 1 (by rfl))
+      (add safe 0 (by push_cast))
+      (add safe 1 (by assumption_mod_cast))
+      (add unsafe 50% (by field_simp [*] at *))
+      (add norm 1 (by simp_all [zero_lt_two]))
+      (add norm 0 (by grind only [Real.mul_self_sqrt]))
+      (add norm 0 (by grind only [integral_gaussian]))
+      (add norm 1 (by rw [← Real.sin_lt]))
+      (add safe 0 (by solve_by_elim [Real.sqrt_pos]))
+      (add safe 0 (by push_cast [sq_pos_of_pos] at *))
+      (add safe 1 (by rw [← EisensteinSeries.r] at *))
+      (add safe 0 (by push_cast [Real.sqrt_sq] at *))
+      (add safe 0 (by push_cast [Real.sq_sqrt] at *))
+      (add safe 100 (by simp_all [one_lt_div']))
+      (add safe 0 (by simp_all [EisensteinSeries.r1]))
+      (add safe 0 (by simp_all [pow_lt_one]))
+      (add unsafe 90% (by grind only [Real.mul_pos]))
+      (add unsafe 90% (by solve_by_elim [inv_pos]))
+      (add unsafe 90% (by solve_by_elim [Real.arcsin_pos]))
+      (add unsafe 90% (by grind only [mul_pos_iff_of_pos_left]))
+      (add unsafe 90% (by grind only [EisensteinSeries.r1_pos]))
+      (add unsafe 90% (by grind only [Real.b_pos]))
+      (add unsafe 90% (by solve_by_elim [Real.sq_lt]))
+      (add unsafe 90% (by solve_by_elim [one_half_pos]))
+      (add unsafe 10% (by positivity [bernsteinApproximation.δ_pos]))
+      (add unsafe 90% (by grind only [Hyperreal.coe_pos]))
+      (add unsafe 90% (by grind only [mul_pos_iff_of_pos_right]))
+      (add unsafe 90% (by unfold Real.sqrt_lt))
+      (add unsafe 90% (by grind only [mul_self_pos]))
+      (add unsafe 90% (by unfold Real.lt_sqrt))
+      (add unsafe 90% (by grind only [zero_lt_one]))
+      (add unsafe 90% (by grind only [Real.sin_pos_of_pos_of_lt_pi]))
+      (add unsafe 90% (by solve_by_elim [div_pos]))
+      (add unsafe 90% (by grind only [Real.rpow_pos_of_pos]))
+      (add unsafe 90% (by solve_by_elim [zero_lt_three]))
+      (add unsafe 90% (by grind only [Real.sinh_pos_iff]))
 
   let x : ℝ := a ^ a
   let y : ℝ := x ^ a
   have h_step5 : y = (a ^ a) ^ a := by
     clear * -
-    simp_all only [y, x, a]
+    aesop (config := {
+      maxRuleApplicationDepth := 220
+      maxNormIterations := 30
+      maxGoals := 256
+      enableUnfold := false
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 0 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 0 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp))
+      (add norm 0 (by simp_all))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by zify))
+      (add safe 1 (by ring_nf))
+      (add safe 0 (by split))
+      (add unsafe 90% (by ring_nf at *))
+      (add norm 0 (by grind only [Real.sqrt_mul]))
+      (add norm 0 (by grind only [Real.sqrt_mul']))
+      (add norm 0 (by grind only [Real.mul_self_sqrt]))
+      (add norm 0 (by grind only [Quaternion.inner_self]))
+      (add norm 0 (by grind only [Real.sqrt_mul_self]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 0 (by grind only [Real.sqrt_mul_self_eq_abs]))
+      (add norm 100 (by rw [← Quaternion.normSq_coe]))
+      (add norm 0 (by grind only [integral_gaussian]))
+      (add norm 0 (by grind only [RCLike.normSq_eq_def']))
+      (add norm 0 (by grind only [Quaternion.sq_eq_normSq]))
+      (add norm 0 (by grind only [WithLp.prod_norm_eq_of_L2]))
+      (add norm 0 (by grind only [Real.sqrt_nonneg]))
+      (add norm 0 (by grind only [norm_eq_sqrt_real_inner]))
+      (add norm 0 (by grind only [Real.sqrt_inv]))
+      (add norm 0 (by grind only [Complex.sq_abs]))
+      (add norm 0 (by grind only [sq_eq_sq]))
+      (add norm 0 (by grind only [EuclideanSpace.norm_eq]))
+      (add norm 0 (by grind only [EuclideanSpace.dist_eq]))
+      (add norm 0 (by grind only [Quaternion.normSq_exp]))
+      (add norm 0 (by grind only [UpperHalfPlane.dist_coe_center_sq]))
+      (add norm 0 (by grind only [Quaternion.star_mul_self]))
+      (add norm 100 (by rw [← Quaternion.normSq_ratCast]))
+      (add norm 0 (by grind only [Complex.abs_def]))
+      (add norm 0 (by grind only [WithLp.prod_norm_sq_eq_of_L2]))
+      (add safe 0 (by push_cast [Real.sq_sqrt] at *))
+      (add unsafe 90% (by unfold Real.sqrt_sq))
+      (add unsafe 50% (by simp only [Real.sqrt_sq_eq_abs]))
+      (add unsafe 50% (by simp only [Real.sqrt]))
+      (add unsafe 90% (by unfold sq_abs))
+      (add unsafe 50% (by simp [Quaternion.star_coe] at *))
+      (add unsafe 90% (by unfold sq_lt_sq))
 
   have h_step6 : (a ^ a) ^ a = a ^ (a * a) := by
     clear * -
-    simp_all only [ofNat_nonneg, mul_self_sqrt, rpow_two, sq_sqrt, a]
-    simp [← Real.rpow_mul, a]
+    rw [rpow_mul]
+    positivity
 
   have h_step7 : y = a ^ (a * a) := by
     clear * - h_step5 h_step6
-    simp_all only [ofNat_nonneg, mul_self_sqrt, rpow_two, sq_sqrt, y, x, a]
+    aesop (config := {
+      maxRuleApplications := 400
+      maxRuleApplicationDepth := 220
+      maxNormIterations := 180
+      maxGoals := 512
+      enableUnfold := false
+      useDefaultSimpSet := false
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 0 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by zify))
+      (add safe 1 (by ring_nf))
+      (add safe 0 (by split))
+      (add safe 0 (by simp_all))
+      (add norm 0 (by grind only [Real.sqrt_mul]))
+      (add norm 0 (by grind only [Real.mul_self_sqrt]))
+      (add norm 0 (by grind only [Real.sqrt_mul']))
+      (add norm 100 (by rw [← Real.sqrt_eq_rpow]))
+      (add norm 0 (by grind only [Quaternion.star_mul_self]))
+      (add norm 0 (by grind only [Real.sqrt_mul_self]))
+      (add norm 100 (by rw [← Quaternion.normSq_coe]))
+      (add norm 0 (by grind only [Quaternion.self_mul_star]))
+      (add norm 0 (by grind only [integral_gaussian]))
+      (add norm 0 (by grind only [Quaternion.sq_eq_normSq]))
+      (add norm 100 (by rw [← Quaternion.normSq]))
+      (add norm 0 (by grind only [sq_eq_sq]))
+      (add norm 0 (by grind only [RCLike.normSq_eq_def']))
+      (add norm 100 (by rw [← sq_abs]))
+      (add norm 100 (by rw [← Quaternion.normSq_smul]))
+      (add norm 0 (by grind only [Real.sqrt_mul_self_eq_abs]))
+      (add norm 0 (by grind only [Quaternion.normSq_star]))
+      (add norm 0 (by grind only [Quaternion.mul_star_eq_coe]))
+      (add norm 0 (by grind only [Quaternion.norm_star]))
+      (add norm 100 (by rw [← mul_pow]))
+      (add safe 1 (by simp_all [Quaternion.inner_self]))
+      (add safe 1 (by simp_all [Quaternion.star_mul_eq_coe]))
+      (add unsafe 10% (by push_cast [Real.sq_sqrt] at *))
+      (add unsafe 10% (by push_cast [Real.sqrt_sq] at *))
+      (add unsafe 50% (by simp [Quaternion.coe_mul] at *))
+      (add unsafe 50% (by unfold Quaternion.coe_commutes))
+      (add unsafe 50% (by simp only [Real.sqrt_sq_eq_abs]))
+      (add unsafe 50% (by simp [Quaternion.star_coe] at *))
+      (add unsafe 50% (by simp [Quaternion.coe_mul_eq_smul] at *))
+      (add unsafe 90% (by simp [Real.sqrt_nonneg] at *))
+      (add unsafe 50% (by simp only [Real.sqrt]))
+      (add unsafe 10% (by push_cast [sq_sub_sq] at *))
 
   have h_step8 : a * a = (2 : ℝ) := by
     clear * -
-    simp_all only [ofNat_nonneg, mul_self_sqrt, a]
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 120
+      maxNormIterations := 60
+      maxGoals := 16
+      enableUnfold := false
+      useDefaultSimpSet := false
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 0 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp_all))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by zify))
+      (add safe 1 (by ring_nf))
+      (add norm 0 (by grind only [Real.mul_self_sqrt]))
+      (add norm 0 (by grind only [Real.sqrt_mul]))
+      (add norm 1 (by norm_num [pow_two] at *))
+      (add norm 0 (by grind only [Real.sqrt_mul_self]))
+      (add norm 1 (by norm_num [Quaternion.self_add_star] at *))
+      (add norm 0 (by grind only [Real.sqrt_mul']))
+      (add norm 1 (by norm_num [Real.rpow_two] at *))
+      (add norm 1 (by norm_num [Quaternion.star_add_self] at *))
+      (add norm 0 (by grind only [Quaternion.sq_eq_normSq]))
+      (add norm 0 (by grind only [Real.sqrt_sq_eq_abs]))
+      (add norm 0 (by grind only [sq_add_sq_mul]))
+      (add norm 0 (by grind only [integral_gaussian]))
+      (add norm 0 (by grind only [WithLp.prod_norm_eq_of_L2]))
+      (add norm 0 (by grind only [Real.sqrt_eq_iff_sq_eq]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [sq_eq_sq]))
+      (add norm 0 (by grind only [Real.sqrt]))
+      (add norm 1 (by norm_num [QuaternionAlgebra.self_add_star] at *))
+      (add norm 0 (by grind only [Real.arccos_eq_arcsin]))
+      (add norm 0 (by grind only [PiLp.norm_eq_of_L2]))
+      (add norm 0 (by grind only [Quaternion.sq_eq_neg_normSq]))
+      (add norm 0 (by grind only [mul_two]))
+      (add norm 0 (by grind only [EuclideanSpace.dist_eq]))
+      (add safe 0 (by push_cast [Real.sq_sqrt] at *))
+      (add safe 0 (by push_cast [Real.sqrt_sq] at *))
+      (add safe 1 (by rw [Real.sqrt_eq_rpow]))
+      (add safe 1 (by simp_all [Quaternion.star_eq_two_re_sub]))
+      (add safe 1 (by simp_all [Quaternion.self_add_star']))
+      (add safe 1 (by simp_all [Quaternion.star_add_self']))
+      (add safe 0 (by simp_all [two_ne_zero]))
+      (add unsafe 90% (by grind only [InnerProductSpaceable]))
+      (add unsafe 50% (by simp_all [sq_sub_sq]))
 
   have h_step9 : y = (2 : ℝ) := by
     clear * - h_step7 h_step8
-    simp_all only [ofNat_nonneg, mul_self_sqrt, rpow_two, sq_sqrt, y, x, a]
+    aesop (config := {
+      maxRuleApplications := 400
+      maxRuleApplicationDepth := 220
+      maxNormIterations := 60
+      maxGoals := 128
+      enableUnfold := false
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 100 (by zify))
+      (add norm 100 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by decide))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by ring_nf))
+      (add safe 0 (by simp_all))
+      (add norm 0 (by grind only [sq_add_sq_mul]))
+      (add norm 100 (by rw [← mul_pow]))
+      (add norm 1 (by norm_num [Real.rpow_two] at *))
+      (add norm 0 (by grind only [Quaternion.self_add_star]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [Real.sqrt_sq]))
+      (add norm 1 (by norm_num [Quaternion.star_add_self] at *))
+      (add norm 0 (by grind only [Real.sqrt_mul]))
+      (add norm 0 (by grind only [Quaternion.star_mul_self]))
+      (add norm 0 (by grind only [Real.mul_self_sqrt]))
+      (add norm 0 (by grind only [Quaternion.sq_eq_normSq]))
+      (add norm 100 (by simp only [mul_assoc] at *))
+      (add norm 0 (by grind only [Quaternion.self_mul_star]))
+      (add norm 0 (by grind only [Surreal.double_powHalf_succ_eq_powHalf]))
+      (add norm 0 (by grind only [sq_eq_sq]))
+      (add norm 0 (by grind only [CoxeterSystem.simple_sq]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 100 (by rw [← ArithmeticFunction.moebius_sq]))
+      (add norm 0 (by grind only [Quaternion.star_mul_eq_coe]))
+      (add norm 0 (by grind only [Quaternion.self_add_star']))
+      (add norm 0 (by grind only [QuaternionGroup.xa_sq]))
+      (add norm 0 (by grind only [Pell.Solution₁.prop_x]))
+      (add safe 0 (by simp_all [pow_two]))
+      (add safe 0 (by simp_all [two_ne_zero]))
+      (add safe 1 (by simp_all [Quaternion.star_eq_two_re_sub]))
+      (add unsafe 10% (by push_cast [Real.sq_sqrt] at *))
+      (add unsafe 50% (by rw [← Quaternion.coe_commutes] at *))
+      (add unsafe 50% (by simp_all [sq_sub_sq]))
+      (add unsafe 50% (by simp_all [Quaternion.coe_mul_eq_smul]))
+      (add unsafe 50% (by simp [Quaternion.coe_mul] at *))
+      (add unsafe 50% (by simp_all [Quaternion.normSq_coe]))
+      (add unsafe 50% (by simp_all [sq_abs]))
 
   have h_step10 : ¬Irrational ((2 : ℝ)) := by
     clear * -
-    simp_all only [not_irrational_ofNat, not_false_eq_true]
+    aesop (config := {
+      maxRuleApplications := 400
+      maxRuleApplicationDepth := 120
+      maxNormIterations := 60
+      maxGoals := 512
+      useSimpAll := false
+      enableUnfold := false
+      useDefaultSimpSet := false
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by abel))
+      (add norm 100 (by push_neg))
+      (add norm 100 (by interval_cases))
+      (add norm 0 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp_all))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add safe 1 (by zify))
+      (add safe 0 (by ring_nf))
+      (add unsafe 90% (by nlinarith))
+      (add unsafe 90% (by omega))
+      (add unsafe 10% (by bound))
+      (add unsafe 90% (by ring_nf at *))
+      (add norm 1 (by field_simp [Nat.Prime.irrational_sqrt] at *))
+      (add norm 1 (by field_simp [Fact] at *))
+      (add norm 0 (by grind only [Nat.not_irrational]))
+      (add norm 1 (by field_simp [legendreSym.quadratic_reciprocity'] at *))
+      (add norm 1 (by field_simp [ZMod.prime_ne_zero] at *))
+      (add norm 1 (by field_simp [Nat.eq_sq_add_sq_of_isSquare_mod_neg_one] at *))
+      (add norm 1 (by field_simp [FiniteField.card] at *))
+      (add norm 1 (by field_simp [CharP.char_ne_one] at *))
+      (add norm 1 (by field_simp [Nat.Prime.sq_add_sq] at *))
+      (add norm 1 (by field_simp [jacobiSym.legendreSym.to_jacobiSym] at *))
+      (add norm 0 (by grind only [gold_irrational]))
+      (add norm 1 (by field_simp [ringChar] at *))
+      (add norm 1 (by field_simp [ZMod.ringChar_zmod_n] at *))
+      (add norm 1 (by field_simp [quadraticChar_eq_pow_of_char_ne_two'] at *))
+      (add norm 0 (by norm_num [ZMod.neg_one_ne_one] at *))
+      (add norm 100 (by positivity [ZMod.sq_add_sq]))
+      (add norm 1 (by field_simp [quadraticChar_isQuadratic] at *))
+      (add norm 0 (by grind only [ZMod.eq_zero_iff_even]))
+      (add norm 100 (by linarith [QuaternionGroup]))
+      (add norm 1 (by field_simp [CharP.cast_eq_zero] at *))
+      (add safe 0 (by field_simp [Nat.prime_two] at *))
+      (add safe 0 (by field_simp [GaussianInt.sq_add_sq_of_nat_prime_of_not_irreducible] at *))
+      (add safe 0 (by field_simp [Char.card_pow_char_pow] at *))
+      (add safe 0 (by field_simp [ZMod.gauss_lemma] at *))
+      (add safe 0 (by field_simp [FiniteField.two_pow_card] at *))
+      (add safe 0 (by simp_rw [LucasLehmer.two_lt_q]))
+      (add unsafe 10% (by simp_all only [Nat.Prime]))
+      (add unsafe 10% (by simp_all only [induction_on_primes]))
+      (add unsafe 90% (by simp only [Nat.Prime.ne_one] at *))
+      (add unsafe 90% (by rw [PNat.prime_two]))
+      (add unsafe 10% (by field_simp [CharP.cast_eq_zero_iff] at *))
+      (add unsafe 10% (by simp_all only [legendreSym]))
 
   have h_y_rat : ¬Irrational y := by
     clear * - h_step9 h_step10
-    simp_all only [not_irrational_ofNat, not_false_eq_true, y, x, a]
+    aesop (config := {
+      maxRuleApplications := 700
+      maxRuleApplicationDepth := 120
+      maxNormIterations := 60
+      maxGoals := 16
+      useDefaultSimpSet := false
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 100 (by abel))
+      (add norm 1 (by bound))
+      (add norm 100 (by interval_cases))
+      (add norm 100 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp_all))
+      (add norm 100 (by ring_nf at *))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_num [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by zify))
+      (add safe 1 (by ring_nf))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 1 (by simp_all only [ArithmeticFunction.moebius_sq]))
+      (add norm 0 (by grind only [even_two]))
+      (add norm 0 (by grind only [sq_eq_one_iff]))
+      (add norm 0 (by grind only [CoxeterSystem.simple_sq]))
+      (add norm 0 (by grind only [sq_add_sq_mul]))
+      (add norm 0 (by simp only [ArithmeticFunction.moebius_sq_eq_one_of_squarefree] at *))
+      (add norm 0 (by simp only [quadraticChar_sq_one'] at *))
+      (add norm 100 (by simp_all [sq_pos_of_pos]))
+      (add norm 0 (by simp only [quadraticChar_sq_one] at *))
+      (add norm 1 (by norm_num [Polynomial.natTrailingDegree_mul_mirror] at *))
+      (add norm 0 (by grind only [sq_eq_zero_iff]))
+      (add norm 1 (by solve_by_elim [Nat.sum_four_squares_of_two_mul_sum_four_squares]))
+      (add norm 0 (by grind only [sq_eq_sq_iff_eq_or_eq_neg]))
+      (add safe 0 (by simp_all [two_ne_zero]))
+      (add safe 0 (by simp_all [Nat.cast_two]))
+      (add safe 0 (by simp_all [pow_two]))
+      (add safe 0 (by field_simp [gaussSum_sq] at *))
+      (add safe 0 (by simp_all [CharTwo.two_eq_zero]))
+      (add safe 0 (by simp_all [Real.rpow_two]))
+      (add safe 0 (by simp_all [Nat.factorial_two]))
+      (add safe 100 (by simp [QuaternionGroup.xa_sq] at *))
+      (add safe 0 (by grind only [Int.cast_ofNat]))
+      (add safe 0 (by field_simp [Nat.prime_two] at *))
+      (add safe 0 (by field_simp [Char.card_pow_char_pow] at *))
+      (add safe 0 (by grind only [Nat.cast_ofNat]))
+      (add safe 0 (by simp_all [ENNReal.rpow_two]))
+      (add safe 100 (by simp [sq_sub_sq] at *))
+      (add unsafe 10% (by simp only [eq_or_eq_neg_of_sq_eq_sq] at *))
+      (add unsafe 10% (by rw [IsSquare_sq] at *))
+      (add unsafe 10% (by solve_by_elim [Int.isUnit_sq]))
+      (add unsafe 90% (by grind only [Complex.cpow_two]))
 
   have h_step11 : Irrational x ∨ ¬Irrational x := by
     clear * -
-    simp_all only [x, a]
-    apply em
+    aesop (config := {
+      maxRuleApplications := 2400
+      maxRuleApplicationDepth := 120
+      maxNormIterations := 30
+      maxGoals := 32
+      enableUnfold := false
+      useDefaultSimpSet := false
+      }) (rule_sets := [-builtin])
+      (add norm 100 (by ring))
+      (add norm 100 (by field_simp))
+      (add norm 100 (by norm_num))
+      (add norm 100 (by norm_cast))
+      (add norm 100 (by abel))
+      (add norm 100 (by push_neg))
+      (add norm 0 (by gcongr))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by split))
+      (add norm 100 (by exfalso))
+      (add norm 0 (by simp_all))
+      (add norm 100 (by field_simp [*] at *))
+      (add norm 100 (by norm_cast at *))
+      (add norm 100 (by rfl))
+      (add norm 100 (by push_cast))
+      (add norm 100 (by assumption_mod_cast))
+      (add safe 1 (by zify))
+      (add unsafe 90% (by nlinarith))
+      (add unsafe 90% (by omega))
+      (add unsafe 10% (by bound))
+      (add unsafe 90% (by interval_cases))
+      (add unsafe 90% (by ring_nf at *))
+      (add norm 0 (by solve_by_elim [Real.sq_sqrt]))
+      (add norm 1 (by simp_all only [ArithmeticFunction.moebius_sq]))
+      (add norm 0 (by solve_by_elim [Real.sqrt_sq]))
+      (add norm 0 (by grind only [Real.sqrt_sq_eq_abs]))
+      (add norm 0 (by grind only [Real.sqrt]))
+      (add norm 0 (by field_simp [sq_abs] at *))
+      (add norm 100 (by simp_all [sq_pos_of_pos]))
+      (add norm 0 (by grind only [Real.sqrt_mul]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 100 (by simp_all [Real.rpow_two]))
+      (add norm 0 (by grind only [sq_eq_sq]))
+      (add norm 0 (by grind only [EuclideanSpace.norm_eq]))
+      (add norm 0 (by grind only [Real.sqrt_mul']))
+      (add norm 100 (by rw [← pow_pos]))
+      (add norm 0 (by grind only [sq_add_sq_mul]))
+      (add norm 0 (by grind only [integral_gaussian]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [Real.mul_self_sqrt]))
+      (add norm 0 (by grind only [PiLp.norm_eq_of_L2]))
+      (add norm 100 (by rw [← mul_pow]))
+      (add norm 0 (by grind only [WithLp.prod_norm_eq_of_L2]))
+      (add safe 0 (by grind only [Quaternion.coe_pow]))
+      (add safe 0 (by grind only [Quaternion.normSq_coe]))
+      (add safe 0 (by simp_all [two_ne_zero]))
+      (add safe 0 (by simp_all [pow_two]))
+      (add safe 100 (by simp [sq_sub_sq] at *))
+      (add safe 0 (by grind only [Quaternion.normSq_ratCast]))
+      (add safe 0 (by grind only [inv_pow]))
+      (add unsafe 10% (by rw [div_pow] at *))
+      (add unsafe 90% (by unfold sq_lt_sq))
+      (add unsafe 90% (by simp [sq_nonneg] at *))
+      (add unsafe 50% (by simp only [abs_sq]))
 
   have h_case1 : ¬Irrational x → (∃ a' b', Irrational a' ∧ Irrational b' ∧ ¬Irrational (a' ^ b')) := by
     intro hx_not_irr
     have h_witness1 : Irrational a ∧ Irrational a ∧ ¬Irrational (a ^ a) := by
       clear * - h_a_irr hx_not_irr
-      simp_all only [not_false_eq_true, and_self, a, x]
+      aesop (config := {
+        maxRuleApplications := 700
+        maxRuleApplicationDepth := 120
+        maxNormIterations := 30
+        maxGoals := 32
+        enableUnfold := false
+        useDefaultSimpSet := false
+        }) (rule_sets := [-builtin])
+        (add norm 100 (by norm_num))
+        (add norm 100 (by norm_cast))
+        (add norm 0 (by gcongr))
+        (add norm 0 (by ring_nf))
+        (add norm 0 (by ext))
+        (add norm 0 (by simp))
+        (add norm 0 (by simp_all))
+        (add norm 100 (by field_simp [*] at *))
+        (add norm 100 (by rfl))
+        (add norm 100 (by push_cast))
+        (add safe 0 (by abel))
+        (add safe 1 (by zify))
+        (add safe 0 (by exfalso))
+        (add unsafe 90% (by ring))
+        (add unsafe 90% (by linarith))
+        (add unsafe 90% (by nlinarith))
+        (add unsafe 90% (by omega))
+        (add unsafe 10% (by bound))
+        (add unsafe 10% (by split))
+        (add unsafe 90% (by ring_nf at *))
+        (add unsafe 50% (by norm_cast at *))
+        (add norm 0 (by solve_by_elim [Real.sq_sqrt]))
+        (add norm 0 (by solve_by_elim [Real.sqrt_sq]))
+        (add norm 1 (by simp_all only [ArithmeticFunction.moebius_sq]))
+        (add norm 100 (by rw [← pow_pos]))
+        (add norm 0 (by solve_by_elim [sq_pos_of_pos]))
+        (add norm 100 (by rw [← mul_pow]))
+        (add norm 0 (by grind only [sq_eq_sq]))
+        (add norm 0 (by grind only [Real.sqrt_mul]))
+        (add norm 0 (by grind only [sq_add_sq_mul]))
+        (add norm 0 (by grind only [CoxeterSystem.simple_sq]))
+        (add norm 0 (by grind only [Real.mul_self_sqrt]))
+        (add norm 0 (by grind only [Real.sqrt_mul']))
+        (add norm 0 (by grind only [zero_lt_two]))
+        (add safe 100 (by simp_rw [Irrational]))
+        (add safe 100 (by simp_rw [Real.sqrt_sq_eq_abs]))
+        (add safe 1 (by push_cast [sq_nonneg] at *))
+        (add safe 0 (by grind only [Quaternion.coe_pow]))
+        (add safe 0 (by grind only [Quaternion.normSq_coe]))
+        (add safe 0 (by grind only [inv_pow]))
+        (add safe 100 (by simp [sq_sub_sq] at *))
+        (add safe 100 (by simp [Pell.Solution₁.mk] at *))
+        (add safe 1 (by rw [Real.sqrt]))
+        (add safe 1 (by rw [Real.sqrt_nonneg]))
+        (add safe 0 (by simp_rw [EisensteinSeries.div_max_sq_ge_one]))
+        (add safe 0 (by grind only [Quaternion.normSq_ratCast]))
+        (add safe 0 (by grind only [Rat.cast_pow]))
+        (add safe 0 (by grind only [Real.rpow_natCast]))
+        (add unsafe 90% (by unfold sq_abs))
+        (add unsafe 10% (by simp_all only [irrational_nrt_of_notint_nrt]))
+        (add unsafe 90% (by unfold sq_lt_sq))
+        (add unsafe 10% (by rw [div_pow] at *))
+        (add unsafe 90% (by unfold sq_le_sq))
 
     clear * - h_witness1
-    simp_all only [and_self_left, exists_and_left, a]
-    obtain ⟨left, right⟩ := h_witness1
-    (bound )
+    exact ⟨a, a, h_witness1.1, h_witness1.1, h_witness1.2.2⟩
 
   have h_case2 : Irrational x → (∃ a' b', Irrational a' ∧ Irrational b' ∧ ¬Irrational (a' ^ b')) := by
     intro hx_irr
     have h_witness2 : Irrational x ∧ Irrational a ∧ ¬Irrational (x ^ a) := by
       clear * - hx_irr h_a_irr h_y_rat
-      simp_all only [not_false_eq_true, and_self, a, x, y]
+      aesop (config := {
+        maxRuleApplications := 2400
+        maxRuleApplicationDepth := 120
+        maxNormIterations := 30
+        maxGoals := 32
+        enableUnfold := false
+        useDefaultSimpSet := false
+        }) (rule_sets := [-builtin])
+        (add norm 100 (by ring))
+        (add norm 100 (by norm_num))
+        (add norm 100 (by norm_cast))
+        (add norm 100 (by linarith))
+        (add norm 0 (by nlinarith))
+        (add norm 0 (by omega))
+        (add norm 100 (by abel))
+        (add norm 0 (by gcongr))
+        (add norm 0 (by bound))
+        (add norm 0 (by ring_nf))
+        (add norm 0 (by ext))
+        (add norm 0 (by simp))
+        (add norm 0 (by simp_all))
+        (add norm 100 (by field_simp [*] at *))
+        (add norm 100 (by rfl))
+        (add norm 100 (by push_cast))
+        (add safe 1 (by zify))
+        (add safe 0 (by split))
+        (add safe 0 (by exfalso))
+        (add unsafe 90% (by ring_nf at *))
+        (add unsafe 50% (by norm_cast at *))
+        (add norm 1 (by simp_all only [ArithmeticFunction.moebius_sq]))
+        (add norm 0 (by grind only [Real.sqrt_mul]))
+        (add norm 100 (by rw [← mul_pow]))
+        (add norm 100 (by rw [← pow_pos]))
+        (add norm 0 (by grind only [Real.sqrt_nonneg]))
+        (add norm 0 (by grind only [Real.sqrt_mul']))
+        (add norm 0 (by grind only [Real.mul_self_sqrt]))
+        (add norm 0 (by grind only [sq_add_sq_mul]))
+        (add norm 0 (by grind only [Real.sqrt_le_sqrt]))
+        (add safe 100 (by simp_rw [Irrational]))
+        (add safe 100 (by simp_rw [Real.sqrt_sq_eq_abs]))
+        (add safe 0 (by push_cast [Real.sq_sqrt] at *))
+        (add safe 0 (by grind only [Quaternion.coe_pow]))
+        (add safe 100 (by simp_rw [le_total]))
+        (add safe 1 (by rw [Real.sqrt]))
+        (add safe 0 (by grind only [Quaternion.normSq_coe]))
+        (add safe 0 (by grind only [Quaternion.normSq_ratCast]))
+        (add safe 0 (by grind only [Rat.cast_pow]))
+        (add safe 0 (by simp_rw [Or.imp]))
+        (add safe 0 (by nlinarith [Real.rpow_natCast]))
+        (add safe 0 (by simp_rw [EisensteinSeries.div_max_sq_ge_one]))
+        (add safe 0 (by simp_rw [abs_pow]))
+        (add safe 0 (by norm_num [Or.elim] at *))
+        (add unsafe 90% (by unfold sq_abs))
+        (add unsafe 90% (by unfold Real.sqrt_sq))
+        (add unsafe 10% (by nlinarith [inv_pow]))
+        (add unsafe 90% (by simp [sq_nonneg] at *))
+        (add unsafe 10% (by simp_all only [irrational_nrt_of_notint_nrt]))
+        (add unsafe 90% (by unfold sq_le_sq))
+        (add unsafe 90% (by solve_by_elim [le_or_lt]))
+        (add unsafe 90% (by unfold sq_lt_sq))
+        (add unsafe 10% (by rw [div_pow] at *))
 
     clear * - h_witness2
-    simp_all only [exists_and_left, x, a]
-    obtain ⟨left, right⟩ := h_witness2
-    obtain ⟨left_1, right⟩ := right
-    (bound )
+    classical aesop
 
   have h_main : ∃ a b, Irrational a ∧ Irrational b ∧ ¬Irrational (a ^ b) := by
     clear * - h_step11 h_case1 h_case2
-    simp_all only [exists_and_left, x, a]
-    cases h_step11 with
-    | inl h =>
-    simp_all only [not_true_eq_false, not_isEmpty_of_nonempty, IsEmpty.exists_iff, and_true, implies_true, forall_const,
-    x, a]
-    | inr h_1 =>
-    simp_all only [not_false_eq_true, forall_const, not_isEmpty_of_nonempty, IsEmpty.exists_iff, and_true, implies_true,
-    x, a]
+    cases h_step11 <;> simp_all
 
   exact h_main

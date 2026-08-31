@@ -3,11 +3,17 @@ import Mathlib
 open BigOperators Real Nat Topology Rat
 set_option maxHeartbeats 0
 
+syntax "∑ " ident " in " term ", " term:67 : term
+syntax "∏ " ident " in " term ", " term:67 : term
+macro_rules
+  | `(∑ $x:ident in $s, $f) => `(∑ $x ∈ $s, $f)
+  | `(∏ $x:ident in $s, $f) => `(∏ $x ∈ $s, $f)
+
 theorem mathd_numbertheory_100 (n : ℕ) (h₀ : 0 < n) (h₁ : Nat.gcd n 40 = 10)
     (h₂ : Nat.lcm n 40 = 280) : n = 70 := by
   have h_step_1 : n * 40 = Nat.gcd n 40 * Nat.lcm n 40 := by
     clear * -
-    simp [Nat.gcd_mul_lcm]
+    simp only [Nat.gcd_mul_lcm] at *
 
   have h_step_2 : n * 40 = 10 * 280 := by
     clear * - h₁ h₂ h_step_1
@@ -24,7 +30,7 @@ theorem mathd_numbertheory_100 (n : ℕ) (h₀ : 0 < n) (h₁ : Nat.gcd n 40 = 1
   have h_step_5 : n = (2800 : ℕ) / 40 := by
     clear * - h_step_4
     simp_all only [reduceDiv]
-    (nlinarith)
+    (linarith)
 
   have h_step_6 : (2800 : ℕ) / 40 = 70 := by
     clear * -

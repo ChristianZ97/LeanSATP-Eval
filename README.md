@@ -1,5 +1,7 @@
 # LeanSATP-Eval
 
+> This branch preserves the v1 (paper) proof exhibits. The current release lives on [`main`](https://github.com/ChristianZ97/LeanSATP-Eval).
+
 Lean 4 proofs from a DSP+ pipeline; subgoals closed by an SATP→BFS cascade.
 All proofs compile with `lake env lean` on stock Mathlib, no prover server.
 
@@ -46,7 +48,7 @@ or `[bfs]`; see `examples/README.md`.
 Built and checked in the [LeanSATP][leansatp] environment:
 
 ```bash
-git clone https://github.com/ChristianZ97/LeanSATP
+git clone --branch legacy https://github.com/ChristianZ97/LeanSATP
 lake env lean /path/to/minif2f/proofs/amc12a_2002_p6.lean
 ```
 
@@ -63,6 +65,6 @@ changes no `Mathlib/*.lean` files; the proofs use no fork-only aesop options.
   by ≥1 system on the official leaderboard.
 
 [dspplus]: https://github.com/microsoft/DSP-Plus
-[leansatp]: https://github.com/ChristianZ97/LeanSATP
+[leansatp]: https://github.com/ChristianZ97/LeanSATP/tree/legacy
 [q35]: https://huggingface.co/Qwen/Qwen3.5-27B-FP8
 [q36]: https://huggingface.co/Qwen/Qwen3.6-27B-FP8

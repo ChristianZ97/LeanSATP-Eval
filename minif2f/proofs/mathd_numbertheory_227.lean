@@ -1,103 +1,946 @@
+
 import Mathlib
 
-open BigOperators Real Nat Topology Rat
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
+
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
+
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+  | _ => Elab.throwUnsupportedSyntax
+end Google
+
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
+
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
+
+
 set_option maxHeartbeats 0
 
 theorem mathd_numbertheory_227 (x y n : ℕ+) (h₀ : ↑x / (4 : ℝ) + y / 6 = (x + y) / n) : n = 5 := by
+  have h1 : (↑x : ℝ) / (4 : ℝ) + (↑y : ℝ) / (6 : ℝ) = (↑(x + y) : ℝ) / ↑n := by
+    clear * - h₀
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxNormIterations := 320
+      maxGoals := 512
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 100 (by gcongr))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by exfalso))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [mul_div_right_comm]))
+      (add norm 0 (by grind only [Nat.cast_add]))
+      (add norm 0 (by grind only [half_add_self]))
+      (add norm 0 (by grind only [div_eq_div_iff_mul_eq_mul]))
+      (add norm 0 (by grind only [div_add']))
+      (add norm 0 (by grind only [div_add_div_same]))
+      (add norm 0 (by grind only [two_ne_zero']))
+      (add norm 0 (by grind only [mul_div_mul_comm]))
+      (add norm 0 (by grind only [mul_div_cancel_right]))
+      (add norm 0 (by grind only [div_mul_eq_mul_div]))
+      (add norm 0 (by grind only [commProb_def']))
+      (add norm 0 (by rw [Int.ofNat_add]))
+      (add norm 0 (by grind only [div_eq_div_iff]))
+      (add norm 0 (by grind only [Nat.cast_mul]))
+      (add norm 0 (by grind only [Real.cos_add_cos]))
+      (add norm 0 (by grind only [add_self_div_two]))
+      (add safe 1 (by simp_all only [div_eq_iff_eq_mul]))
+      (add safe 0 (by simp only [mul_div] at *))
+      (add safe 0 (by simp only [eq_div_iff] at *))
+      (add safe 0 (by simp only [eq_div_iff_mul_eq] at *))
+      (add safe 0 (by simp only [mul_div_assoc] at *))
+      (add safe 0 (by simp only [div_eq_iff] at *))
+      (add safe 0 (by simp only [add_div] at *))
+      (add safe 0 (by simp only [mul_div_cancel_left₀] at *))
+      (add safe 1 (by simp_all only [eq_div_iff_mul_eq']))
+      (add safe 0 (by simp only [div_mul] at *))
+      (add safe 0 (by simp only [div_div] at *))
+      (add safe 0 (by simp only [mul_div_cancel_right₀] at *))
+      (add safe 1 (by simp_all only [div_eq_iff_eq_mul']))
+      (add safe 0 (by simp only [div_eq_iff_mul_eq] at *))
+      (add safe 0 (by simp only [mul_div_mul_left] at *))
+      (add safe 0 (by simp only [div_eq_one_iff_eq] at *))
 
-  have h1 : (x : ℝ) / 4 + (y : ℝ) / 6 = (3 * (x : ℝ) + 2 * (y : ℝ)) / 12 := by
-    clear * -
-    (field_simp)
-    (nlinarith)
+  have h2 : (3 * (↑x : ℝ) / 12 + 2 * (↑y : ℝ) / 12) = (↑(x + y) : ℝ) / ↑n := by
+    clear * - h1
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxNormIterations := 320
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by ring_nf at *))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by exfalso))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [mul_right_comm]))
+      (add norm 0 (by grind only [mul_div_right_comm]))
+      (add norm 0 (by grind only [half_add_self]))
+      (add norm 0 (by grind only [div_mul_eq_mul_div]))
+      (add norm 0 (by grind only [div_add_div_same]))
+      (add norm 0 (by grind only [div_add']))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [mul_div_assoc']))
+      (add norm 0 (by grind only [add_self_div_two]))
+      (add norm 0 (by grind only [mul_div_mul_comm]))
+      (add norm 0 (by grind only [mul_add_mul]))
+      (add norm 0 (by grind only [mul_div_left_comm]))
+      (add norm 0 (by grind only [mul_div_cancel_right]))
+      (add norm 0 (by grind only [two_ne_zero']))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add safe 0 (by simp only [mul_div] at *))
+      (add safe 0 (by simp only [add_div] at *))
+      (add safe 0 (by simp only [mul_div_assoc] at *))
+      (add safe 0 (by simp only [div_mul] at *))
+      (add safe 0 (by simp only [mul_div_cancel_left₀] at *))
+      (add safe 0 (by simp only [eq_div_iff] at *))
+      (add safe 0 (by simp only [div_div] at *))
+      (add safe 0 (by simp only [mul_div_cancel_right₀] at *))
+      (add safe 0 (by simp only [div_eq_iff] at *))
+      (add safe 0 (by simp only [mul_div_mul_left] at *))
+      (add safe 0 (by simp only [eq_div_iff_mul_eq] at *))
+      (add safe 0 (by simp only [div_mul_cancel₀] at *))
+      (add safe 0 (by simp only [div_eq_one_iff_eq] at *))
+      (add safe 0 (by simp only [mul_div_cancel₀] at *))
+      (add safe 0 (by simp only [div_right_comm] at *))
+      (add safe 0 (by simp only [mul_div_mul_right] at *))
+      (add safe 0 (by simp only [div_self] at *))
 
-  have h2 : (3 * (x : ℝ) + 2 * (y : ℝ)) / 12 = ((x : ℝ) + (y : ℝ)) / (n : ℝ) := by
-    clear * - h₀ h1
-    simp_all only
-
-  have h3 : (n : ℝ) * (3 * (x : ℝ) + 2 * (y : ℝ)) = 12 * ((x : ℝ) + (y : ℝ)) := by
+  have h3 : ((3 * ↑x + 2 * ↑y) : ℝ) / 12 = (↑(x + y) : ℝ) / ↑n := by
     clear * - h2
-    (field_simp [*] at *)
-    (nlinarith)
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      maxGoals := 512
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 1 (by norm_num [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by exfalso))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [div_mul_eq_mul_div]))
+      (add norm 0 (by grind only [mul_div_assoc']))
+      (add norm 0 (by grind only [mul_div_left_comm]))
+      (add norm 0 (by grind only [div_add_div_same]))
+      (add norm 0 (by grind only [half_add_self]))
+      (add norm 0 (by grind only [mul_right_comm]))
+      (add norm 0 (by grind only [mul_div_mul_comm]))
+      (add norm 0 (by grind only [tsub_div]))
+      (add safe 0 (by simp only [mul_div] at *))
+      (add safe 0 (by simp only [eq_div_iff] at *))
+      (add safe 0 (by simp only [mul_div_cancel_left₀] at *))
+      (add safe 0 (by simp only [mul_div_assoc] at *))
+      (add safe 0 (by simp only [mul_div_cancel_right₀] at *))
+      (add safe 0 (by simp only [div_eq_iff] at *))
+      (add safe 0 (by simp only [add_div] at *))
+      (add safe 0 (by simp only [mul_div_mul_left] at *))
+      (add safe 0 (by simp only [div_div] at *))
+      (add safe 0 (by simp only [mul_div_right_comm] at *))
+      (add safe 0 (by simp only [div_mul_cancel₀] at *))
+      (add safe 0 (by simp only [div_self] at *))
+      (add safe 0 (by simp only [div_mul] at *))
+      (add safe 0 (by simp only [eq_div_iff_mul_eq] at *))
+      (add safe 0 (by simp only [mul_div_mul_right] at *))
+      (add safe 0 (by simp only [div_eq_one_iff_eq] at *))
+      (add safe 0 (by simp only [mul_div_cancel₀] at *))
+      (add safe 0 (by simp only [div_add'] at *))
+      (add safe 0 (by simp only [two_ne_zero'] at *))
+      (add safe 0 (by simp only [div_right_comm] at *))
+      (add safe 0 (by simp only [sub_div] at *))
+      (add safe 0 (by simp only [div_eq_iff_mul_eq] at *))
+      (add safe 0 (by simp only [div_eq_div_iff] at *))
+      (add safe 0 (by simp only [div_left_inj'] at *))
 
-  have h4 : 3 * (n : ℝ) * (x : ℝ) + 2 * (n : ℝ) * (y : ℝ) = 12 * (x : ℝ) + 12 * (y : ℝ) := by
+  have h4 : ↑n * (3 * ↑x + 2 * ↑y : ℝ) = 12 * (↑(x + y) : ℝ) := by
     clear * - h3
-    (nlinarith)
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 60
+      maxGoals := 512
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by exfalso))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [mul_right_comm]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by grind only [eq_div_iff_mul_eq]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [two_ne_zero']))
+      (add norm 0 (by grind only [div_eq_div_iff]))
+      (add norm 0 (by grind only [div_left_inj']))
+      (add norm 0 (by grind only [mul_div_right_comm]))
+      (add norm 0 (by grind only [gosperCatalan]))
+      (add norm 0 (by grind only [div_eq_iff_eq_mul]))
+      (add norm 0 (by grind only [div_mul]))
+      (add norm 0 (by grind only [div_mul_eq_mul_div]))
+      (add norm 0 (by grind only [div_add']))
+      (add norm 0 (by grind only [Int.mul_ediv_cancel']))
+      (add norm 0 (by grind only [mul_right_inj']))
+      (add norm 0 (by grind only [mul_add_mul]))
+      (add safe 0 (by simp only [eq_div_iff] at *))
+      (add safe 0 (by simp only [div_eq_iff] at *))
+      (add safe 0 (by simp only [mul_div_assoc] at *))
+      (add safe 0 (by simp only [mul_div] at *))
+      (add safe 0 (by simp only [mul_div_cancel_right₀] at *))
+      (add safe 0 (by simp only [mul_div_cancel_left₀] at *))
+      (add safe 0 (by simp only [mul_div_cancel₀] at *))
+      (add safe 0 (by simp only [div_eq_iff_mul_eq] at *))
+      (add safe 0 (by simp only [mul_div_mul_left] at *))
+      (add safe 0 (by simp only [div_mul_cancel₀] at *))
+      (add safe 0 (by simp only [div_div] at *))
+      (add safe 0 (by simp only [div_self] at *))
+      (add safe 0 (by simp only [div_eq_one_iff_eq] at *))
+      (add safe 0 (by simp only [mul_div_mul_right] at *))
+      (add safe 0 (by simp only [add_div] at *))
 
-  have h5 : 3 * (n : ℝ) * (x : ℝ) - 12 * (x : ℝ) = 12 * (y : ℝ) - 2 * (n : ℝ) * (y : ℝ) := by
+  have h5 : ↑n = 12 * (↑x + ↑y : ℝ) / (3 * ↑x + 2 * ↑y : ℝ) := by
     clear * - h4
-    (nlinarith)
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      maxGoals := 512
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [eq_div_iff_mul_eq]))
+      (add norm 0 (by grind only [div_eq_iff_eq_mul]))
+      (add norm 0 (by grind only [Nat.cast_mul]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [mul_right_comm]))
+      (add norm 0 (by grind only [div_eq_div_iff]))
+      (add norm 0 (by grind only [two_ne_zero']))
+      (add norm 0 (by grind only [mul_eq_mul_left_iff]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by rw [Quaternion.coe_natCast]))
+      (add norm 0 (by grind only [div_eq_iff_eq_mul']))
+      (add norm 0 (by grind only [gosperCatalan]))
+      (add norm 0 (by rw [QuaternionAlgebra.coe_natCast]))
+      (add norm 0 (by grind only [Complex.cos_sub_cos]))
+      (add norm 0 (by grind only [div_left_inj']))
+      (add norm 0 (by grind only [mul_add_mul]))
+      (add norm 0 (by grind only [mul_right_inj']))
+      (add norm 0 (by grind only [div_add']))
+      (add norm 0 (by grind only [commProb_def']))
+      (add norm 0 (by grind only [qrSign]))
+      (add norm 0 (by grind only [eq_div_iff_mul_eq']))
+      (add norm 0 (by rw [PNat.val_ofNat]))
+      (add norm 0 (by grind only [PadicInt.coe_mul]))
+      (add safe 0 (by simp only [eq_div_iff] at *))
+      (add safe 0 (by simp only [div_eq_iff] at *))
+      (add safe 0 (by simp only [mul_div_cancel_left₀] at *))
+      (add safe 0 (by simp only [mul_div_assoc] at *))
+      (add safe 0 (by simp only [div_eq_iff_mul_eq] at *))
+      (add safe 0 (by simp only [mul_div] at *))
+      (add safe 0 (by simp only [mul_div_cancel_right₀] at *))
+      (add safe 0 (by simp only [mul_div_mul_left] at *))
 
-  have h6 : (x : ℝ) * (3 * (n : ℝ) - 12) = (y : ℝ) * (12 - 2 * (n : ℝ)) := by
-    clear * - h5
-    (nlinarith)
+  have h6 : (2 * ↑x + 2 * ↑y : ℝ) < (3 * ↑x + 2 * ↑y : ℝ) := by
+    clear * -
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      maxGoals := 256
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [CircleDeg1Lift.map_lt_of_translationNumber_lt_int]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_iff_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul'']))
+      (add unsafe 50% (by nlinarith [lt_of_mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_iff_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_left]))
+      (add unsafe 50% (by nlinarith [mul_add_mul_lt_mul_add_mul]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul₀]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_le_of_lt]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_lt_of_le]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_right]))
+      (add unsafe 50% (by nlinarith [lt_of_mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right]))
+      (add unsafe 10% (by grind only [Int.lt_of_sum_four_squares_eq_mul]))
+      (add unsafe 50% (by nlinarith [mul_self_lt_mul_self]))
+      (add unsafe 50% (by nlinarith [div_lt_div_iff]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_left']))
+      (add unsafe 50% (by nlinarith [Decidable.mul_lt_mul'']))
+      (add unsafe 50% (by nlinarith [lt_of_mul_lt_mul_left']))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_right']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_neg_left]))
+      (add unsafe 50% (by nlinarith [lt_mul_left]))
+      (add unsafe 50% (by nlinarith [pow_lt_pow_right₀]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_le_of_lt]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left']))
+      (add unsafe 50% (by nlinarith [lt_of_mul_lt_mul_right']))
+      (add unsafe 50% (by nlinarith [Monotone.seq_pos_lt_seq_of_le_of_lt]))
 
-  have h7 : (x : ℝ) / (y : ℝ) = (12 - 2 * (n : ℝ)) / (3 * (n : ℝ) - 12) := by
-    clear * - h6
-    rw [div_eq_div_iff]
-    · simp_all only
-      ring
-    · simp_all only [ne_eq, Nat.cast_eq_zero, PNat.ne_zero, not_false_eq_true]
-    · simp_all only [ne_eq]
-      intro h7
-      simp_all only [mul_zero, zero_eq_mul, Nat.cast_eq_zero, PNat.ne_zero, false_or]
-      linarith!
+  have h7 : (3 * ↑x + 2 * ↑y : ℝ) < (3 * ↑x + 3 * ↑y : ℝ) := by
+    clear * -
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      maxGoals := 512
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [lt_of_mul_lt_mul_right']))
+      (add norm 0 (by grind only [CircleDeg1Lift.map_lt_of_translationNumber_lt_int]))
+      (add norm 0 (by grind only [EReal.add_lt_add]))
+      (add norm 0 (by grind only [mul_lt_mul_of_lt_of_lt]))
+      (add norm 0 (by grind only [CircleDeg1Lift.map_lt_of_translationNumber_lt_nat]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_iff_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul]))
+      (add unsafe 50% (by nlinarith [lt_of_mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_iff_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul'']))
+      (add unsafe 50% (by nlinarith [mul_add_mul_lt_mul_add_mul]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_le_of_lt]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul₀]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_lt_of_le]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul']))
+      (add unsafe 50% (by nlinarith [lt_of_mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [mul_self_lt_mul_self]))
+      (add unsafe 10% (by grind only [Int.lt_of_sum_four_squares_eq_mul]))
+      (add unsafe 50% (by nlinarith [div_lt_div_iff]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [Decidable.mul_lt_mul'']))
+      (add unsafe 50% (by nlinarith [lt_of_mul_lt_mul_left']))
+      (add unsafe 50% (by nlinarith [StrictConvexOn.secant_strict_mono_aux1]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_left']))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_right']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_neg_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_iff_of_le_of_le]))
 
-  have h8 : 0 < (x : ℝ) := by
-    clear * - x
-    simp_all only [Nat.cast_pos, PNat.pos]
+  have h8 : (2 * ↑x + 2 * ↑y : ℝ) < (3 * ↑x + 2 * ↑y : ℝ) ∧ (3 * ↑x + 2 * ↑y : ℝ) < (3 * ↑x + 3 * ↑y : ℝ) := by
+    clear * - h6 h7
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      maxGoals := 512
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by norm_num [*] at *))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [rfl]))
+      (add norm 0 (by grind only [CircleDeg1Lift.map_lt_of_translationNumber_lt_int]))
+      (add norm 0 (by grind only [mul_self_lt_mul_self]))
+      (add norm 0 (by grind only [lt_of_mul_lt_mul_left']))
+      (add norm 0 (by grind only [SimpleGraph.TripartiteFromTriangles.ExplicitDisjoint]))
+      (add norm 0 (by grind only [lt_of_mul_lt_mul_right']))
+      (add norm 0 (by grind only [Decidable.mul_lt_mul'']))
+      (add norm 0 (by grind only [EReal.add_lt_add]))
+      (add norm 0 (by grind only [CircleDeg1Lift.map_lt_of_translationNumber_lt_nat]))
+      (add norm 0 (by grind only [mul_lt_mul_of_lt_of_lt]))
+      (add norm 0 (by grind only [CircleDeg1Lift.translationNumber_lt_of_forall_lt_add]))
+      (add unsafe 10% (by grind only [mul_lt_mul_left']))
+      (add unsafe 10% (by grind only [mul_lt_mul_right']))
+      (add unsafe 10% (by grind only [mul_lt_mul_iff_left]))
+      (add unsafe 10% (by grind only [mul_lt_mul_of_le_of_lt]))
+      (add unsafe 10% (by grind only [mul_lt_mul_of_lt_of_le]))
+      (add unsafe 10% (by grind only [mul_add_mul_lt_mul_add_mul]))
+      (add unsafe 10% (by grind only [mul_lt_mul]))
+      (add unsafe 10% (by grind only [mul_lt_mul₀]))
+      (add unsafe 10% (by grind only [mul_lt_mul'']))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_right]))
+      (add unsafe 10% (by grind only [mul_lt_mul_iff_right]))
+      (add unsafe 10% (by grind only [mul_lt_mul']))
+      (add unsafe 10% (by grind only [Int.lt_of_sum_four_squares_eq_mul]))
+      (add unsafe 10% (by grind only [StrictConvexOn.secant_strict_mono_aux1]))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_left]))
+      (add unsafe 10% (by grind only [mul_lt_mul_of_pos_left]))
+      (add unsafe 10% (by grind only [div_lt_div_iff]))
+      (add unsafe 10% (by grind only [mul_lt_mul_of_pos_right]))
+      (add unsafe 10% (by grind only [mul_lt_mul_left]))
+      (add unsafe 10% (by grind only [Valuation.map_add_lt]))
+      (add unsafe 10% (by grind only [mul_lt_mul_iff_of_le_of_le]))
 
-  have h9 : 0 < (y : ℝ) := by
-    clear * - y
-    simp_all only [Nat.cast_pos, PNat.pos]
+  have h9 : (1 : ℝ) / (3 * ↑x + 3 * ↑y) < (1 : ℝ) / (3 * ↑x + 2 * ↑y) ∧ (1 : ℝ) / (3 * ↑x + 2 * ↑y) < (1 : ℝ) / (2 * ↑x + 2 * ↑y) := by
+    clear * - h8
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      maxGoals := 512
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 100 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right']))
+      (add unsafe 50% (by nlinarith [div_lt_div_iff]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [lt_div_iff_mul_lt']))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_left']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul]))
+      (add unsafe 50% (by nlinarith [lt_div_iff_mul_lt]))
+      (add unsafe 50% (by nlinarith [lt_div_iff']))
+      (add unsafe 50% (by nlinarith [lt_div_iff]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul₀]))
+      (add unsafe 50% (by nlinarith [StrictConvexOn.slope_strict_mono_adjacent]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul'']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_iff_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_iff_right]))
+      (add unsafe 50% (by nlinarith [lt_of_mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [div_lt_iff']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_lt_of_le]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_le_of_lt]))
+      (add unsafe 50% (by nlinarith [div_lt_iff]))
+      (add unsafe 50% (by nlinarith [mul_add_mul_lt_mul_add_mul]))
+      (add unsafe 50% (by nlinarith [div_lt_iff_lt_mul']))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left']))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_right']))
+      (add unsafe 50% (by nlinarith [div_lt_iff_lt_mul]))
+      (add unsafe 50% (by nlinarith [div_lt_div_right]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left]))
+      (add unsafe 50% (by nlinarith [lt_of_mul_lt_mul_left]))
 
-  have h10 : (12 - 2 * (n : ℝ)) / (3 * (n : ℝ) - 12) > 0 := by
-    clear * - h7 h8 h9
-    simp_all only [Nat.cast_pos, PNat.pos, gt_iff_lt]
-    have h1 := h7
-    simp_all only [gt_iff_lt]
-    have h2 := h1.symm
-    simp_all only [Nat.cast_pos, PNat.pos, div_pos_iff_of_pos_left]
+  have h10 : (12 * (↑x + ↑y : ℝ)) / (3 * (↑x + ↑y : ℝ)) < (12 * (↑x + ↑y : ℝ)) / (3 * ↑x + 2 * ↑y : ℝ) ∧ (12 * (↑x + ↑y : ℝ)) / (3 * ↑x + 2 * ↑y : ℝ) < (12 * (↑x + ↑y : ℝ)) / (2 * (↑x + ↑y : ℝ)) := by
+    clear * - h9
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      maxGoals := 512
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 100 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right]))
+      (add unsafe 10% (by grind only [mul_lt_mul]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_left']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul']))
+      (add unsafe 50% (by nlinarith [lt_div_iff']))
+      (add unsafe 10% (by grind only [mul_lt_mul_right']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left']))
+      (add unsafe 50% (by nlinarith [lt_div_iff]))
+      (add unsafe 50% (by nlinarith [div_lt_div_iff]))
+      (add unsafe 50% (by nlinarith [lt_div_iff_mul_lt']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul'']))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul₀]))
+      (add unsafe 50% (by nlinarith [div_lt_iff']))
+      (add unsafe 50% (by nlinarith [StrictConvexOn.slope_strict_mono_adjacent]))
+      (add unsafe 50% (by nlinarith [lt_div_iff_mul_lt]))
+      (add unsafe 50% (by nlinarith [div_lt_iff]))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left']))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_right']))
+      (add unsafe 50% (by nlinarith [mul_add_mul_lt_mul_add_mul]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_lt_of_le]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_iff_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_le_of_lt]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_iff_right]))
+      (add unsafe 50% (by nlinarith [div_lt_div_right]))
+      (add unsafe 50% (by nlinarith [div_lt_iff_lt_mul']))
+      (add unsafe 50% (by nlinarith [div_lt_div_left]))
 
-  have h11 : 12 - 2 * (n : ℝ) > 0 ∧ 3 * (n : ℝ) - 12 > 0 := by
+  have h11 : (4 : ℝ) < (12 * (↑x + ↑y : ℝ)) / (3 * ↑x + 2 * ↑y : ℝ) ∧ (12 * (↑x + ↑y : ℝ)) / (3 * ↑x + 2 * ↑y : ℝ) < (6 : ℝ) := by
     clear * - h10
-    simp_all only [gt_iff_lt, sub_pos]
-    have h30 := h10
-    simp_all only
-    have hf := div_pos_iff.mp h30
-    simp_all only [sub_pos, sub_neg]
-    rcases hf with ⟨hlt, hgt⟩ | ⟨_, hgt⟩ <;> constructor <;> nlinarith
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 10% (by grind only [mul_lt_mul]))
+      (add unsafe 10% (by grind only [mul_lt_mul']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_left']))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [lt_div_iff']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul'']))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [lt_div_iff]))
+      (add unsafe 50% (by nlinarith [div_lt_iff']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul₀]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right']))
+      (add unsafe 50% (by nlinarith [div_lt_iff]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_left]))
+      (add unsafe 50% (by nlinarith [StrictConvexOn.slope_strict_mono_adjacent]))
+      (add unsafe 50% (by nlinarith [div_lt_div_iff]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_le_of_lt]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_le_of_one_lt]))
+      (add unsafe 50% (by nlinarith [lt_div_iff_mul_lt']))
+      (add unsafe 50% (by nlinarith [lt_mul_left]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_right']))
+      (add unsafe 50% (by nlinarith [Real.pi_lt_sqrtTwoAddSeries]))
+      (add unsafe 10% (by grind only [pow_lt_pow_right₀]))
+      (add unsafe 10% (by grind only [pow_lt_pow_left]))
+      (add unsafe 50% (by nlinarith [mul_add_mul_lt_mul_add_mul]))
+      (add unsafe 50% (by nlinarith [lt_div_iff_mul_lt]))
 
-  have h12 : 2 * (n : ℝ) < 12 := by
-    clear * - h11
-    simp_all only [gt_iff_lt, sub_pos]
+  have h12 : (4 : ℝ) < ↑n ∧ ↑n < (6 : ℝ) := by
+    clear * - h5 h11
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_right]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_left']))
+      (add unsafe 10% (by grind only [mul_lt_mul]))
+      (add unsafe 50% (by nlinarith [lt_div_iff']))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul']))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_right]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left']))
+      (add unsafe 50% (by nlinarith [lt_div_iff]))
+      (add unsafe 50% (by nlinarith [div_lt_iff']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul'']))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_left]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_le_of_one_lt]))
+      (add unsafe 50% (by nlinarith [div_lt_iff]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_left]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_le_of_lt]))
+      (add unsafe 50% (by nlinarith [StrictConvexOn.slope_strict_mono_adjacent]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_right']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul₀]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_right']))
+      (add unsafe 50% (by nlinarith [gold_pos]))
+      (add unsafe 50% (by nlinarith [one_lt_div]))
+      (add unsafe 50% (by nlinarith [lt_mul_left]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_right']))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left']))
+      (add unsafe 50% (by nlinarith [div_lt_div_iff]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_right]))
+      (add unsafe 10% (by grind only [pow_lt_pow_left]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_of_le]))
 
-  have h13 : (n : ℝ) < 6 := by
+  have h13 : ↑n > (4 : ℝ) ∧ ↑n < (6 : ℝ) := by
     clear * - h12
-    simp_all only [cast_lt_ofNat]
-    norm_cast at h12
-    exact Nat.lt_of_mul_lt_mul_left h12
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by push_neg))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by norm_num [*] at *))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 10% (by grind only [lt_trans]))
+      (add unsafe 10% (by grind only [Nat.totient_lt]))
+      (add unsafe 10% (by grind only [Nat.sub_lt]))
+      (add unsafe 10% (by grind only [pow_lt_pow_right]))
+      (add unsafe 10% (by grind only [PNat.coe_lt_coe]))
+      (add unsafe 10% (by grind only [gold_pos]))
+      (add unsafe 10% (by grind only [lt_self_pow]))
+      (add unsafe 10% (by grind only [lt_of_lt_of_le]))
+      (add unsafe 10% (by grind only [lt_mul_of_le_of_one_lt]))
+      (add unsafe 10% (by grind only [Pell.eq_pow_of_pell_lem]))
+      (add unsafe 10% (by grind only [IsPrimePow.one_lt]))
+      (add unsafe 10% (by grind only [one_lt_gold]))
+      (add unsafe 10% (by grind only [lt_mul_left]))
+      (add unsafe 10% (by grind only [pow_lt_pow_left]))
+      (add unsafe 10% (by grind only [PNat.eq_one_of_lt_two]))
+      (add unsafe 10% (by grind only [Pell.eq_pell]))
+      (add unsafe 10% (by grind only [Pell.x_pos]))
+      (add unsafe 10% (by grind only [pow_lt_pow_iff_right]))
+      (add unsafe 10% (by grind only [tsub_pos_of_lt]))
+      (add unsafe 10% (by grind only [Nat.totient_pos]))
+      (add unsafe 10% (by grind only [lt_mul_of_one_le_of_lt]))
+      (add unsafe 10% (by grind only [pow_lt_pow_right₀]))
+      (add unsafe 10% (by grind only [lt_mul_iff_one_lt_left']))
+      (add unsafe 10% (by grind only [Nat.psp_from_prime_gt_p]))
+      (add unsafe 10% (by grind only [Nat.succ_pos']))
+      (add unsafe 10% (by grind only [LucasLehmer.two_lt_q]))
+      (add unsafe 10% (by grind only [Nat.lt_of_succ_le]))
+      (add unsafe 10% (by grind only [one_lt_two]))
+      (add unsafe 10% (by grind only [Real.rpow_lt_rpow_of_exponent_lt]))
+      (add unsafe 10% (by grind only [lt_mul_of_lt_of_one_le]))
+      (add unsafe 10% (by grind only [pow_unbounded_of_one_lt]))
+      (add unsafe 10% (by grind only [Nat.succ_pos]))
 
-  have h14 : 3 * (n : ℝ) > 12 := by
-    clear * - h11
-    simp_all only [gt_iff_lt, sub_pos]
+  have h14 : (4 : ℤ) < ↑n ∧ ↑n < (6 : ℤ) := by
+    clear * - h13
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by positivity))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by push_neg))
+      (add safe 100 (by zify))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by norm_num [*] at *))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 10% (by grind only [lt_trans]))
+      (add unsafe 10% (by grind only [pow_lt_pow_right]))
+      (add unsafe 10% (by grind only [lt_of_lt_of_le]))
+      (add unsafe 10% (by grind only [pow_lt_pow_iff_right]))
+      (add unsafe 10% (by grind only [Nat.sub_lt]))
+      (add unsafe 10% (by grind only [pow_lt_pow_right₀]))
+      (add unsafe 10% (by grind only [lt_mul_left]))
+      (add unsafe 10% (by grind only [Monotone.seq_pos_lt_seq_of_le_of_lt]))
+      (add unsafe 10% (by grind only [lt_self_pow]))
+      (add unsafe 10% (by grind only [lt_of_le_of_lt]))
+      (add unsafe 10% (by grind only [pow_lt_pow_left]))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_left]))
+      (add unsafe 10% (by grind only [lt_of_mul_lt_mul_right]))
+      (add unsafe 10% (by grind only [Nat.lt_of_succ_le]))
+      (add unsafe 10% (by grind only [pow_lt_pow_succ]))
+      (add unsafe 10% (by grind only [Nat.totient_lt]))
+      (add unsafe 10% (by grind only [Nat.lt_factorial_self]))
+      (add unsafe 10% (by grind only [Real.rpow_lt_rpow_of_exponent_lt]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_one_le_of_lt]))
+      (add unsafe 10% (by grind only [lt_of_pow_lt_pow_left]))
+      (add unsafe 10% (by grind only [Nat.mul_lt_mul_of_pos_left]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_lt_of_one_le]))
+      (add unsafe 10% (by grind only [mul_lt_mul]))
+      (add unsafe 10% (by grind only [Nat.psp_from_prime_gt_p]))
+      (add unsafe 50% (by nlinarith [lt_mul_of_le_of_one_lt]))
+      (add unsafe 10% (by grind only [mul_lt_mul']))
+      (add unsafe 10% (by grind only [Pell.n_lt_xn]))
+      (add unsafe 10% (by grind only [Nat.lt_of_succ_lt]))
+      (add unsafe 10% (by grind only [Pell.eq_pow_of_pell_lem]))
+      (add unsafe 50% (by nlinarith [lt_mul_iff_one_lt_left']))
+      (add unsafe 10% (by grind only [Monotone.seq_pos_lt_seq_of_lt_of_le]))
+      (add unsafe 10% (by grind only [PNat.coe_lt_coe]))
 
-  have h15 : (n : ℝ) > 4 := by
+  have h15 : ↑n = (5 : ℤ) := by
     clear * - h14
-    simp_all only [gt_iff_lt, ofNat_lt_cast]
-    norm_cast at h14
-    norm_cast
-    contrapose! h14
-    apply mul_le_mul' (le_refl 3) h14
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      enableSimp := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by gcongr))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by rw [PNat.coe_inj]))
+      (add norm 0 (by grind only [Nat.totient_prime]))
+      (add norm 0 (by grind only [IsPrimitiveRoot.eq_neg_one_of_two_right]))
+      (add norm 0 (by grind only [IsPrimitiveRoot.pow]))
+      (add norm 0 (by grind only [PNat.recOn]))
+      (add norm 0 (by grind only [IsPrimitiveRoot.sub_one_norm_eq_eval_cyclotomic]))
+      (add norm 0 (by grind only [Eq.symm]))
+      (add unsafe 10% (by grind only [Nat.totient_lt]))
+      (add unsafe 10% (by grind only [PNat.pos]))
+      (add unsafe 10% (by grind only [Nat.totient_pos]))
+      (add unsafe 10% (by grind only [Nat.totient_even]))
+      (add unsafe 10% (by grind only [PNat.pow_coe]))
+      (add unsafe 10% (by grind only [Nat.totient_two]))
+      (add unsafe 10% (by grind only [PNat.coe_lt_coe]))
+      (add unsafe 10% (by grind only [IsPrimitiveRoot]))
+      (add unsafe 10% (by grind only [PNat.coe_injective]))
+      (add unsafe 10% (by grind only [Polynomial.cyclotomic_pos]))
+      (add unsafe 10% (by grind only [Nat.totient]))
+      (add unsafe 10% (by grind only [IsCyclotomicExtension.numberField]))
+      (add unsafe 10% (by grind only [Nat.exists_eq_succ_of_ne_zero]))
+      (add unsafe 10% (by grind only [Nat.totient_prime_pow]))
+      (add unsafe 10% (by grind only [PNat.one_coe]))
+      (add unsafe 10% (by grind only [Nat.totient_le]))
+      (add unsafe 10% (by grind only [IsCyclotomicExtension.zeta_spec]))
+      (add unsafe 10% (by grind only [mem_primitiveRoots]))
+      (add unsafe 10% (by grind only [IsCyclotomicExtension.finrank]))
+      (add unsafe 10% (by grind only [Nat.totient_one]))
+      (add unsafe 10% (by grind only [PNat.eq_one_of_lt_two]))
+      (add unsafe 10% (by grind only [Polynomial.cyclotomic]))
+      (add unsafe 10% (by grind only [le_antisymm]))
+      (add unsafe 10% (by grind only [Polynomial.cyclotomic.irreducible_rat]))
+      (add unsafe 10% (by grind only [IsPrimitiveRoot.one]))
 
-  have h16 : (4 : ℝ) < (n : ℝ) ∧ (n : ℝ) < (6 : ℝ) := by
-    clear * - h15 h13
-    simp_all only [cast_lt_ofNat, gt_iff_lt, ofNat_lt_cast, and_self]
+  have h16 : n = 5 := by
+    clear * - h15
+    norm_cast at h15
 
-  have h17 : n = 5 := by
-    clear * - h16
-    simp_all only [ofNat_lt_cast, cast_lt_ofNat]
-    cases n
-    simp_all only [PNat.mk_coe]
-    congr <;> linarith
-
-  exact h17
+  exact h16

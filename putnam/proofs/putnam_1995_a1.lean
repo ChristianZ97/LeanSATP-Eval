@@ -13,107 +13,87 @@ theorem putnam_1995_a1
 (hT3 : ∀ a ∈ T, ∀ b ∈ T, ∀ c ∈ T, a * b * c ∈ T)
 (hU3 : ∀ a ∈ U, ∀ b ∈ U, ∀ c ∈ U, a * b * c ∈ U)
 : (∀ a ∈ T, ∀ b ∈ T, a * b ∈ T) ∨ (∀ a ∈ U, ∀ b ∈ U, a * b ∈ U) := by
-  by_contra h_contra
-  have h_neg_T : ¬(∀ a ∈ T, ∀ b ∈ T, a * b ∈ T) := by
-    clear * - h_contra
-    simp_all only [not_or, not_forall, Classical.not_imp]
+  -- Assume the negation of the conclusion to derive a contradiction
+  by_contra! h_neg
+  -- h_neg consists of two parts:
+  -- 1. There exist a, b in T such that a*b is not in T.
+  -- 2. There exist c, d in U such that c*d is not in U.
 
-  have h_neg_U : ¬(∀ a ∈ U, ∀ b ∈ U, a * b ∈ U) := by
-    clear * - h_contra
-    simp_all only [not_or, not_forall, Classical.not_imp]
+  let ⟨a, ha_T, b, hb_T, hab_not_in_T⟩ := h_neg.left
+  let ⟨c, hc_U, d, hd_U, cd_not_in_U⟩ := h_neg.right
 
-  have h_ex_T : ∃ t₁ t₂, t₁ ∈ T ∧ t₂ ∈ T ∧ t₁ * t₂ ∉ T := by
-    clear * - h_neg_T
-    simp_all
+  -- Since a, b are in T and T is subset of S, a*b is in S.
+  have hab_in_S : a * b ∈ S := by
+    have h_a_in_S : a ∈ S := hsub.1 ha_T
+    have h_b_in_S : b ∈ S := hsub.1 hb_T
+    exact hS a h_a_in_S b h_b_in_S
 
-  have h_ex_U : ∃ u₁ u₂, u₁ ∈ U ∧ u₂ ∈ U ∧ u₁ * u₂ ∉ U := by
-    clear * - h_neg_U
-    simp_all
+  -- Since a*b is in S but not in T, it must be in U (because T U U = S and disjoint)
+  have hab_in_U : a * b ∈ U := by
+    have h_in_union : a * b ∈ T ∪ U := by
+      rw [hunion]
+      exact hab_in_S
 
-  let ⟨t₁, t₂, ht₁, ht₂, ht12_not_T⟩ := h_ex_T
-  let ⟨u₁, u₂, hu₁, hu₂, hu12_not_U⟩ := h_ex_U
+    cases' h_in_union with h_in_T h_in_U
+    · exfalso
+      apply hab_not_in_T
+      exact h_in_T
 
-  have h_t1_in_S : t₁ ∈ S := by
-    clear * - ht₁ hsub
-    obtain ⟨left, right⟩ := hsub
-    (bound )
+    · exact h_in_U
 
-  have h_t2_in_S : t₂ ∈ S := by
-    clear * - ht₂ hsub
-    obtain ⟨left, right⟩ := hsub
-    (bound )
+  -- Similarly for c, d in U -> c*d in S -> c*d in T
+  have cd_in_S : c * d ∈ S := by
+    have h_c_in_S : c ∈ S := hsub.2 hc_U
+    have h_d_in_S : d ∈ S := hsub.2 hd_U
+    exact hS c h_c_in_S d h_d_in_S
 
-  have h_t1t2_in_S : t₁ * t₂ ∈ S := by
-    clear * - h_t1_in_S h_t2_in_S hS
-    simp_all only
+  have cd_in_T : c * d ∈ T := by
+    have h_in_union : c * d ∈ T ∪ U := by
+      rw [hunion]
+      exact cd_in_S
 
-  have h_u1_in_S : u₁ ∈ S := by
-    clear * - hu₁ hsub
-    obtain ⟨left, right⟩ := hsub
-    (bound )
+    cases' h_in_union with h_in_T h_in_U
+    · exact h_in_T
+    · exfalso
+      apply cd_not_in_U
+      exact h_in_U
 
-  have h_u2_in_S : u₂ ∈ S := by
-    clear * - hu₂ hsub
-    obtain ⟨left, right⟩ := hsub
-    (bound )
+  -- Now consider the product P = (a*b) * (c*d) = a * b * c * d
+  -- We will show P is in U using the triple closure of U on factors (a*b), c, d
+  -- Note: a*b is in U, c is in U, d is in U.
+  have h_prod_in_U : (a * b) * c * d ∈ U := by
+    have h_ab_in_U : a * b ∈ U := hab_in_U
+    have h_c_in_U : c ∈ U := hc_U
+    have h_d_in_U : d ∈ U := hd_U
+    apply hU3 (a * b) h_ab_in_U c h_c_in_U d h_d_in_U
 
-  have h_u1u2_in_S : u₁ * u₂ ∈ S := by
-    clear * - h_u1_in_S h_u2_in_S hS
-    simp_all only
+  -- We will also show P is in T using the triple closure of T on factors a, b, (c*d)
+  -- Note: a is in T, b is in T, c*d is in T.
+  have h_prod_in_T : a * b * (c * d) ∈ T := by
+    have h_a_in_T : a ∈ T := ha_T
+    have h_b_in_T : b ∈ T := hb_T
+    have h_cd_in_T : c * d ∈ T := cd_in_T
+    apply hT3 a h_a_in_T b h_b_in_T (c * d) h_cd_in_T
 
-  have h_t1t2_in_U : t₁ * t₂ ∈ U := by
-    clear * - ht12_not_T h_t1t2_in_S hunion hdisj
-    subst hunion
-    simp_all only [Set.mem_union, false_or]
+  -- By associativity/commutativity of multiplication, these products are equal.
+  have h_eq : (a * b) * c * d = a * b * (c * d) := by ring
 
-  have h_u1u2_in_T : u₁ * u₂ ∈ T := by
-    clear * - hu12_not_U h_u1u2_in_S hunion hdisj
-    subst hunion
-    simp_all only [Set.mem_union, or_false]
+  -- Therefore, the element P is in both T and U.
+  have h_in_intersection : (a * b) * c * d ∈ T ∩ U := by
+    constructor
+    · show (a * b) * c * d ∈ T
+      rw [h_eq]
+      exact h_prod_in_T
 
-  let u₃ := t₁ * t₂
-  let t₃ := u₁ * u₂
+    · show (a * b) * c * d ∈ U
+      exact h_prod_in_U
 
-  have h_u3_in_U : u₃ ∈ U := by
-    clear * - h_t1t2_in_U
-    simp_all only [u₃]
+  -- But T and U are disjoint, so their intersection is empty.
+  have h_disj_empty : T ∩ U = ∅ := hdisj
 
-  have h_t3_in_T : t₃ ∈ T := by
-    clear * - h_u1u2_in_T
-    simp_all only [t₃]
-
-  have h_t1t2t3_in_T : t₁ * t₂ * t₃ ∈ T := by
-    clear * - ht₁ ht₂ h_t3_in_T hT3
-    simp_all only [t₃]
-
-  have h_u3t3_eq_t1t2t3 : u₃ * t₃ = t₁ * t₂ * t₃ := by
-    clear * -
-    simp_all only [u₃, t₃]
-
-  have h_u3t3_in_T : u₃ * t₃ ∈ T := by
-    clear * - h_u3t3_eq_t1t2t3 h_t1t2t3_in_T
-    simp_all only [t₃, u₃]
-
-  have h_u3u1u2_in_U : u₃ * u₁ * u₂ ∈ U := by
-    clear * - h_u3_in_U hu₁ hu₂ hU3
-    simp_all only [u₃]
-
-  have h_u3t3_eq_u3u1u2 : u₃ * t₃ = u₃ * u₁ * u₂ := by
-    clear * -
-    simp_all only [u₃, t₃]
-    (nlinarith)
-
-  have h_u3t3_in_U : u₃ * t₃ ∈ U := by
-    clear * - h_u3t3_eq_u3u1u2 h_u3u1u2_in_U
-    simp_all only [u₃, t₃]
-
-  have h_u3t3_in_inter : u₃ * t₃ ∈ T ∩ U := by
-    clear * - h_u3t3_in_T h_u3t3_in_U
-    simp_all only [Set.mem_inter_iff, and_self, u₃, t₃]
-
+  -- This leads to a contradiction.
   have h_false : False := by
-    clear * - h_u3t3_in_inter hdisj
-    simp_all only [Set.mem_empty_iff_false, u₃, t₃]
+    simp only [h_disj_empty] at h_in_intersection
+    exact h_in_intersection
 
-  exfalso
   exact h_false

@@ -1,75 +1,92 @@
 import Mathlib
 
-open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
+
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
+
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+  | _ => Elab.throwUnsupportedSyntax
+end Google
+
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
+
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
+
 
 theorem induction_11div10tonmn1ton (n : ℕ) : 11 ∣ 10 ^ n - (-1 : ℤ) ^ n := by
-  have h1 : (10 : ℤ) = (11 : ℤ) + (-1 : ℤ) := by
-    clear * -
-    simp_all only [Int.reduceNeg, Int.reduceAdd]
 
-  have h2 : (10 : ℤ) ^ n = ((11 : ℤ) + (-1 : ℤ)) ^ n := by
-    clear * - h1
-    simp_all only [Int.reduceNeg, Int.reduceAdd]
-
-  have h3 : ((11 : ℤ) + (-1 : ℤ)) ^ n = ∑ k in Finset.range (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) := by
-    clear * -
-    simp_all only [Int.reduceNeg, Int.reduceAdd]
-    have A := (add_pow 11 (-1) n).symm
-    simp_all only [Int.reduceNeg, Int.reduceAdd]
-    nth_rewrite 1 [← A]
-    simp_all only [Int.reduceNeg]
-    simp [← A, mul_comm, mul_assoc, mul_left_comm, ← mul_add]
-
-  have h4 : ((11 : ℤ) + (-1 : ℤ)) ^ n = (Nat.choose n 0 : ℤ) * (11 : ℤ) ^ 0 * (-1 : ℤ) ^ n + ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) := by
-    clear * - h3
-    simp_all only [Int.reduceNeg, Int.reduceAdd, choose_zero_right, Nat.cast_one, pow_zero, mul_one, one_mul]
-    simp [Finset.sum_Ico_eq_sub, ← h3]
-
-  have h5 : (Nat.choose n 0 : ℤ) * (11 : ℤ) ^ 0 * (-1 : ℤ) ^ n = (-1 : ℤ) ^ n := by
-    clear * -
-    simp_all only [choose_zero_right, Nat.cast_one, pow_zero, mul_one, Int.reduceNeg, one_mul]
-
-  have h6 : (10 : ℤ) ^ n = (-1 : ℤ) ^ n + ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) := by
-    clear * - h2 h4 h5
-    simp_all only [Int.reduceNeg, Int.reduceAdd, choose_zero_right, Nat.cast_one, pow_zero, mul_one, one_mul]
-
-  have h7 : (10 : ℤ) ^ n - (-1 : ℤ) ^ n = ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) := by
-    clear * - h6
-    simp_all only [Int.reduceNeg, add_sub_cancel_left]
-
-  have h8 : ∀ k ∈ Finset.Ico 1 (n + 1), (11 : ℤ) ^ k = (11 : ℤ) * (11 : ℤ) ^ (k - 1) := by
-    clear * -
-    simp_all
-    intro k _ hk2
-    cases k <;> simp [pow_succ]
-    · simp_all
-    · simp_all
-      rw [mul_comm]
-
-  have h9 : ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ k * (-1 : ℤ) ^ (n - k) = ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) * (11 : ℤ) ^ (k - 1) * (-1 : ℤ) ^ (n - k) := by
-    clear * - h8
-    simp_all
-    refine' Finset.sum_congr rfl _
-    simp_all
-    simp [mul_assoc, mul_left_comm] <;> intros <;> aesop
-
-  have h10 : ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) * (11 : ℤ) ^ (k - 1) * (-1 : ℤ) ^ (n - k) = (11 : ℤ) * ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ (k - 1) * (-1 : ℤ) ^ (n - k) := by
-    clear * - h9
-    clear h9
-    simp [Finset.mul_sum, mul_assoc, Nat.cast_comm]
-
-  have h11 : (10 : ℤ) ^ n - (-1 : ℤ) ^ n = (11 : ℤ) * ∑ k in Finset.Ico 1 (n + 1), (Nat.choose n k : ℤ) * (11 : ℤ) ^ (k - 1) * (-1 : ℤ) ^ (n - k) := by
-    clear * - h7 h9 h10
-    simp_all only [Int.reduceNeg]
-
-  have h12 : ∃ (m : ℤ), (10 : ℤ) ^ n - (-1 : ℤ) ^ n = (11 : ℤ) * m := by
-    clear * - h11
-    simp_all only [Int.reduceNeg, mul_eq_mul_left_iff, OfNat.ofNat_ne_zero, or_false, exists_eq']
-
-  have h13 : 11 ∣ 10 ^ n - (-1 : ℤ) ^ n := by
-    clear * - h12
-    obtain ⟨w, h⟩ := h12
-    simp_all only [Int.reduceNeg, dvd_mul_right]
-
-  exact h13
+  aesop (config := {
+    maxRuleApplications := 1600
+    maxNormIterations := 320
+    useDefaultSimpSet := false
+    })
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by positivity))
+    (add norm 0 (by omega))
+    (add norm 100 (by gcongr))
+    (add norm 0 (by bound))
+    (add norm 1 (by ext))
+    (add norm 100 (by ring_nf at *))
+    (add norm 1 (by field_simp [*] at *))
+    (add safe 100 (by ring))
+    (add safe 100 (by field_simp))
+    (add safe 100 (by norm_num))
+    (add safe 100 (by push_neg))
+    (add safe 100 (by interval_cases))
+    (add safe 0 (by split))
+    (add safe 0 (by norm_num [*] at *))
+    (add safe 100 (by rfl))
+    (add safe 100 (by decide))
+    (add safe 0 (by push_cast))
+    (add safe 100 (by assumption_mod_cast))
+    (add norm 0 (by grind only [QuaternionGroup.a_one_pow]))
+    (add norm 0 (by grind only [DihedralGroup.r_one_pow]))
+    (add norm 0 (by grind only [one_pow]))
+    (add norm 0 (by grind only [QuaternionGroup.one_def]))
+    (add norm 0 (by rw [DihedralGroup.r_one_pow_n]))
+    (add norm 0 (by grind only [sub_dvd_pow_sub_pow]))
+    (add norm 0 (by grind only [ArithmeticFunction.moebius_apply_of_squarefree]))
+    (add norm 0 (by grind only [Nat.Prime.not_dvd_one]))
+    (add norm 0 (by grind only [Nat.dvd_one]))
+    (add norm 0 (by grind only [nat_sub_dvd_pow_sub_pow]))
+    (add norm 0 (by grind only [orderOf_dvd_iff_pow_eq_one]))
+    (add norm 0 (by grind only [Even.neg_one_pow]))
+    (add norm 0 (by grind only [Nat.eq_one_of_dvd_coprimes]))
+    (add norm 0 (by grind only [Commute.pow_dvd_sub_pow_of_pow_eq_zero_left]))
+    (add norm 0 (by grind only [DihedralGroup.one_def]))
+    (add norm 0 (by grind only [pow_one]))
+    (add norm 0 (by grind only [orderOf_dvd_of_pow_eq_one]))
+    (add norm 0 (by grind only [LucasLehmer.ω_pow_eq_one]))
+    (add norm 0 (by grind only [AlgebraicGeometry.Proj.pow_apply]))
+    (add norm 0 (by grind only [QuaternionGroup.a_one_pow_n]))
+    (add norm 0 (by grind only [one_dvd]))
+    (add norm 0 (by grind only [dvd_refl]))
+    (add norm 0 (by grind only [Commute.pow_dvd_sub_pow_of_pow_eq_zero_right]))
+    (add norm 0 (by grind only [ArithmeticFunction.cardDistinctFactors_apply_prime_pow]))
+    (add norm 0 (by grind only [LucasLehmer.ω_pow_eq_neg_one]))
+    (add norm 0 (by grind only [Commute.one_right]))
+    (add norm 0 (by grind only [neg_one_sq]))
+    (add norm 0 (by grind only [legendreSym.at_one]))
+    (add norm 0 (by grind only [legendreSym.prime_dvd_of_eq_neg_one]))
+    (add norm 0 (by grind only [jacobiSym.prime_dvd_of_eq_neg_one]))
+    (add norm 0 (by grind only [Nat.eq_one_of_dvd_one]))
+    (add norm 0 (by grind only [Prime.not_dvd_one]))

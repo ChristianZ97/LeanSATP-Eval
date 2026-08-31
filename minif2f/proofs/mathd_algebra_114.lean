@@ -1,64 +1,91 @@
 import Mathlib
 
-open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
+
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
+
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+  | _ => Elab.throwUnsupportedSyntax
+end Google
+
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
+
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
+
 
 theorem mathd_algebra_114 (a : ℝ) (h₀ : a = 8) :
     (16 * (a ^ 2) ^ ((1 : ℝ) / 3)) ^ ((1 : ℝ) / 3) = 4 := by
-  have h1 : (16 * (a ^ 2) ^ ((1 : ℝ) / 3)) ^ ((1 : ℝ) / 3) = (16 * ((8 : ℝ) ^ 2) ^ ((1 : ℝ) / 3)) ^ ((1 : ℝ) / 3) := by
-    have h1_inner : a ^ 2 = (8 : ℝ) ^ 2 := by
-      clear * - h₀
-      subst h₀
-      simp_all only
 
-    clear * - h1_inner
-    simp_all only [one_div]
-
-  have h2 : (16 * ((8 : ℝ) ^ 2) ^ ((1 : ℝ) / 3)) ^ ((1 : ℝ) / 3) = (16 * (64 : ℝ) ^ ((1 : ℝ) / 3)) ^ ((1 : ℝ) / 3) := by
-    have h2_fact : ((8 : ℝ) ^ 2) = (64 : ℝ) := by
-      clear * -
-      (ring)
-
-    clear * - h2_fact
-    simp_all only [one_div]
-
-  have h3 : (16 * (64 : ℝ) ^ ((1 : ℝ) / 3)) ^ ((1 : ℝ) / 3) = (16 * (4 : ℝ)) ^ ((1 : ℝ) / 3) := by
-    have h3_fact : (64 : ℝ) ^ ((1 : ℝ) / 3) = (4 : ℝ) := by
-      clear * -
-      simp_all only [one_div]
-      rw [Real.rpow_def_of_pos (by norm_num)] <;> norm_cast
-      field_simp [show (64 : ℝ) = 2 ^ 6 by norm_cast] <;> ring
-      simp [exp_mul, exp_log] <;> norm_num
-
-    clear * - h3_fact
-    simp_all only [one_div]
-
-  have h4 : (16 * (4 : ℝ)) ^ ((1 : ℝ) / 3) = (64 : ℝ) ^ ((1 : ℝ) / 3) := by
-    have h4_fact : (16 : ℝ) * (4 : ℝ) = (64 : ℝ) := by
-      clear * -
-      (ring)
-
-    clear * - h4_fact
-    simp only [one_div] at *
-    (ring)
-
-  have h5 : (64 : ℝ) ^ ((1 : ℝ) / 3) = (4 : ℝ) := by
-    have h5_fact : (64 : ℝ) ^ ((1 : ℝ) / 3) = (4 : ℝ) := by
-      clear * -
-      simp_all only [one_div]
-      rw [eq_comm]
-      have : (64 : ℝ) = (4 : ℝ) ^ 3
-      · norm_num
-      · simp_all only
-        simp [← this, Real.rpow_def_of_pos]
-        simp_all only [Real.log_pow, Nat.cast_ofNat]
-        field_simp [exp_log, mul_comm] <;> ring
-
-    clear * - h5_fact
-    simp_all only [one_div]
-
-  have h_final : (16 * (a ^ 2) ^ ((1 : ℝ) / 3)) ^ ((1 : ℝ) / 3) = (4 : ℝ) := by
-    clear * - h1 h2 h3 h4 h5
-    simp_all only [one_div]
-
-  exact h_final
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 320
+    maxGoals := 256
+    useDefaultSimpSet := false
+    })
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by bound))
+    (add norm 1 (by ext))
+    (add norm 1 (by field_simp [*] at *))
+    (add safe 100 (by ring))
+    (add safe 100 (by field_simp))
+    (add safe 100 (by norm_num))
+    (add safe 100 (by positivity))
+    (add safe 0 (by omega))
+    (add safe 100 (by interval_cases))
+    (add safe 0 (by split))
+    (add safe 0 (by norm_num [*] at *))
+    (add safe 100 (by decide))
+    (add safe 0 (by push_cast))
+    (add safe 100 (by assumption_mod_cast))
+    (add norm 0 (by grind only [Real.rpow_one]))
+    (add norm 0 (by grind only [Real.rpow_mul]))
+    (add norm 0 (by grind only [Real.inv_rpow]))
+    (add norm 0 (by grind only [Real.mul_rpow]))
+    (add norm 0 (by grind only [one_div]))
+    (add norm 0 (by grind only [ne_of_gt]))
+    (add norm 0 (by grind only [mul_inv_cancel]))
+    (add norm 0 (by grind only [mul_one_div]))
+    (add norm 0 (by grind only [MeasureTheory.integral_comp_rpow_Ioi_of_pos]))
+    (add norm 0 (by grind only [Complex.mul_cpow_ofReal_nonneg]))
+    (add norm 0 (by grind only [MeasureTheory.integral_comp_rpow_Ioi]))
+    (add norm 0 (by grind only [Real.rpow_pos_of_pos]))
+    (add norm 0 (by grind only [Real.doublingGamma]))
+    (add norm 0 (by grind only [WeakFEPair.h_feq']))
+    (add norm 0 (by grind only [Real.rpow_neg]))
+    (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+    (add norm 0 (by grind only [inv_mul_cancel]))
+    (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+    (add norm 0 (by grind only [one_div_mul_cancel]))
+    (add norm 0 (by grind only [Complex.ofReal_log]))
+    (add norm 0 (by grind only [mul_one_div_cancel]))
+    (add norm 0 (by grind only [Complex.ofReal_cpow]))
+    (add norm 0 (by grind only [Real.rpow_add]))
+    (add norm 0 (by grind only [Complex.HadamardThreeLines.sSupNormIm_eps_pos]))
+    (add norm 0 (by grind only [Real.Gamma]))
+    (add norm 0 (by grind only [two_ne_zero]))
+    (add norm 0 (by grind only [Real.doublingGamma_eq_Gamma]))
+    (add norm 0 (by grind only [Real.rpow_neg_one]))
+    (add norm 0 (by grind only [Real.Gamma_two]))
+    (add norm 0 (by grind only [Complex.Gamma_one_half_eq]))
+    (add norm 0 (by grind only [mellinInv_eq_fourierIntegralInv]))
+    (add safe 0 (by simp only [div_self] at *))

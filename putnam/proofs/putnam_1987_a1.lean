@@ -10,129 +10,201 @@ theorem putnam_1987_a1
 (hC : C = {(x, y) : ℝ × ℝ | x ^ 3 - 3 * x * y ^ 2 + 3 * y = 1})
 (hD : D = {(x, y) : ℝ × ℝ | 3 * x ^ 2 * y - 3 * x - y ^ 3 = 0})
 : A ∩ B = C ∩ D := by
-  have h_equiv : ∀ (x y : ℝ), ((x, y) ∈ A ∩ B) ↔ ((x, y) ∈ C ∩ D) := by
-    intro x y
-    simp only [hA, hB, hC, hD, Set.mem_setOf_eq, Set.mem_inter_iff]
-    constructor
-    · -- Forward direction: (x,y) ∈ A ∩ B implies (x,y) ∈ C ∩ D
-      intro hAB
-      have h_sum_neq_zero : (x:ℝ) ^ 2 + (y:ℝ) ^ 2 ≠ (0:ℝ) := by
-        clear * - hAB
-        simp_all only [ne_eq, not_false_eq_true]
+  simp only [hA, hB, hC, hD] at *
+  ext p
+  constructor
+  · intro h
+    obtain ⟨hxy_ne_zero, hx_eq_x_over_r2, h2xy_plus_y_over_r2_eq_3⟩ := h
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 0 (by push_neg))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 0 (by exfalso))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 50% (by ring_nf at *))
+      (add norm 0 (by grind only [Set.mem_setOf_eq]))
+      (add norm 0 (by grind only [Set.mem_setOf]))
+      (add norm 0 (by grind only [Set.mem_inter_iff]))
+      (add norm 0 (by grind only [Set.mem_cIoo]))
+      (add norm 0 (by grind only [Set.mem_union]))
+      (add norm 0 (by grind only [ContinuousMap.mem_setOfIdeal]))
+      (add norm 0 (by grind only [LinearMap.polar_mem_iff]))
+      (add norm 0 (by grind only [mem_wellApproximable_iff]))
+      (add norm 0 (by grind only [Set.setOf_subset_setOf]))
+      (add norm 0 (by grind only [Set.mem_compl_iff]))
+      (add norm 0 (by grind only [MeasureTheory.IsStoppingTime.measurableSet_eq_stopping_time]))
+      (add norm 0 (by grind only [Set.mem_iInter]))
+      (add norm 0 (by grind only [MeasureTheory.IsStoppingTime.measurableSet_eq_stopping_time_of_countable]))
+      (add norm 0 (by grind only [MeasureTheory.IsStoppingTime.measurableSet_stopping_time_le]))
+      (add norm 0 (by grind only [Set.subset_def]))
+      (add norm 0 (by grind only [regionBetween]))
+      (add norm 0 (by grind only [RightDerivMeasurableAux.B]))
+      (add norm 0 (by grind only [MeasureTheory.IsStoppingTime.measurableSet_le_stopping_time]))
+      (add norm 0 (by grind only [BoxIntegral.Box.mem_coe]))
+      (add norm 0 (by grind only [IsDedekindDomain.HeightOneSpectrum.mem_adicCompletionIntegers]))
+      (add norm 0 (by grind only [GromovHausdorff.candidates]))
+      (add norm 0 (by grind only [Complex.stolzSet]))
+      (add norm 0 (by grind only [GromovHausdorff.candidatesB]))
+      (add norm 0 (by grind only [Set.mem_Ici]))
+      (add norm 0 (by grind only [Set.mem_Ioo]))
+      (add norm 0 (by grind only [mem_measurableAtom_self]))
+      (add norm 0 (by grind only [Set.mem_preimage]))
+      (add norm 0 (by grind only [Set.mem_Iic]))
+      (add norm 0 (by grind only [iff_self_iff]))
+      (add norm 0 (by grind only [SimpleGraph.mem_neighborSet]))
+      (add norm 0 (by grind only [Set.mem_Ico]))
+      (add norm 0 (by grind only [FiberBundleCore.mem_localTrivAsPartialEquiv_source]))
 
-      have h_real_part_orig : (x:ℝ) ^ 2 - (y:ℝ) ^ 2 = (x:ℝ) / ((x:ℝ) ^ 2 + (y:ℝ) ^ 2) := by
-        clear * - hAB
-        simp_all only [ne_eq]
+  · intro h
+    obtain ⟨hc, hd⟩ := h
+    have h_sum_sq_ne_zero : p.1 ^ 2 + p.2 ^ 2 ≠ 0 := by
+      by_contra h_zero
+      simp [h_zero] at hc hd
+      norm_num at hc
+      aesop (config := {
+        maxRuleApplications := 40
+        maxRuleApplicationDepth := 10
+        maxNormIterations := 520
+        enableUnfold := false
+        })
+        (add norm 100 (by norm_cast))
+        (add norm 0 (by linarith))
+        (add norm 0 (by nlinarith))
+        (add norm 0 (by positivity))
+        (add norm 0 (by omega))
+        (add norm 0 (by bound))
+        (add norm 0 (by ring_nf))
+        (add norm 1 (by field_simp [*] at *))
+        (add safe 100 (by field_simp))
+        (add safe 100 (by norm_num))
+        (add safe 100 (by norm_cast at *))
+        (add safe 100 (by decide))
+        (add safe 0 (by push_cast))
+        (add safe 100 (by assumption_mod_cast))
+        (add unsafe 50% (by ring_nf at *))
+        (add norm 0 (by grind only [sq_eq_zero_iff]))
+        (add norm 0 (by grind only [zero_pow]))
+        (add norm 0 (by grind only [legendreSym.eq_one_of_sq_sub_mul_sq_eq_zero]))
+        (add norm 0 (by grind only [legendreSym.eq_one_of_sq_sub_mul_sq_eq_zero']))
+        (add norm 0 (by grind only [pow_eq_zero]))
+        (add norm 0 (by grind only [pow_eq_zero_iff]))
+        (add norm 0 (by grind only [sq_eq_one_iff]))
+        (add norm 0 (by grind only [Zsqrtd.zero_re]))
+        (add norm 0 (by grind only [or_self_iff]))
+        (add norm 0 (by grind only [MulZeroClass]))
+        (add norm 0 (by grind only [legendreSym.eq_zero_mod_of_eq_neg_one]))
+        (add norm 0 (by grind only [sq_eq_sq]))
+        (add norm 0 (by grind only [mul_eq_zero]))
+        (add norm 0 (by grind only [mul_eq_one]))
+        (add norm 0 (by grind only [OfNat.ofNat_ne_zero]))
+        (add norm 0 (by grind only [ArithmeticFunction.moebius_sq]))
+        (add norm 0 (by grind only [Quaternion.normSq_eq_zero]))
+        (add norm 0 (by grind only [sq_sub_sq]))
+        (add norm 0 (by grind only [eq_or_eq_neg_of_sq_eq_sq]))
+        (add norm 0 (by grind only [euler_four_squares]))
+        (add norm 0 (by grind only [two_ne_zero]))
+        (add norm 0 (by grind only [sq_eq_sq_iff_eq_or_eq_neg]))
+        (add norm 0 (by grind only [even_two]))
+        (add norm 0 (by grind only [Zsqrtd.zero_im]))
+        (add norm 0 (by grind only [mul_eq_one_iff]))
+        (add norm 0 (by grind only [zero_div]))
+        (add norm 0 (by grind only [sq_abs]))
+        (add norm 0 (by grind only [eq_false_intro]))
+        (add norm 0 (by grind only [or_false]))
+        (add norm 0 (by grind only [sq_add_sq_mul]))
+        (add norm 0 (by grind only [sq_nonneg]))
+        (add unsafe 90% (by simp only [pow_two] at *))
 
-      have h_imag_part_orig : 2 * (x:ℝ) * (y:ℝ) + (y:ℝ) / ((x:ℝ) ^ 2 + (y:ℝ) ^ 2) = (3:ℝ) := by
-        clear * - hAB
-        simp_all only [ne_eq]
+    let z : ℂ := Complex.mk p.1 p.2
+    have h_z_cubic : z ^ 3 - 3 * Complex.I * z - 1 = 0 := by
+      have h_z_cube_expanded : z ^ 3 = (p.1 ^ 3 - 3 * p.1 * p.2 ^ 2) + Complex.I * (3 * p.1 ^ 2 * p.2 - p.2 ^ 3) := by
+        simp [pow_succ z, Complex.ext_iff]
+        aesop  (add simp [pow_two, pow_three]) <;> ring_nf
 
-      have h_sum_rewrite : (x:ℝ) ^ 2 + (y:ℝ) ^ 2 = (x:ℝ) ^ 2 + (y:ℝ) ^ 2 := by
-        clear * -
-        simp_all only
+      have h_rhs_part : 3 * Complex.I * z + 1 = (1 - 3 * p.2) + Complex.I * (3 * p.1) := by
+        simp [z, ← h_z_cube_expanded, hc, hd]
+        simp [mul_comm, mul_assoc, mul_left_comm]
+        simp [Complex.ext_iff, mul_comm] <;> ring
 
-      have h_reciprocal_form : ((x:ℝ):ℝ) / ((x:ℝ) ^ 2 + (y:ℝ) ^ 2) - ((-y:ℝ):ℝ) / ((x:ℝ) ^ 2 + (y:ℝ) ^ 2) * (0:ℝ) = (x:ℝ) / ((x:ℝ) ^ 2 + (y:ℝ) ^ 2) := by
-        clear * -
-        simp_all only [mul_zero, sub_zero]
+      simp [h_z_cube_expanded, h_rhs_part]
+      simp only [Complex.ext_iff] at *
+      simp_all [z, pow_three]
+      constructor <;>
+        { linarith
+        }
 
-      have h_combined_step : ((x:ℝ) ^ 2 - (y:ℝ) ^ 2) + (2 * (x:ℝ) * (y:ℝ)) * (0:ℝ) = (x:ℝ) / ((x:ℝ) ^ 2 + (y:ℝ) ^ 2) := by
-        clear * - h_real_part_orig
-        simp_all only [mul_zero, add_zero]
-
-      have h_key_equation : (x:ℝ) ^ 3 - 3 * (x:ℝ) * (y:ℝ) ^ 2 = (1:ℝ) - 3 * (y:ℝ) := by
-        clear * - h_sum_neq_zero h_real_part_orig h_imag_part_orig
-        simp_all only [ne_eq]
-        field_simp [mul_comm] at * <;> ring
-        apply mul_right_cancel₀ h_sum_neq_zero <;> nlinarith [pow_two_nonneg (x - 1), pow_two_nonneg (y - 1)]
-
-      have h_imag_key_equation : 3 * (x:ℝ) ^ 2 * (y:ℝ) - (y:ℝ) ^ 3 = 3 * (x:ℝ) := by
-        clear * - h_sum_neq_zero h_real_part_orig h_imag_part_orig
-        simp_all only [ne_eq]
-        try field_simp [h_sum_neq_zero] at *
-        simp_all only
-        nlinarith [sq_nonneg (x ^ 2 - y ^ 2), sq_nonneg (2 * x * y - 1), sq_nonneg (x ^ 2 + y ^ 2), sq_nonneg (x - 1),
-          sq_nonneg (y - 1)]
-
-      have h_C_condition : (x:ℝ) ^ 3 - 3 * (x:ℝ) * (y:ℝ) ^ 2 + 3 * (y:ℝ) = (1:ℝ) := by
-        clear * - h_key_equation
-        simp_all only [sub_add_cancel]
-
-      have h_D_condition : 3 * (x:ℝ) ^ 2 * (y:ℝ) - 3 * (x:ℝ) - (y:ℝ) ^ 3 = (0:ℝ) := by
-        clear * - h_imag_key_equation
-        (nlinarith)
-
-      constructor
-      · exact h_C_condition
-      · exact h_D_condition
-
-    · -- Backward direction: (x,y) ∈ C ∩ D implies (x,y) ∈ A ∩ B
-      intro hCD
-      have h_C_eq : (x:ℝ) ^ 3 - 3 * (x:ℝ) * (y:ℝ) ^ 2 + 3 * (y:ℝ) = (1:ℝ) := by
-        clear * - hCD
-        simp_all only
-
-      have h_D_eq : 3 * (x:ℝ) ^ 2 * (y:ℝ) - 3 * (x:ℝ) - (y:ℝ) ^ 3 = (0:ℝ) := by
-        clear * - hCD
-        simp_all only
-
-      have h_cube_expansion_real : (x:ℝ) ^ 3 - 3 * (x:ℝ) * (y:ℝ) ^ 2 = (x:ℝ) ^ 3 - 3 * (x:ℝ) * (y:ℝ) ^ 2 := by
-        clear * -
-        simp_all only
-
-      have h_cube_expansion_imag : 3 * (x:ℝ) ^ 2 * (y:ℝ) - (y:ℝ) ^ 3 = 3 * (x:ℝ) ^ 2 * (y:ℝ) - (y:ℝ) ^ 3 := by
-        clear * -
-        simp_all only
-
-      have h_sum_pos_or_zero : (x:ℝ) ^ 2 + (y:ℝ) ^ 2 ≥ (0:ℝ) := by
-        clear * -
-        simp_all only [ge_iff_le]
-        (nlinarith)
-
-      have h_not_both_zero : ¬((x:ℝ) = (0:ℝ) ∧ (y:ℝ) = (0:ℝ)) := by
-        clear * - h_C_eq h_D_eq
-        simp_all only [not_and]
-        intro a
-        subst a
-        simp_all only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, mul_zero, zero_mul, sub_self, zero_add,
-          zero_sub, neg_eq_zero, pow_eq_zero_iff, not_true_eq_false, zero_ne_one]
-
-      have h_sum_nonzero_backward : (x:ℝ) ^ 2 + (y:ℝ) ^ 2 ≠ (0:ℝ) := by
-        clear * - h_not_both_zero h_sum_pos_or_zero
-        simp_all only [ge_iff_le, not_and, ne_eq]
-        apply Aesop.BuiltinRules.not_intro
-        intro a
-        simp_all only [le_refl]
-        apply h_not_both_zero
-        · (nlinarith)
-        · (nlinarith)
-
-      have h_x_squared_minus_y_squared : (x:ℝ) ^ 2 - (y:ℝ) ^ 2 = (x:ℝ) / ((x:ℝ) ^ 2 + (y:ℝ) ^ 2) := by
-        clear * - h_C_eq h_D_eq h_sum_nonzero_backward
-        simp_all only [ne_eq]
-        field_simp [h_sum_nonzero_backward, mul_comm]
-        try nlinarith [sq_nonneg (x - 1), sq_nonneg (y - 1), sq_nonneg (x + y)]
-
-      have h_2xy_plus_term : 2 * (x:ℝ) * (y:ℝ) + (y:ℝ) / ((x:ℝ) ^ 2 + (y:ℝ) ^ 2) = (3:ℝ) := by
-        clear * - h_C_eq h_D_eq h_sum_nonzero_backward
-        simp_all only [ne_eq]
-        field_simp [h_sum_nonzero_backward] <;> ring
-        nlinarith [mul_self_nonneg (x - y), mul_self_nonneg (x + 1), mul_self_nonneg (y + 1)]
-
-      constructor
-      · constructor
-        · exact h_sum_nonzero_backward
-        · exact h_x_squared_minus_y_squared
-
-      · constructor
-        · exact h_sum_nonzero_backward
-        · exact h_2xy_plus_term
-
-  have h_set_ext : A ∩ B = C ∩ D := by
-    apply Set.ext
-    intro p
-    simp only [Set.mem_inter_iff]
-    subst hB hD hA hC
-    simp_all only [ne_eq, Set.mem_inter_iff, Set.mem_setOf_eq]
-
-  exact h_set_ext
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 320
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 0 (by push_neg))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 10% (by exfalso))
+      (add unsafe 50% (by ring_nf at *))
+      (add norm 0 (by grind only [Set.mem_setOf_eq]))
+      (add norm 0 (by grind only [Set.mem_inter_iff]))
+      (add norm 0 (by grind only [Set.mem_setOf]))
+      (add norm 0 (by grind only [Set.mem_union]))
+      (add norm 0 (by grind only [Set.mem_cIoo]))
+      (add norm 0 (by grind only [Set.mem_compl_iff]))
+      (add norm 0 (by grind only [and_imp]))
+      (add norm 0 (by grind only [Set.mem_Ico]))
+      (add norm 0 (by grind only [Set.mem_Ici]))
+      (add norm 0 (by grind only [Complex.stolzSet]))
+      (add norm 0 (by grind only [mem_wellApproximable_iff]))
+      (add norm 0 (by grind only [SimpleGraph.mem_neighborSet]))
+      (add norm 0 (by grind only [RightDerivMeasurableAux.B]))
+      (add norm 0 (by grind only [true_and_iff]))
+      (add norm 0 (by grind only [ge_iff_le]))
+      (add norm 0 (by grind only [Set.mem_Ioo]))
+      (add norm 0 (by grind only [Set.mem_preimage]))
+      (add norm 0 (by grind only [Set.mem_singleton_iff]))
+      (add norm 0 (by grind only [iff_self_iff]))
+      (add norm 0 (by grind only [and_true]))
+      (add norm 0 (by grind only [FiberBundleCore.mem_localTrivAsPartialEquiv_source]))
+      (add norm 0 (by grind only [Set.mem_iInter]))
+      (add norm 0 (by grind only [LinearMap.polar_mem_iff]))
+      (add norm 0 (by grind only [Set.mem_Iic]))
+      (add norm 0 (by grind only [Set.mem_Ioc]))
+      (add norm 0 (by grind only [Set.subset_def]))
+      (add norm 0 (by grind only [ContinuousMap.mem_setOfIdeal]))
+      (add norm 0 (by grind only [BoxIntegral.Box.mem_coe]))
+      (add norm 0 (by grind only [and_true_iff]))
+      (add norm 0 (by grind only [GromovHausdorff.candidates]))
+      (add norm 0 (by grind only [Set.mem_prod]))
+      (add norm 0 (by grind only [Set.setOf_subset_setOf]))

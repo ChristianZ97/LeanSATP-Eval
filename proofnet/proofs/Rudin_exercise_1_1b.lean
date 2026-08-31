@@ -1,0 +1,70 @@
+import Mathlib
+
+open Topology Filter Real Complex TopologicalSpace Finset
+open scoped BigOperators
+
+
+theorem exercise_1_1b
+(x : ℝ)
+(y : ℚ)
+(h : y ≠ 0)
+: ( Irrational x ) -> Irrational ( x * y ) := by
+
+  aesop (config := {
+    maxRuleApplications := 1600
+    maxRuleApplicationDepth := 600
+    maxNormIterations := 520
+    })
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 1 (by push_neg))
+    (add norm 0 (by bound))
+    (add norm 0 (by ring_nf))
+    (add norm 1 (by field_simp [*] at *))
+    (add safe 100 (by ring))
+    (add safe 100 (by field_simp))
+    (add safe 100 (by norm_num))
+    (add safe 0 (by positivity))
+    (add safe 100 (by omega))
+    (add safe 100 (by interval_cases))
+    (add safe 0 (by ext))
+    (add safe 0 (by split))
+    (add safe 100 (by norm_cast at *))
+    (add safe 100 (by rfl))
+    (add safe 100 (by decide))
+    (add safe 0 (by push_cast))
+    (add safe 100 (by assumption_mod_cast))
+    (add unsafe 10% (by exfalso))
+    (add norm 0 (by grind only [Rat.cast_mul]))
+    (add norm 0 (by grind only [irrational_rat_mul_iff]))
+    (add norm 0 (by grind only [irrational_mul_rat_iff]))
+    (add norm 0 (by grind only [Rat.cast_def]))
+    (add norm 0 (by grind only [Quaternion.coe_ratCast]))
+    (add norm 0 (by grind only [Rat.cast_inv]))
+    (add norm 0 (by grind only [irrational_div_rat_iff]))
+    (add norm 0 (by grind only [Rat.smul_def]))
+    (add norm 0 (by grind only [Rat.cast_id]))
+    (add norm 0 (by grind only [Rat.cast_intCast]))
+    (add norm 0 (by grind only [LiouvilleWith.mul_rat_iff]))
+    (add norm 0 (by grind only [Rat.cast]))
+    (add norm 0 (by grind only [Rat.mul_den_eq_num]))
+    (add norm 0 (by grind only [Padic.coe_mul]))
+    (add norm 0 (by grind only [LinearOrderedField.cutMap_coe]))
+    (add norm 0 (by grind only [Rat]))
+    (add norm 0 (by grind only [Int.norm_cast_rat]))
+    (add norm 0 (by grind only [Rat.cast_pos]))
+    (add norm 0 (by grind only [PadicInt.coe_mul]))
+    (add norm 0 (by grind only [Rat.cast_nonneg]))
+    (add norm 0 (by grind only [Rat.num_div_den]))
+    (add norm 0 (by grind only [Complex.div_ratCast]))
+    (add norm 0 (by grind only [irrational_mul_int_iff]))
+    (add norm 0 (by grind only [Int.cast_ne_zero]))
+    (add norm 0 (by grind only [Complex.ofReal_ratCast]))
+    (add norm 0 (by grind only [Rat.cast_div]))
+    (add norm 0 (by grind only [GeneralizedContinuedFraction.coe_of_h_rat_eq]))
+    (add norm 0 (by grind only [Rat.exists_eq_mul_div_num_and_eq_mul_div_den]))
+    (add norm 0 (by grind only [Rat.floor_cast]))
+    (add norm 0 (by grind only [Rat.cast_abs]))
+    (add norm 0 (by grind only [Rat.num_den_mk]))
+    (add safe 1 (by simp_all only [Rat.cast_natCast]))

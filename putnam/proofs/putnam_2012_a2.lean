@@ -1,5 +1,6 @@
 
 import Mathlib
+
 open Matrix
 
 set_option maxHeartbeats 0
@@ -10,93 +11,301 @@ theorem putnam_2012_a2
 (hS : ∀ x y : S, ∃ z : S, x * z = y)
 (habc : a * c = b * c)
 : a = b := by
-  obtain ⟨x, hx⟩ := hS c a
-  obtain ⟨y, hy⟩ := hS c b
-  have step1 : c * x = a := hx
-  have step2 : c * y = b := hy
-  have step3 : a * c = (c * x) * c := by
-    clear * - step1
-    subst step1
-    simp_all only
+  -- Step 1: Let x be such that c * x = a
+  have h1 : ∃ x : S, c * x = a := by
+    obtain ⟨x, hx⟩ := hS c a
+    exact ⟨x, hx⟩
 
-  have step4 : (c * x) * c = (c * c) * x := by
-    clear * -
-    rw [mul_right_comm]
+  let ⟨x, hx⟩ := h1
+  -- Step 2: Let y be such that c * y = b
+  have h2 : ∃ y : S, c * y = b := by
+    obtain ⟨y, hy⟩ := hS c b
+    exact ⟨y, hy⟩
 
-  have step5 : a * c = (c * c) * x := by
-    clear * - step3 step4
-    simp_all only
+  let ⟨y, hy⟩ := h2
+  -- Step 3: a * c = b * c (given)
+  have h3 : a * c = b * c := habc
+  -- Step 4: (c * x) * c = (c * y) * c
+  have h4 : (c * x) * c = (c * y) * c := by
+    clear * - hx hy h3
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      maxGoals := 512
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 1 (by push_neg))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 100 (by push_cast))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 90% (by split))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [mul_right_comm]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_mul_param_iff]))
+      (add norm 0 (by grind only [mul_mul_mul_comm]))
+      (add norm 0 (by grind only [QuaternionAlgebra.mul_imI]))
+      (add norm 0 (by grind only [QuaternionAlgebra.mul_imJ]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_param_mul_iff]))
+      (add norm 0 (by grind only [Metric.glueDist]))
+      (add norm 0 (by grind only [mul_add_mul]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_param_pow_mul_iff]))
+      (add norm 0 (by grind only [PosNum.shiftl_eq_shiftLeft]))
+      (add norm 0 (by grind only [Metric.Sum.dist]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_mul_param_pow_iff]))
+      (add norm 0 (by grind only [Pell.isPell_norm]))
+      (add norm 0 (by grind only [SimpleGraph.Walk.length_append]))
+      (add norm 0 (by rw [Zsqrtd.smul_val]))
+      (add norm 0 (by grind only [QuaternionAlgebra.mul_imK]))
+      (add norm 0 (by grind only [pow_add]))
+      (add norm 0 (by grind only [AddChar.mulShift_mul]))
+      (add norm 0 (by grind only [FractionalIdeal.dual_dual]))
+      (add norm 0 (by grind only [Valuation.map_mul]))
+      (add norm 0 (by grind only [tsub_add_cancel_of_le]))
+      (add norm 0 (by grind only [AddChar.map_add_eq_mul]))
+      (add norm 0 (by grind only [FractionalIdeal.self_mul_dual]))
+      (add norm 0 (by grind only [AddChar.mulShift_mulShift]))
+      (add norm 0 (by rw [mul_le_mul_iff_left]))
+      (add norm 0 (by grind only [isCoprime_comm]))
+      (add norm 0 (by grind only [FractionalIdeal.dual_mul_self]))
+      (add norm 0 (by grind only [MeasureTheory.Measure.sub_add_cancel_of_le]))
+      (add safe 0 (by simp only [mul_div_assoc] at *))
 
-  have step6 : b * c = (c * y) * c := by
-    clear * - step2
-    subst step2
-    simp_all only
+  -- Step 5: c * (x * c) = c * (y * c) by associativity
+  have h5 : c * (x * c) = c * (y * c) := by
+    clear * - h4
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      maxGoals := 512
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by field_simp [*] at *))
+      (add norm 100 (by push_cast))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 100 (by exfalso))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 90% (by split))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [mul_right_comm]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [mul_mul_mul_comm]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_mul_param_iff]))
+      (add norm 0 (by grind only [QuaternionAlgebra.mul_imI]))
+      (add norm 0 (by grind only [QuaternionAlgebra.mul_imJ]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_param_mul_iff]))
+      (add norm 0 (by grind only [Metric.glueDist]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_param_pow_mul_iff]))
+      (add norm 0 (by grind only [mul_add_mul]))
+      (add norm 0 (by grind only [PosNum.shiftl_eq_shiftLeft]))
+      (add norm 0 (by grind only [Pell.isPell_norm]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_mul_param_pow_iff]))
+      (add norm 0 (by grind only [Metric.Sum.dist]))
+      (add norm 0 (by grind only [SimpleGraph.Walk.length_append]))
+      (add norm 0 (by rw [Zsqrtd.smul_val]))
+      (add norm 0 (by grind only [QuaternionAlgebra.mul_imK]))
+      (add norm 0 (by grind only [pow_add]))
+      (add norm 0 (by grind only [AddChar.mulShift_mul]))
+      (add norm 0 (by grind only [FractionalIdeal.dual_dual]))
+      (add norm 0 (by grind only [Valuation.map_mul]))
+      (add norm 0 (by grind only [AddChar.map_add_eq_mul]))
+      (add norm 0 (by rw [mul_le_mul_iff_left]))
+      (add norm 0 (by grind only [tsub_add_cancel_of_le]))
+      (add norm 0 (by grind only [FractionalIdeal.self_mul_dual]))
+      (add norm 0 (by grind only [AddChar.mulShift_mulShift]))
+      (add norm 0 (by grind only [FractionalIdeal.dual_mul_self]))
+      (add norm 0 (by grind only [gaussSum_mulShift]))
+      (add norm 0 (by grind only [two_mul]))
+      (add safe 0 (by simp only [mul_div_assoc] at *))
 
-  have step7 : (c * y) * c = (c * c) * y := by
-    clear * -
-    rw [mul_assoc]
-    rw [mul_left_comm]
-    rw [mul_comm]
+  -- Step 6: Since commutative semigroup, we can rearrange.
+  -- Actually in CommSemigroup, multiplication is commutative and associative.
+  -- Let's use the fact that a * c = b * c implies we can work with these expressions.
+  -- Step 7: We want to show (c * c) * x = (c * c) * y
+  -- From h5: c * (x * c) = c * (y * c)
+  -- By commutativity: x * c = c * x, etc.
+  -- But let's proceed more directly.
+  -- Step 8: There exists z such that (c * c) * z = c
+  have h8 : ∃ z : S, (c * c) * z = c := by
+    obtain ⟨z, hz⟩ := hS (c * c) c
+    exact ⟨z, hz⟩
 
-  have step8 : b * c = (c * c) * y := by
-    clear * - step6 step7
-    simp_all only
+  let ⟨z, hz⟩ := h8
+  -- Step 9: Multiply both sides of some equality by ((c * c) * z)
+  -- First, let's get an intermediate result.
+  -- From h5: c * (x * c) = c * (y * c)
+  -- We want to eventually get c * x = c * y or similar.
+  -- Let's try a different path using the given h3: a * c = b * c
+  -- Since a = c * x and b = c * y:
+  -- (c * x) * c = (c * y) * c
+  -- Which is h4 already established.
+  -- Step 10: We want c * x = c * y, which means a = b if we can cancel c.
+  -- Use z from h8: (c * c) * z = c
+  -- Multiply (c * c) * z on the left of both sides of some equation involving x and y.
+  -- Consider: (c * c) * x = ?
+  -- From commutativity and associativity:
+  -- (c * c) * x = c * (c * x) = c * a
+  -- Similarly (c * c) * y = c * b
+  -- Let me establish:
+  have h10_intermediate : (c * c) * x = c * a := by
+    calc
+      (c * c) * x = c * (c * x) := by rw [mul_assoc]
+        _ = c * a := by rw [hx]
 
-  have step9 : (c * c) * x = (c * c) * y := by
-    clear * - step5 habc step8
-    simp_all only
+  have h11_intermediate : (c * c) * y = c * b := by
+    calc
+      (c * c) * y = c * (c * y) := by rw [mul_assoc]
+        _ = c * b := by rw [hy]
 
-  obtain ⟨u, hu⟩ := hS (c * c) c
-  have step10 : (c * c) * u = c := hu
-  have step11 : ((c * c) * x) * u = ((c * c) * y) * u := by
-    clear * - step9
-    simp_all only
+  -- Now from h3: a * c = b * c
+  -- Multiply both sides by c on the left:
+  have h12 : c * (a * c) = c * (b * c) := by
+    rw [h3]
 
-  have step12 : ((c * c) * x) * u = (c * c) * (x * u) := by
-    clear * -
-    rw [mul_assoc]
+  -- By associativity: (c * a) * c = (c * b) * c
+  have h13 : (c * a) * c = (c * b) * c := by
+    calc
+      (c * a) * c = c * (a * c) := by rw [mul_assoc]
+        _ = c * (b * c) := by rw [h3]
+        _ = (c * b) * c := by rw [mul_assoc]
 
-  have step13 : (c * c) * (x * u) = (c * c) * (u * x) := by
-    clear * -
-    rw [mul_comm x u]
+  -- Now use hz: (c * c) * z = c, i.e., c * (c * z) = c
+  -- Left-multiply h13 by z appropriately... Let me think differently.
+  -- We have (c * a) * c = (c * b) * c
+  -- Let w be such that c * w = identity... but we don't have identity.
+  -- Alternative approach: Use hz to "cancel" one c.
+  -- From h10_intermediate and h11_intermediate:
+  -- (c * c) * x = c * a
+  -- (c * c) * y = c * b
+  -- Compute ((c * c) * z) * (c * a):
+  have h14 : c * a = ((c * c) * z) * a := by
+    rw [hz]
 
-  have step14 : (c * c) * (u * x) = ((c * c) * u) * x := by
-    clear * -
-    simp only [mul_assoc]
+  have h15 : c * b = ((c * c) * z) * b := by
+    rw [hz]
 
-  have step15 : ((c * c) * u) * x = c * x := by
-    clear * - step10
-    simp_all only
+  -- This doesn't directly help. Let me try another route.
+  -- Start fresh from h3: a * c = b * c
+  -- Right-multiply by z where (c * c) * z = c:
+  -- (a * c) * z = (b * c) * z
+  have h16 : (a * c) * z = (b * c) * z := by
+    rw [h3]
 
-  have step16 : ((c * c) * x) * u = a := by
-    clear * - step12 step13 step14 step15 step1
-    subst step1
-    simp_all only
+  -- Left side: a * (c * z). Right side: b * (c * z)
+  have h17 : a * (c * z) = b * (c * z) := by
+    calc
+      a * (c * z) = (a * c) * z := by rw [mul_assoc]
+        _ = (b * c) * z := by rw [h16]
+        _ = b * (c * z) := by rw [mul_assoc]
 
-  have step17 : ((c * c) * y) * u = (c * c) * (y * u) := by
-    clear * -
-    rw [mul_assoc]
+  -- Now if we can show that right-multiplication by (c * z) is injective, or find that a = b.
+  -- Note: c * (c * z) = (c * c) * z = c (by hz)
+  have h18 : c * (c * z) = c := by
+    calc
+      c * (c * z) = (c * c) * z := by rw [mul_assoc]
+        _ = c := by rw [hz]
 
-  have step18 : (c * c) * (y * u) = (c * c) * (u * y) := by
-    clear * -
-    rw [mul_comm y u]
+  -- This shows that (c * z) acts like a "right inverse" for c in some sense.
+  -- But we need a = b. Let's use the solvability property again.
+  -- Since we're in a commutative semigroup with right-solvability, it's actually a group-like structure.
+  -- For any d, there exists e such that d * e = d' for any d'. In particular, there exists e such that e * (c * z) gives us control.
+  -- Let k = c * z. Then h17 says: a * k = b * k.
+  -- We also have h18: c * k = c.
+  -- For any element u, there exists v such that u * v = k (using hS with x=u, y=k).
+  -- Then (a * k) * v = a * (k * v) and (b * k) * v = b * (k * v).
+  -- Since a * k = b * k, we get a * (k * v) = b * (k * v).
+  -- Choose u = a. Get v_a such that a * v_a = k.
+  -- have h19 : ∃ v : S, a * v = k_def := by sorry
+  -- This approach is getting complicated. Let me just state the final steps clearly.
+  -- Key insight: In a commutative semigroup with the property that ∀x,y ∃z, x*z=y,
+  -- the cancellation law holds: if a*c = b*c then a=b.
+  -- Using hS, let w be such that c * w = a * c (= b * c).
+  -- Hmm, let me just complete the proof skeleton as requested.
+  -- Step 10 (revised): a * k = b * k where k = c * z
+  have h10_final : a * (c * z) = b * (c * z) := h17
+  -- Final step: Show a = b using the properties
+  have h_final : a = b := by
+    clear * - h10_final h18 hS hx hy habc
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 20
+      maxNormIterations := 60
+      maxGoals := 512
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by bound))
+      (add norm 0 (by ring_nf))
+      (add norm 1 (by ext))
+      (add norm 100 (by exfalso))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by norm_num [*] at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [mul_right_comm]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_mul_param_iff]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_param_mul_iff]))
+      (add norm 0 (by grind only [mul_mul_mul_comm]))
+      (add norm 0 (by grind only [mul_add_mul]))
+      (add norm 0 (by grind only [QuaternionAlgebra.mul_imI]))
+      (add norm 0 (by grind only [QuaternionAlgebra.mul_imJ]))
+      (add norm 0 (by grind only [Pell.isPell_norm]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_param_pow_mul_iff]))
+      (add norm 0 (by grind only [mul_right_inj']))
+      (add norm 0 (by grind only [mul_left_cancel₀]))
+      (add norm 0 (by grind only [Metric.glueDist]))
+      (add norm 0 (by grind only [Zsqrtd.divides_sq_eq_zero_z]))
+      (add norm 0 (by grind only [Zsqrtd.smul_val]))
+      (add norm 0 (by grind only [PosNum.shiftl_eq_shiftLeft]))
+      (add norm 0 (by grind only [Valuation.map_mul]))
+      (add norm 0 (by grind only [AddChar.mulShift_mul]))
+      (add norm 0 (by grind only [Metric.Sum.dist]))
+      (add norm 0 (by grind only [mul_left_inj']))
+      (add norm 0 (by grind only [SimpleGraph.Walk.length_append]))
+      (add norm 0 (by grind only [Zsqrtd.divides_sq_eq_zero]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_mul_param_pow_iff]))
+      (add norm 0 (by grind only [QuaternionAlgebra.mul_imK]))
+      (add norm 0 (by grind only [AddChar.mulShift_mulShift]))
+      (add norm 0 (by grind only [FractionalIdeal.dual_mul_self]))
+      (add norm 0 (by grind only [AddChar.mulShift_apply]))
+      (add norm 0 (by grind only [AddChar.map_add_eq_mul]))
+      (add norm 0 (by grind only [PowerSeries.eq_mul_inv_iff_mul_eq]))
+      (add norm 0 (by grind only [pow_add]))
 
-  have step19 : (c * c) * (u * y) = ((c * c) * u) * y := by
-    clear * -
-    simp only [mul_assoc]
-
-  have step20 : ((c * c) * u) * y = c * y := by
-    clear * - step10
-    simp_all only
-
-  have step21 : ((c * c) * y) * u = b := by
-    clear * - step17 step18 step19 step20 step2
-    subst step2
-    simp_all only
-
-  have step22 : a = b := by
-    clear * - step11 step16 step21
-    subst step16 step21
-    simp_all only
-
-  exact step22
+  exact h_final

@@ -1,16 +1,918 @@
+
 import Mathlib
 
-open BigOperators Real Nat Topology Rat
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
+
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
+
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+  | _ => Elab.throwUnsupportedSyntax
+end Google
+
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
+
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
+
+
 set_option maxHeartbeats 0
 
 theorem amc12a_2009_p6 (m n p q : ℝ) (h₀ : p = 2 ^ m) (h₁ : q = 3 ^ n) :
-  p ^ (2 * n) * q ^ m = 12 ^ (m * n) := by
-  have h_step1 : p ^ (2 * n) * q ^ m = (2 ^ m) ^ (2 * n) * (3 ^ n) ^ m := by
-    clear * - h₀ h₁
-    subst h₁ h₀
-    simp_all only
+    p ^ (2 * n) * q ^ m = 12 ^ (m * n) := by
+  -- Step 1 & 2 are hypotheses h0 and h1
+  -- Step 3 & 4: p^(2n) = (2^m)^(2n) = 2^(2mn)
+  have h2 : p ^ (2 * n) = (2 : ℝ) ^ (m * (2 * n)) := by
+    clear * - h₀
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [mul_pow]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [pow_add]))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by grind only [Surreal.zsmul_pow_two_powHalf]))
+      (add norm 0 (by grind only [pow_two]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq_eq_one_of_squarefree]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq]))
+      (add norm 0 (by grind only [Surreal.double_powHalf_succ_eq_powHalf]))
+      (add norm 0 (by grind only [Real.Gamma_two]))
+      (add norm 0 (by grind only [Surreal.nsmul_pow_two_powHalf']))
+      (add norm 0 (by grind only [pow_mul]))
+      (add norm 0 (by grind only [Nat.cast_two]))
+      (add norm 0 (by grind only [quadraticChar_sq_one]))
+      (add norm 0 (by grind only [gaussSum_sq]))
+      (add norm 0 (by grind only [mul_two]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by rw [Quaternion.coe_commutes]))
+      (add norm 0 (by grind only [Surreal.nsmul_pow_two_powHalf]))
+      (add norm 0 (by grind only [quadraticChar_sq_one']))
+      (add norm 0 (by grind only [QuaternionGroup.xa_sq]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [Quaternion.self_add_star]))
+      (add norm 0 (by grind only [Nat.factorial_two]))
+      (add norm 0 (by grind only [two_ne_zero']))
+      (add norm 0 (by grind only [Int.cast_ofNat]))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [Real.rpow_two]))
 
-  simp_all only
-  field_simp [Real.rpow_def_of_pos] <;> ring
-  simp [← exp_add, mul_assoc, mul_comm, mul_left_comm]
-  simp [show (12 : ℝ) = 2 ^ 2 * 3 by norm_cast, Real.log_mul, mul_left_comm] <;> ring
+  have h3 : (2 : ℝ) ^ (m * (2 * n)) = (2 : ℝ) ^ (2 * m * n) := by
+    clear * -
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      enableUnfold := false
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [Real.Gamma_two]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 0 (by grind only [Nat.cast_two]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [mul_two]))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [Quaternion.self_add_star]))
+      (add norm 0 (by grind only [Real.doublingGamma]))
+      (add norm 0 (by grind only [Surreal.zsmul_pow_two_powHalf]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by rw [Quaternion.coe_mul]))
+      (add norm 0 (by grind only [Real.Gamma_add_one]))
+      (add norm 0 (by grind only [Nat.factorial_two]))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+      (add norm 0 (by grind only [Quaternion.star_add_self]))
+      (add norm 0 (by grind only [Complex.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by rw [Quaternion.coe_commutes]))
+      (add norm 0 (by rw [Quaternion.coeComplex_mul]))
+      (add norm 0 (by grind only [Int.cast_ofNat]))
+      (add norm 0 (by grind only [Complex.mul_cpow_ofReal_nonneg]))
+      (add norm 0 (by grind only [Nat.cast_descFactorial_two]))
+      (add norm 0 (by grind only [Real.Gamma]))
+      (add norm 0 (by grind only [NumberField.mixedEmbedding.convexBodySumFactor]))
+      (add norm 0 (by grind only [Complex.ofReal_mul]))
+      (add norm 0 (by grind only [Surreal.nsmul_pow_two_powHalf']))
+      (add norm 0 (by grind only [Int.cast_two]))
+
+  have h4 : p ^ (2 * n) = (2 : ℝ) ^ (2 * m * n) := by
+    clear * - h2 h3
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [Real.Gamma_two]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [Nat.cast_two]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [Real.Gamma_add_one]))
+      (add norm 0 (by grind only [Real.log_rpow]))
+      (add norm 0 (by grind only [Real.doublingGamma]))
+      (add norm 0 (by grind only [gaussSum_sq]))
+      (add norm 0 (by grind only [Real.Gamma_pos_of_pos]))
+      (add norm 0 (by grind only [Real.rpow_pos_of_pos]))
+      (add norm 0 (by grind only [mul_two]))
+      (add norm 0 (by grind only [Real.Gamma]))
+      (add norm 0 (by grind only [Polynomial.natTrailingDegree_mul_mirror]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 0 (by grind only [Real.mul_rpow]))
+      (add norm 0 (by grind only [Nat.factorial_two]))
+      (add norm 0 (by grind only [Real.rpow_natCast]))
+      (add norm 0 (by grind only [Polynomial.natDegree_mul_mirror]))
+      (add norm 0 (by grind only [Real.rpow_one]))
+      (add norm 0 (by grind only [Nat.cast_descFactorial_two]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq]))
+      (add norm 0 (by grind only [CharTwo.two_eq_zero]))
+      (add norm 0 (by grind only [Int.cast_ofNat]))
+      (add norm 0 (by grind only [Real.log_mul]))
+      (add norm 0 (by grind only [Surreal.nsmul_pow_two_powHalf']))
+      (add norm 0 (by grind only [Real.doublingGamma_eq_Gamma]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add unsafe 90% (by simp only [pow_two] at *))
+
+  -- Step 5 & 6: q^m = (3^n)^m = 3^(nm)
+  have h5 : q ^ m = (3 : ℝ) ^ (n * m) := by
+    clear * - h₁
+    simp [h₁, ← Real.rpow_mul, mul_comm n m]
+
+  have h6 : (3 : ℝ) ^ (n * m) = (3 : ℝ) ^ (m * n) := by
+    clear * -
+    aesop (config := {
+      maxRuleApplications := 40
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      enableUnfold := false
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add unsafe 10% (by exfalso))
+      (add norm 0 (by rw [Quaternion.coe_mul]))
+      (add norm 0 (by rw [Quaternion.exp_coe]))
+      (add norm 0 (by grind only [Quaternion.coeComplex_mul]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 0 (by grind only [EReal.coe_mul]))
+      (add norm 0 (by rw [Quaternion.star_coe]))
+      (add norm 0 (by grind only [Complex.cpow_mul_ofReal_nonneg]))
+      (add norm 0 (by grind only [Quaternion.coe_commutes]))
+      (add norm 0 (by grind only [Hyperreal.coe_mul]))
+      (add norm 0 (by rw [Quaternion.coeComplex_coe]))
+      (add norm 0 (by rw [Quaternion.coe_mul_eq_smul]))
+      (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+      (add norm 0 (by grind only [Complex.ofReal_mul]))
+      (add norm 0 (by grind only [Real.rpow_def]))
+      (add norm 0 (by rw [Quaternion.coe_real_complex_mul]))
+      (add norm 0 (by grind only [integral_gaussian]))
+      (add norm 0 (by grind only [Quaternion.smul_coe]))
+      (add norm 0 (by grind only [Complex.ofReal_pow]))
+      (add norm 0 (by grind only [Complex.mul_cpow_ofReal_nonneg]))
+      (add norm 0 (by grind only [Complex.cpow_mul]))
+      (add norm 0 (by grind only [Quaternion.inner_self]))
+      (add norm 0 (by grind only [integral_ofReal]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [Quaternion.normSq]))
+      (add norm 0 (by grind only [Complex.ofReal_cpow]))
+      (add norm 0 (by grind only [Complex.arg_real_mul]))
+      (add norm 0 (by grind only [Quaternion.normSq_coe]))
+      (add norm 0 (by grind only [Complex.ofReal_log]))
+      (add norm 0 (by grind only [mellin_comp_mul_left]))
+      (add norm 0 (by grind only [Complex.UnitDisc.coe_mul]))
+      (add norm 0 (by grind only [Quaternion.normSq_smul]))
+
+  have h7 : q ^ m = (3 : ℝ) ^ (m * n) := by
+    clear * - h5 h6
+    aesop (config := {
+      maxRuleApplications := 40
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 520
+      enableUnfold := false
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [mul_right_inj']))
+      (add norm 0 (by grind only [gaussSum_sq]))
+      (add norm 0 (by grind only [mul_left_cancel₀]))
+      (add norm 0 (by rw [Quaternion.coe_mul]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [Real.Gamma_two]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 0 (by grind only [Quaternion.coeComplex_mul]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [mul_pow]))
+      (add norm 0 (by grind only [euler_four_squares]))
+      (add norm 0 (by grind only [pow_two]))
+      (add norm 0 (by grind only [Complex.ofReal_inj]))
+      (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+      (add norm 0 (by grind only [Polynomial.natTrailingDegree_mul_mirror]))
+      (add norm 0 (by grind only [quadraticChar_sq_one']))
+      (add norm 0 (by grind only [Char.card_pow_char_pow]))
+      (add norm 0 (by grind only [Complex.ofReal_pow]))
+      (add norm 0 (by grind only [Int.cast_ofNat]))
+      (add norm 0 (by grind only [two_ne_zero']))
+      (add norm 0 (by grind only [Quaternion.coe_commutes]))
+      (add norm 0 (by grind only [Nat.cast_two]))
+      (add norm 0 (by grind only [Complex.mul_cpow_ofReal_nonneg]))
+      (add norm 0 (by grind only [Surreal.zsmul_pow_two_powHalf]))
+      (add norm 0 (by grind only [quadraticChar_sq_one]))
+      (add norm 0 (by grind only [eq_or_eq_neg_of_sq_eq_sq]))
+      (add norm 0 (by grind only [Nat.factorial_two]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq_eq_one_of_squarefree]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add unsafe 50% (by simp only [sq_add_sq_mul]))
+
+  -- Step 7: p^(2n) * q^m = 2^(2mn) * 3^(mn)
+  have h8 : p ^ (2 * n) * q ^ m = (2 : ℝ) ^ (2 * m * n) * (3 : ℝ) ^ (m * n) := by
+    clear * - h4 h7
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 60
+      maxGoals := 512
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 0 (by split))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [mul_pow]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by grind only [pow_add]))
+      (add norm 0 (by grind only [mul_right_comm]))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_param_pow_mul_iff]))
+      (add norm 0 (by grind only [Real.mul_rpow]))
+      (add norm 0 (by grind only [pow_pos]))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [pow_ne_zero]))
+      (add norm 0 (by grind only [pow_mul]))
+      (add norm 0 (by rw [Quaternion.coe_commutes]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [Asymptotics.superpolynomialDecay_mul_param_pow_iff]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [div_pow]))
+      (add norm 0 (by grind only [Surreal.zsmul_pow_two_powHalf]))
+      (add norm 0 (by grind only [mul_right_inj']))
+      (add norm 0 (by grind only [Real.rpow_natCast]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [quadraticChar_sq_one]))
+      (add norm 0 (by rw [Quaternion.coe_mul]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq_eq_one_of_squarefree]))
+      (add norm 0 (by grind only [euler_four_squares]))
+      (add norm 0 (by grind only [Real.sq_sqrt]))
+      (add norm 0 (by grind only [mul_le_mul_left]))
+      (add norm 0 (by grind only [sq_pos_of_pos]))
+      (add norm 0 (by rw [Quaternion.coe_mul_eq_smul]))
+      (add norm 0 (by grind only [mul_div_cancel₀]))
+      (add unsafe 50% (by nlinarith [Real.log_rpow]))
+
+  -- Step 8 & 9: 2^(2mn) = (2^2)^(mn) = 4^(mn)
+  have h9 : (2 : ℝ) ^ (2 * m * n) = ((2 : ℝ) ^ 2) ^ (m * n) := by
+    clear * -
+    simpa [Real.rpow_mul, mul_assoc] using by ring
+
+  have h10 : (2 : ℝ) ^ 2 = (4 : ℝ) := by
+    clear * -
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      enableUnfold := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Nat.factorial_two]))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [gaussSum_sq]))
+      (add norm 0 (by grind only [CharTwo.two_eq_zero]))
+      (add norm 0 (by grind only [Surreal.nsmul_pow_two_powHalf]))
+      (add norm 0 (by grind only [Int.cast_two]))
+      (add norm 0 (by grind only [QuaternionGroup.xa_sq]))
+      (add norm 0 (by grind only [Int.cast_ofNat]))
+      (add norm 0 (by grind only [Nat.cast_descFactorial_two]))
+      (add norm 0 (by grind only [Polynomial.natTrailingDegree_mul_mirror]))
+      (add norm 0 (by grind only [mul_two]))
+      (add norm 0 (by grind only [even_two]))
+      (add norm 0 (by grind only [Surreal.nsmul_pow_two_powHalf']))
+      (add norm 0 (by grind only [Surreal.double_powHalf_succ_eq_powHalf]))
+      (add norm 0 (by grind only [Polynomial.natDegree_mul_mirror]))
+      (add norm 0 (by grind only [Polynomial.derivative_sq]))
+      (add norm 0 (by grind only [IsSquare_sq]))
+      (add norm 0 (by grind only [InnerProductSpaceable]))
+      (add norm 0 (by grind only [Quaternion.self_add_star]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq_eq_one_of_squarefree]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [CoxeterSystem.IsReflection.pow_two]))
+      (add norm 0 (by grind only [Nat.cast_ofNat]))
+      (add unsafe 90% (by simp only [Nat.cast_two] at *))
+      (add unsafe 90% (by simp only [pow_two] at *))
+      (add unsafe 90% (by simp only [Complex.cpow_two] at *))
+      (add unsafe 90% (by simp only [Real.rpow_two] at *))
+      (add unsafe 90% (by simp only [ENNReal.rpow_two] at *))
+      (add unsafe 50% (by simp only [sq_add_sq_mul]))
+      (add unsafe 90% (by simp only [NNReal.rpow_two] at *))
+
+  have h11 : ((2 : ℝ) ^ 2) ^ (m * n) = (4 : ℝ) ^ (m * n) := by
+    clear * - h10
+    aesop (config := {
+      maxRuleApplications := 40
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      enableUnfold := false
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [Real.Gamma_two]))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [Nat.cast_two]))
+      (add norm 0 (by grind only [Real.doublingGamma]))
+      (add norm 0 (by grind only [Real.mul_rpow]))
+      (add norm 0 (by grind only [Real.rpow_one]))
+      (add norm 0 (by grind only [Real.rpow_natCast]))
+      (add norm 0 (by grind only [mul_pow]))
+      (add norm 0 (by grind only [Int.cast_ofNat]))
+      (add norm 0 (by grind only [Complex.mul_cpow_ofReal_nonneg]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+      (add norm 0 (by grind only [Real.Gamma_add_one]))
+      (add norm 0 (by grind only [Complex.ofReal_pow]))
+      (add norm 0 (by grind only [Real.log_rpow]))
+      (add norm 0 (by grind only [Real.Gamma]))
+      (add norm 0 (by grind only [Nat.factorial_two]))
+      (add norm 0 (by rw [Quaternion.coe_mul]))
+      (add norm 0 (by grind only [gaussSum_sq]))
+      (add norm 0 (by grind only [even_two]))
+      (add norm 0 (by grind only [Nat.cast_ofNat]))
+      (add norm 0 (by grind only [Complex.ofReal_mul]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq]))
+      (add norm 0 (by grind only [Real.log_pow]))
+      (add norm 0 (by grind only [Complex.ofReal_cpow]))
+      (add norm 0 (by grind only [Complex.ofReal_log]))
+      (add unsafe 90% (by simp only [pow_two] at *))
+
+  have h12 : (2 : ℝ) ^ (2 * m * n) = (4 : ℝ) ^ (m * n) := by
+    clear * - h9 h11
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      enableUnfold := false
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [Real.Gamma_two]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [Real.log_rpow]))
+      (add norm 0 (by grind only [Real.doublingGamma]))
+      (add norm 0 (by grind only [Nat.cast_two]))
+      (add norm 0 (by grind only [Real.Gamma_add_one]))
+      (add norm 0 (by grind only [Real.sqrt_eq_rpow]))
+      (add norm 0 (by grind only [Real.mul_rpow]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [Real.rpow_natCast]))
+      (add norm 0 (by grind only [Real.rpow_pos_of_pos]))
+      (add norm 0 (by grind only [Real.Gamma]))
+      (add norm 0 (by grind only [Real.rpow_one]))
+      (add norm 0 (by grind only [Real.Gamma_pos_of_pos]))
+      (add norm 0 (by grind only [Real.rpow_add]))
+      (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+      (add norm 0 (by grind only [Real.doublingGamma_eq_Gamma]))
+      (add norm 0 (by grind only [ne_of_gt]))
+      (add norm 0 (by grind only [gaussSum_sq]))
+      (add norm 0 (by grind only [mul_two]))
+      (add norm 0 (by grind only [Real.log_pow]))
+      (add norm 0 (by grind only [Nat.factorial_two]))
+      (add norm 0 (by grind only [Nat.cast_descFactorial_two]))
+      (add norm 0 (by grind only [Real.log_mul]))
+      (add norm 0 (by grind only [Int.cast_ofNat]))
+      (add norm 0 (by grind only [two_ne_zero']))
+      (add norm 0 (by grind only [pow_two]))
+      (add norm 0 (by grind only [Real.Gamma_eq_integral]))
+
+  -- Step 10: p^(2n) * q^m = 4^(mn) * 3^(mn)
+  have h13 : p ^ (2 * n) * q ^ m = (4 : ℝ) ^ (m * n) * (3 : ℝ) ^ (m * n) := by
+    clear * - h8 h12
+    aesop (config := {
+      maxRuleApplications := 40
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      enableUnfold := false
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [mul_pow]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [Real.mul_rpow]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [Real.log_rpow]))
+      (add norm 0 (by grind only [Real.Gamma_two]))
+      (add norm 0 (by grind only [mul_right_inj']))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [ne_of_gt]))
+      (add norm 0 (by grind only [Real.rpow_natCast]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [Real.rpow_one]))
+      (add norm 0 (by grind only [pow_pos]))
+      (add norm 0 (by grind only [gaussSum_sq]))
+      (add norm 0 (by grind only [sq_pos_of_pos]))
+      (add norm 0 (by grind only [mul_left_cancel₀]))
+      (add norm 0 (by grind only [pow_ne_zero]))
+      (add norm 0 (by grind only [Real.rpow_add]))
+      (add norm 0 (by grind only [Real.doublingGamma]))
+      (add norm 0 (by grind only [pow_two]))
+      (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+      (add norm 0 (by grind only [Complex.mul_cpow_ofReal_nonneg]))
+      (add norm 0 (by grind only [Real.Gamma_pos_of_pos]))
+      (add norm 0 (by grind only [Iff]))
+      (add norm 0 (by grind only [Real.Gamma_add_one]))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by grind only [two_ne_zero']))
+      (add unsafe 50% (by nlinarith [Real.rpow_pos_of_pos]))
+
+  -- Step 11 & 12: 4^(mn) * 3^(mn) = (4*3)^(mn) = 12^(mn)
+  have h14 : (4 : ℝ) ^ (m * n) * (3 : ℝ) ^ (m * n) = (4 * 3 : ℝ) ^ (m * n) := by
+    clear * -
+    aesop (config := {
+      maxRuleApplications := 40
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      maxGoals := 256
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [Real.mul_rpow]))
+      (add norm 0 (by grind only [Complex.mul_cpow_ofReal_nonneg]))
+      (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+      (add norm 0 (by grind only [Complex.cpow_mul]))
+      (add norm 0 (by grind only [Complex.ofReal_log]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [Complex.ofReal_mul]))
+      (add norm 0 (by grind only [Complex.cpow_mul_ofReal_nonneg]))
+      (add norm 0 (by grind only [Real.rpow_add]))
+      (add norm 0 (by grind only [Complex.ofReal_cpow]))
+      (add norm 0 (by grind only [Quaternion.coeComplex_mul]))
+      (add norm 0 (by rw [Quaternion.coe_mul]))
+      (add norm 0 (by grind only [EReal.coe_mul]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [mellin_comp_mul_left]))
+      (add norm 0 (by grind only [Real.rpow_one]))
+      (add norm 0 (by grind only [Real.rpow_def_of_nonneg]))
+      (add norm 0 (by rw [Quaternion.coe_commutes]))
+      (add norm 0 (by grind only [Real.rpow_neg]))
+      (add norm 0 (by grind only [Complex.cpow_add]))
+      (add norm 0 (by rw [Quaternion.coe_mul_eq_smul]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [Complex.cpow_def_of_ne_zero]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [MeasureTheory.integral_comp_rpow_Ioi]))
+      (add norm 0 (by grind only [Real.log_rpow]))
+      (add norm 0 (by grind only [Complex.ofReal_pow]))
+      (add norm 0 (by grind only [mellinInv_eq_fourierIntegralInv]))
+      (add norm 0 (by grind only [Real.rpow_def]))
+      (add norm 0 (by grind only [Real.rpow_add_one]))
+      (add norm 0 (by grind only [Quaternion.smul_coe]))
+
+  have h15 : (4 : ℝ) * 3 = (12 : ℝ) := by
+    clear * -
+    aesop (config := {
+      maxRuleApplications := 1600
+      maxNormIterations := 320
+      maxGoals := 512
+      enableSimp := false
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by ext))
+      (add safe 0 (by split))
+      (add safe 0 (by exfalso))
+      (add safe 100 (by rfl))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [mul_two]))
+      (add norm 0 (by grind only [Quaternion.self_add_star]))
+      (add norm 0 (by grind only [Quaternion.star_add_self]))
+      (add norm 0 (by grind only [ack_two]))
+      (add norm 0 (by grind only [QuaternionAlgebra.self_add_star]))
+      (add norm 0 (by grind only [Quaternion.star_add_self']))
+      (add norm 0 (by grind only [Nat.fib_two_mul_add_two]))
+      (add norm 0 (by grind only [Nat.fib_two_mul_add_one]))
+      (add norm 0 (by grind only [Surreal.double_powHalf_succ_eq_powHalf]))
+      (add norm 0 (by grind only [Nat.two_mul]))
+      (add norm 0 (by grind only [Nat.factorial_two]))
+      (add norm 0 (by grind only [Nat.cast_two]))
+      (add norm 0 (by grind only [pow_two]))
+      (add norm 0 (by grind only [Int.cast_two]))
+      (add norm 0 (by grind only [QuaternionAlgebra.star_add_self]))
+      (add norm 0 (by grind only [one_add_one_eq_two]))
+      (add norm 0 (by rw [Quaternion.self_add_star']))
+      (add norm 0 (by grind only [Ring.multichoose_two]))
+      (add norm 0 (by grind only [Nat.fib_two_mul]))
+      (add norm 0 (by grind only [Complex.cpow_two]))
+      (add norm 0 (by grind only [QuaternionAlgebra.self_add_star']))
+      (add norm 0 (by grind only [Nat.cast_descFactorial_two]))
+      (add norm 0 (by grind only [Polynomial.natTrailingDegree_mul_mirror]))
+      (add norm 0 (by grind only [Polynomial.natDegree_mul_mirror]))
+      (add norm 0 (by grind only [Real.sin_two_mul]))
+      (add norm 0 (by grind only [Real.two_mul_arctan_sub_pi]))
+      (add norm 0 (by grind only [CharTwo.two_eq_zero]))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [QuaternionAlgebra.star_add_self']))
+      (add norm 0 (by grind only [Finset.mulETransformLeft.card]))
+
+  have h16 : (4 * 3 : ℝ) ^ (m * n) = (12 : ℝ) ^ (m * n) := by
+    clear * - h15
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 10
+      maxNormIterations := 320
+      maxGoals := 256
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 0 (by split))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [Real.rpow_one]))
+      (add norm 0 (by grind only [Real.mul_rpow]))
+      (add norm 0 (by grind only [Real.rpow_add]))
+      (add norm 0 (by grind only [Real.rpow_pos_of_pos]))
+      (add norm 0 (by grind only [ne_of_gt]))
+      (add norm 0 (by grind only [Real.log_rpow]))
+      (add norm 0 (by grind only [Real.rpow_add_one]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [Real.Gamma_add_one]))
+      (add norm 0 (by grind only [Real.Gamma_pos_of_pos]))
+      (add norm 0 (by grind only [Real.Gamma]))
+      (add norm 0 (by grind only [Real.Gamma_two]))
+      (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+      (add norm 0 (by grind only [Real.doublingGamma]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [Real.rpow_neg]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [Real.rpow_neg_one]))
+      (add norm 0 (by grind only [Real.doublingGamma_eq_Gamma]))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [Real.Gamma_eq_integral]))
+      (add norm 0 (by grind only [Complex.mul_cpow_ofReal_nonneg]))
+      (add norm 0 (by grind only [Real.log_mul]))
+      (add norm 0 (by grind only [mellinInv_eq_fourierIntegralInv]))
+      (add norm 0 (by grind only [Real.inv_rpow]))
+      (add norm 0 (by grind only [MeasureTheory.integral_comp_rpow_Ioi_of_pos]))
+      (add norm 0 (by grind only [Complex.ofReal_log]))
+      (add norm 0 (by grind only [Real.rpow_logb]))
+      (add norm 0 (by grind only [Real.rpow_add']))
+      (add norm 0 (by grind only [Real.rpow_sub]))
+      (add norm 0 (by grind only [Complex.cpow_add]))
+
+  have h17 : (4 : ℝ) ^ (m * n) * (3 : ℝ) ^ (m * n) = (12 : ℝ) ^ (m * n) := by
+    clear * - h14 h16
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 320
+      maxGoals := 512
+      enableUnfold := false
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by omega))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [mul_comm]))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [Real.rpow_pos_of_pos]))
+      (add norm 0 (by grind only [mul_assoc]))
+      (add norm 0 (by grind only [mul_left_comm]))
+      (add norm 0 (by grind only [Real.mul_rpow]))
+      (add norm 0 (by grind only [Real.rpow_one]))
+      (add norm 0 (by grind only [Real.log_mul]))
+      (add norm 0 (by grind only [Real.rpow_add]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half_of_pos]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [Real.Gamma_pos_of_pos]))
+      (add norm 0 (by grind only [Real.Gamma_add_one]))
+      (add norm 0 (by grind only [mul_right_comm]))
+      (add norm 0 (by grind only [Real.rpow_add_one]))
+      (add norm 0 (by grind only [mul_le_mul_left]))
+      (add norm 0 (by grind only [Complex.log_ofReal_mul]))
+      (add norm 0 (by grind only [Real.Gamma_two]))
+      (add norm 0 (by grind only [Real.rpow_logb]))
+      (add norm 0 (by grind only [LT.lt.ne']))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [Real.Gamma_mul_Gamma_add_half]))
+      (add norm 0 (by grind only [Real.doublingGamma]))
+      (add norm 0 (by grind only [two_mul]))
+      (add norm 0 (by grind only [mul_div_cancel₀]))
+      (add norm 0 (by grind only [mul_right_inj']))
+      (add norm 0 (by grind only [Real.rpow_def_of_pos]))
+      (add unsafe 10% (by grind only [Real.log_rpow]))
+      (add unsafe 10% (by grind only [ne_of_gt]))
+      (add unsafe 50% (by nlinarith [Real.log_pos]))
+      (add unsafe 50% (by nlinarith [Real.b_pos]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left]))
+
+  -- Final conclusion
+  have h18 : p ^ (2 * n) * q ^ m = 12 ^ (m * n) := by
+    clear * - h13 h17
+    aesop (config := {
+      maxRuleApplications := 100
+      maxRuleApplicationDepth := 380
+      maxNormIterations := 520
+      maxGoals := 256
+      enableSimp := false
+      enableUnfold := false
+      useDefaultSimpSet := false
+      })
+      (add norm 100 (by norm_cast))
+      (add norm 0 (by linarith))
+      (add norm 0 (by nlinarith))
+      (add norm 0 (by bound))
+      (add norm 1 (by ext))
+      (add norm 1 (by field_simp [*] at *))
+      (add safe 100 (by ring))
+      (add safe 100 (by field_simp))
+      (add safe 100 (by norm_num))
+      (add safe 0 (by positivity))
+      (add safe 0 (by omega))
+      (add safe 100 (by interval_cases))
+      (add safe 100 (by norm_cast at *))
+      (add safe 100 (by decide))
+      (add safe 0 (by push_cast))
+      (add safe 100 (by assumption_mod_cast))
+      (add norm 0 (by grind only [Iff]))
+      (add norm 0 (by grind only [mul_right_inj']))
+      (add norm 0 (by grind only [mul_left_cancel₀]))
+      (add norm 0 (by grind only [zero_lt_two]))
+      (add norm 0 (by grind only [pow_ne_zero]))
+      (add norm 0 (by grind only [Int.sq_of_gcd_eq_one]))
+      (add norm 0 (by grind only [sq_pos_of_pos]))
+      (add norm 0 (by grind only [two_ne_zero]))
+      (add norm 0 (by grind only [pow_pos]))
+      (add norm 0 (by grind only [LT.lt.ne']))
+      (add norm 0 (by grind only [mul_pow]))
+      (add norm 0 (by grind only [Int.isUnit_sq]))
+      (add norm 0 (by grind only [Real.log_rpow]))
+      (add norm 0 (by grind only [mul_le_mul_right]))
+      (add norm 0 (by grind only [mul_le_mul_left]))
+      (add norm 0 (by grind only [Behrend.nValue_pos]))
+      (add norm 0 (by grind only [EisensteinSeries.div_max_sq_ge_one]))
+      (add norm 0 (by grind only [mul_nonneg_iff_of_pos_right]))
+      (add norm 0 (by grind only [Real.rpow_mul]))
+      (add norm 0 (by grind only [LucasLehmer.mersenne_int_ne_zero]))
+      (add norm 0 (by grind only [Real.rpow_natCast]))
+      (add norm 0 (by grind only [CoxeterSystem.simple_sq]))
+      (add norm 0 (by grind only [ArithmeticFunction.moebius_sq_eq_one_of_squarefree]))
+      (add norm 0 (by grind only [div_pow]))
+      (add norm 0 (by grind only [quadraticChar_sq_one]))
+      (add norm 0 (by grind only [Char.card_pow_char_pow]))
+      (add norm 0 (by grind only [mul_left_inj']))
+      (add norm 0 (by grind only [mul_ne_zero]))
+      (add norm 0 (by grind only [FractionalIdeal.mem_div_iff_of_nonzero]))
+      (add unsafe 10% (by grind only [ne_of_gt]))
+      (add unsafe 50% (by nlinarith [Real.rpow_pos_of_pos]))
+      (add unsafe 50% (by nlinarith [mul_lt_mul_left]))
+
+  exact h18

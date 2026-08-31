@@ -1,0 +1,13 @@
+run: workspace/result/qwen36-27b_int4/satp_dsp_minif2f_v427_test_sbfsb3
+manifest: _batch_sbfsb3.jsonl sha256=fe859eb627645bf7b88e526e7476d28607d95cfa3e3bafd66e7cb1741e31fa8f
+mode: satpbfsaesop
+toolchain: leanprover/lean4:v4.27.0
+pins: see LeanSATP/deps/.pins (mathlib + aesop identity); verified via `lake env lean` in LeanSATP workspace
+gate: standalone compile + #print axioms allowlist ['Classical.choice', 'Quot.sound', 'propext']
+published: 188 = 183 axiom-clean + 5 native_decide (Lean.ofReduceBool+trustCompiler): amc12_2001_p5, amc12a_2020_p4, mathd_algebra_170, mathd_numbertheory_353, mathd_numbertheory_427
+native_decide provenance: all 5 emitted by BFS-Prover Try-this suggestions ([apply] steps in _A.log); none from satp emissions or sketch text; kept per 2026-08-16 user ruling (BFS-side responsibility)
+header hygiene: harness-only _BIGOP_COMPAT sugar stripped from all files (GDM vendored header kept verbatim)
+excluded service-dependent: []
+excluded gate-failed: []
+rescued (stale-name normalized, re-gated): ['algebra_absapbon1pabsapbleqsumabsaon1pabsa', 'mathd_algebra_275', 'mathd_algebra_332', 'numbertheory_4x3m7y3neq2003'] table={'abs_add': 'abs_add_le', 'Real.rpow_nat_cast': 'Real.rpow_natCast', 'Int.mod_self': 'Int.emod_self', 'Real.sqrt_eq_iff_sq_eq': None}
+note: sketch winners carry the run's file-level `set_option maxHeartbeats 0` pin (run artifact, untouched)

@@ -1,90 +1,92 @@
 import Mathlib
 
-open BigOperators Real Nat Topology Rat
-set_option maxHeartbeats 0
+/- Vendored verbatim from google-deepmind/formal-conjectures @ f564f8d7
+(Apache-2.0): the `answer()` term elaborator (FormalConjectures/Util/Answer)
+and `Real.nthRoot` (FormalConjecturesForMathlib/…/NthRoot). -/
+
+/-- Indicates where the answer is in a problem statement. -/
+syntax (name := Google.answer) "answer(" term ")" : term
+
+namespace Google
+open Lean Elab Term
+/-- Indicates where the answer is in a problem statement. -/
+@[term_elab answer]
+def answerElab : TermElab := fun stx expectedType? => do
+  match stx with
+  | `(answer($a:term)) => do
+    mkSaveInfoAnnotation <$> postponeElabTerm (← `(by exact $a)) expectedType?
+  | _ => Elab.throwUnsupportedSyntax
+end Google
+
+namespace Real
+/-- `nthRoot n r` computes `ⁿ√r`; behaves as expected on negatives for odd `n`. -/
+noncomputable def nthRoot (n : ℕ) (r : ℝ) : ℝ :=
+  if Even n then r ^ (n⁻¹ : ℝ) else SignType.sign r ^ n * abs r ^ (n⁻¹ : ℝ)
+end Real
+
+open scoped Real
+open scoped Nat
+open scoped Topology
+open scoped Polynomial
+
 
 theorem aime_1990_p15 (a b x y : ℝ) (h₀ : a * x + b * y = 3) (h₁ : a * x ^ 2 + b * y ^ 2 = 7)
     (h₂ : a * x ^ 3 + b * y ^ 3 = 16) (h₃ : a * x ^ 4 + b * y ^ 4 = 42) :
     a * x ^ 5 + b * y ^ 5 = 20 := by
-  let u := x + y
 
-  let v := x * y
-
-  have h_step3 : a * x ^ 3 + b * y ^ 3 = u * (a * x ^ 2 + b * y ^ 2) - v * (a * x + b * y) := by
-    clear * -
-    simp_all only [u, v]
-    (nlinarith)
-
-  have h_step4 : (16 : ℝ) = 7 * u - 3 * v := by
-    clear * - h_step3 h₂ h₁ h₀
-    simp_all only [u, v]
-    (nlinarith)
-
-  have h_step5 : a * x ^ 4 + b * y ^ 4 = u * (a * x ^ 3 + b * y ^ 3) - v * (a * x ^ 2 + b * y ^ 2) := by
-    clear * -
-    simp_all only [u, v]
-    (nlinarith)
-
-  have h_step6 : (42 : ℝ) = 16 * u - 7 * v := by
-    clear * - h_step5 h₃ h₂ h₁
-    simp_all only [u, v]
-    (nlinarith)
-
-  have h_step7 : (112 : ℝ) = 49 * u - 21 * v := by
-    clear * - h_step4
-    simp_all only [u, v]
-    (nlinarith)
-
-  have h_step8 : (126 : ℝ) = 48 * u - 21 * v := by
-    clear * - h_step6
-    simp_all only [u, v]
-    (nlinarith)
-
-  have h_step9 : (49 * u - 21 * v) - (48 * u - 21 * v) = (112 : ℝ) - (126 : ℝ) := by
-    clear * - h_step7 h_step8
-    simp_all only [sub_sub_sub_cancel_right, u, v]
-
-  have h_step10 : u = (-14 : ℝ) := by
-    clear * - h_step9
-    simp_all only [sub_sub_sub_cancel_right, u, v]
-    (nlinarith)
-
-  have h_step11 : (16 : ℝ) = 7 * (-14 : ℝ) - 3 * v := by
-    clear * - h_step4 h_step10
-    simp_all only [mul_neg, u, v]
-
-  have h_step12 : (16 : ℝ) = (-98 : ℝ) - 3 * v := by
-    clear * - h_step11
-    simp_all only [mul_neg, sub_left_inj, neg_inj, v]
-    (nlinarith)
-
-  have h_step13 : (114 : ℝ) = -3 * v := by
-    clear * - h_step12
-    simp_all only [neg_mul, v]
-    (nlinarith)
-
-  have h_step14 : v = (-38 : ℝ) := by
-    clear * - h_step13
-    simp_all only [neg_mul, v]
-    (nlinarith)
-
-  have h_step15 : a * x ^ 5 + b * y ^ 5 = u * (a * x ^ 4 + b * y ^ 4) - v * (a * x ^ 3 + b * y ^ 3) := by
-    clear * -
-    simp_all only [u, v]
-    (nlinarith)
-
-  have h_step16 : a * x ^ 5 + b * y ^ 5 = (-14 : ℝ) * (42 : ℝ) - (-38 : ℝ) * (16 : ℝ) := by
-    clear * - h_step15 h_step10 h_step14 h₃ h₂
-    simp_all only [neg_mul, sub_neg_eq_add, u, v]
-
-  have h_step17 : a * x ^ 5 + b * y ^ 5 = (-588 : ℝ) + (608 : ℝ) := by
-    clear * - h_step16
-    simp_all only [neg_mul, sub_neg_eq_add]
-    (nlinarith)
-
-  have h_step18 : a * x ^ 5 + b * y ^ 5 = (20 : ℝ) := by
-    clear * - h_step17
-    simp_all only
-    (nlinarith)
-
-  exact h_step18
+  aesop (config := {
+    maxRuleApplications := 100
+    maxRuleApplicationDepth := 10
+    maxNormIterations := 320
+    enableSimp := false
+    enableUnfold := false
+    useDefaultSimpSet := false
+    })
+    (add norm 100 (by norm_cast))
+    (add norm 0 (by linarith))
+    (add norm 0 (by nlinarith))
+    (add norm 0 (by bound))
+    (add norm 1 (by ext))
+    (add norm 1 (by field_simp [*] at *))
+    (add safe 100 (by ring))
+    (add safe 100 (by field_simp))
+    (add safe 100 (by norm_num))
+    (add safe 0 (by positivity))
+    (add safe 0 (by omega))
+    (add safe 100 (by interval_cases))
+    (add safe 100 (by norm_cast at *))
+    (add safe 100 (by decide))
+    (add safe 0 (by push_cast))
+    (add safe 100 (by assumption_mod_cast))
+    (add norm 0 (by grind only [sq_pos_of_pos]))
+    (add norm 0 (by grind only [sq_lt_sq]))
+    (add norm 0 (by grind only [Real.sq_sqrt]))
+    (add norm 0 (by grind only [Real.sqrt_lt]))
+    (add norm 0 (by grind only [Pell.Solution₁.y_mul]))
+    (add norm 0 (by grind only [EisensteinSeries.r1]))
+    (add norm 0 (by grind only [sq_abs]))
+    (add norm 0 (by grind only [sq_sub_sq]))
+    (add norm 0 (by grind only [mul_self_nonneg]))
+    (add norm 0 (by grind only [one_lt_sq_iff_one_lt_abs]))
+    (add norm 0 (by grind only [sq_eq_sq]))
+    (add norm 0 (by grind only [Real.sqrt_sq]))
+    (add norm 0 (by grind only [Real.lt_sqrt]))
+    (add norm 0 (by grind only [Pell.Solution₁.x_mul]))
+    (add norm 0 (by grind only [euler_four_squares]))
+    (add norm 0 (by grind only [Quaternion.sq_eq_normSq]))
+    (add norm 0 (by grind only [sq_lt_one_iff]))
+    (add norm 0 (by grind only [Real.mul_self_sqrt]))
+    (add norm 0 (by grind only [zero_lt_two]))
+    (add unsafe 50% (by simp only [sq_add_sq_mul]))
+    (add unsafe 50% (by simp only [Pell.Solution₁.prop_x]))
+    (add unsafe 50% (by nlinarith [mul_lt_mul_left]))
+    (add unsafe 50% (by nlinarith [mul_lt_mul_right]))
+    (add unsafe 50% (by nlinarith [Pell.Solution₁.x_mul_pos]))
+    (add unsafe 50% (by nlinarith [mul_lt_iff_lt_one_left]))
+    (add unsafe 50% (by nlinarith [mul_lt_mul_of_pos_left]))
+    (add unsafe 50% (by simp only [Pell.Solution₁.prop_y]))
+    (add unsafe 50% (by nlinarith [Real.mul_pos]))
+    (add unsafe 90% (by simp only [pow_two] at *))
+    (add unsafe 50% (by nlinarith [lt_mul_of_one_lt_left']))
+    (add unsafe 50% (by nlinarith [EisensteinSeries.r1_pos]))
+    (add unsafe 50% (by simp only [Pell.Solution₁.prop]))

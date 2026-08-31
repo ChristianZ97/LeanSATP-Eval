@@ -6,87 +6,99 @@ set_option maxHeartbeats 0
 abbrev putnam_1986_a2_solution : ℕ := 3
 theorem putnam_1986_a2
 : (Nat.floor ((10 ^ 20000 : ℝ) / (10 ^ 100 + 3)) % 10 = putnam_1986_a2_solution) := by
-  let Y : ℕ := 10 ^ 100
-  let y : ℝ := (Y : ℝ)
-  let S_sum := ∑ k in Finset.range 200, ((-3 : ℝ) ^ k) * (y ^ (199 - k))
-  have h_step2_algebra : y ^ 200 = (y + 3) * S_sum + 3 ^ 200 := by
-    clear * -
-    simp_all only [Nat.reducePow, Nat.cast_ofNat, y, Y, S_sum]
-    (norm_num)
+  have h_main : Nat.floor ((10 ^ 20000 : ℝ) / (10 ^ 100 + 3)) % 10 = 3 := by
+    -- Let y = 10^100. We are analyzing floor(y^200 / (y+3)) mod 10.
+    -- Note that 10^20000 = (10^100)^200.
+    let y : ℝ := 10 ^ 100
+    have h_y_pow : y ^ 200 = (10 ^ 20000 : ℝ) := by
+      norm_num [pow_mul]
+      <;> ring_nf
+      aesop (config := {
+        maxRuleApplications := 100
+        maxRuleApplicationDepth := 10
+        maxNormIterations := 320
+        enableUnfold := false
+        })
+        (add norm 100 (by norm_cast))
+        (add norm 0 (by linarith))
+        (add norm 0 (by nlinarith))
+        (add norm 1 (by push_neg))
+        (add norm 0 (by bound))
+        (add norm 1 (by ring_nf))
+        (add norm 1 (by simp))
+        (add norm 100 (by simp_all))
+        (add norm 1 (by field_simp [*] at *))
+        (add norm 1 (by norm_num [*] at *))
+        (add safe 100 (by ring))
+        (add safe 100 (by field_simp))
+        (add safe 100 (by norm_num))
+        (add safe 100 (by positivity))
+        (add safe 100 (by omega))
+        (add safe 100 (by interval_cases))
+        (add safe 0 (by split))
+        (add safe 0 (by exfalso))
+        (add safe 100 (by norm_cast at *))
+        (add safe 100 (by decide))
+        (add safe 0 (by push_cast))
+        (add safe 100 (by assumption_mod_cast))
+        (add norm 0 (by grind only [MulZeroClass]))
+        (add norm 0 (by grind only [SzemerediRegularity.eps_pow_five_pos]))
+        (add norm 0 (by grind only [Nat.cast_zero]))
+        (add norm 0 (by grind only [FractionalIdeal.div_zero]))
+        (add norm 0 (by grind only [EuclideanDomain.zero_div]))
+        (add norm 0 (by grind only [Zsqrtd.zero_re]))
+        (add norm 0 (by grind only [div_zero]))
+        (add norm 0 (by grind only [Zsqrtd.zero_im]))
+        (add norm 0 (by grind only [Rat.zero_divInt]))
+        (add norm 0 (by grind only [quadraticChar_zero]))
+        (add norm 0 (by grind only [jacobiSym.zero_left]))
+        (add norm 0 (by grind only [zero_pow]))
+        (add norm 0 (by grind only [Ordinal.zero_opow]))
+        (add norm 0 (by grind only [Real.sqrt_pos]))
+        (add norm 0 (by grind only [HasDerivWithinAt.deriv_eq_zero]))
+        (add norm 0 (by grind only [HurwitzZeta.evenKernel_undef]))
+        (add norm 0 (by grind only [Int.zero_mul]))
+        (add norm 0 (by grind only [Real.sqrt_zero]))
+        (add norm 0 (by grind only [Ordinal.div_zero]))
+        (add norm 0 (by grind only [ZNum.div_zero]))
+        (add norm 0 (by grind only [MulChar.map_zero]))
+        (add norm 0 (by grind only [EReal.zero_div]))
+        (add norm 0 (by grind only [zero_tsub]))
+        (add norm 0 (by grind only [Int.zero_ediv]))
+        (add unsafe 10% (by grind only [LucasLehmer.mersenne_int_pos]))
+        (add unsafe 10% (by grind only [Nat.cast_pos]))
+        (add unsafe 50% (by nlinarith [Int.ediv_zero]))
+        (add unsafe 50% (by nlinarith [mul_self_pos]))
+        (add unsafe 50% (by nlinarith [mul_pos_iff_of_pos_right]))
+        (add unsafe 10% (by grind only [Int.natCast_pos]))
+        (add unsafe 50% (by nlinarith [mul_pos_iff_of_pos_left]))
+        (add unsafe 10% (by grind only [Int.natCast_nonpos_iff]))
 
-  have h_step3_div : y ^ 200 / (y + 3) = S_sum + 3 ^ 200 / (y + 3) := by
-    clear * - h_step2_algebra
-    simp_all only [Nat.reducePow, Nat.cast_ofNat, y, Y, S_sum]
-    (field_simp)
-    (nlinarith)
+    have h_divisor : (10 ^ 100 + 3 : ℝ) = y + 3 := by
+      rfl
 
-  have h_step4_power : (3 : ℝ) ^ 200 = 9 ^ 100 := by
-    clear * -
-    (ring)
+    have h_expr : (10 ^ 20000 : ℝ) / (10 ^ 100 + 3) = y ^ 200 / (y + 3) := by
+      rw [h_y_pow, h_divisor]
 
-  have h_step5_ineq : (9 : ℝ) ^ 100 < 10 ^ 100 + 3 := by
-    clear * -
-    (bound )
+    -- We use the algebraic identity: x^n - a^n = (x-a)(x^(n-1) + x^(n-2)a + ... + a^(n-1))
+    -- Here we want to divide y^200 by y+3.
+    -- Consider P(y) such that y^200 = (y+3)P(y) + R.
+    -- By polynomial division, R = (-3)^200 = 3^200.
+    -- So y^200 = (y+3)Q(y) + 3^200, where Q(y) = sum_{k=0}^{199} y^(199-k)*(-3)^k.
+    -- Thus y^200 / (y+3) = Q(y) + 3^200 / (y+3).
+    -- Since y = 10^100 is large, 3^200 / (y+3) is small positive fraction (< 1).
+    -- So floor(y^200 / (y+3)) = Q(y).
+    -- We need Q(y) mod 10.
+    -- Q(y) = y^199 - 3*y^198 + ... + (-3)^199.
+    -- Since y = 10^100, y is divisible by 10. So y^k for k>=1 is 0 mod 10.
+    -- The only term in Q(y) not divisible by 10 is the constant term (-3)^199.
+    -- So Q(y) == (-3)^199 (mod 10).
+    -- (-3)^199 = -(3^199).
+    -- 3^199 mod 10: Cycle of 3^k mod 10 is 3, 9, 7, 1. Length 4.
+    -- 199 = 4*49 + 3. So 3^199 == 3^3 == 27 == 7 (mod 10).
+    -- So Q(y) == -7 == 3 (mod 10).
+    -- Formalizing the value of Q(y) as an integer and showing it equals the floor.
+    -- Let's define the polynomial sum.
+    repeat' rw [h_expr]; norm_num [y, h_y_pow]
 
-  have h_step6_bounds : 0 < (3 : ℝ) ^ 200 / (y + 3) ∧ (3 : ℝ) ^ 200 / (y + 3) < 1 := by
-    clear * - h_step4_power h_step5_ineq
-    simp_all only [Nat.reducePow, Nat.cast_ofNat, Nat.ofNat_pos, pow_pos, div_pos_iff_of_pos_left, y, Y]
-    apply And.intro
-    · (nlinarith)
-    · (nlinarith)
-
-  let S_int : ℤ := ∑ k in Finset.range 200, ((-3 : ℤ) ^ k) * (Y ^ (199 - k) : ℤ)
-  have h_sum_is_int : (S_int : ℝ) = S_sum := by
-    clear * -
-    simp_all only [Int.reduceNeg, Nat.reducePow, Nat.cast_ofNat, Int.cast_sum, Int.cast_mul, Int.cast_pow, Int.cast_neg,
-        Int.cast_ofNat, S_int, Y, S_sum, y]
-
-  have h_S_int_nn : 0 ≤ S_int := by
-    clear * - h_step2_algebra h_sum_is_int
-    simp_all only [Nat.reducePow, Nat.cast_ofNat, Int.reduceNeg, Int.cast_sum, Int.cast_mul, Int.cast_pow, Int.cast_neg,
-      Int.cast_ofNat, y, Y, S_sum, S_int]
-    (norm_num [*] at *)
-
-  have h_step7_floor : Nat.floor (y ^ 200 / (y + 3)) = S_int.natAbs := by
-    clear * - h_step3_div h_step6_bounds h_sum_is_int h_S_int_nn
-    simp_all only [Nat.reducePow, Nat.cast_ofNat, Nat.ofNat_pos, pow_pos, div_pos_iff_of_pos_left, Int.reduceNeg,
-      Int.cast_sum, Int.cast_mul, Int.cast_pow, Int.cast_neg, Int.cast_ofNat, y, Y, S_sum, S_int]
-    norm_num [Nat.floor_eq_iff]
-
-  have h_expr_match : (10 ^ 20000 : ℝ) / (10 ^ 100 + 3) = y ^ 200 / (y + 3) := by
-    clear * -
-    simp_all only [Nat.reducePow, Nat.cast_ofNat, y, Y]
-    (norm_num)
-
-  have h_Y_mod_10 : (Y : ZMod 10) = 0 := by
-    clear * -
-    simp_all only [Nat.reducePow, Nat.cast_ofNat, Y]
-    rfl
-
-  have h_S_mod_10 : (S_int : ZMod 10) = 3 := by
-    clear * - h_Y_mod_10
-    simp_all only [Nat.reducePow, Nat.cast_ofNat, Int.reduceNeg, Int.cast_sum, Int.cast_mul, Int.cast_pow, Int.cast_neg,
-      Int.cast_ofNat, Y, S_int]
-    (norm_num [*] at *)
-    rfl
-
-  have h_step_final_mod : S_int.natAbs % 10 = 3 := by
-    clear * - h_S_mod_10 h_S_int_nn
-    simp_all only [Int.reduceNeg, Nat.reducePow, Nat.cast_ofNat, Int.cast_sum, Int.cast_mul, Int.cast_pow, Int.cast_neg,
-      Int.cast_ofNat, S_int, Y]
-    (norm_num [*] at *)
-
-  have h_result : Nat.floor ((10 ^ 20000 : ℝ) / (10 ^ 100 + 3)) % 10 = 3 := by
-    calc
-      Nat.floor ((10 ^ 20000 : ℝ) / (10 ^ 100 + 3)) % 10
-      = Nat.floor (y ^ 200 / (y + 3)) % 10 := by
-        simp_all only [Nat.reducePow, Nat.cast_ofNat, Nat.ofNat_pos, pow_pos, div_pos_iff_of_pos_left, Int.reduceNeg,
-            Int.cast_sum, Int.cast_mul, Int.cast_pow, Int.cast_neg, Int.cast_ofNat, y, Y, S_sum, S_int]
-
-      _ = S_int.natAbs % 10 := by
-        rw [h_step7_floor]
-
-      _ = 3 := by
-        exact h_step_final_mod
-
-  rw [h_result]
+  exact h_main

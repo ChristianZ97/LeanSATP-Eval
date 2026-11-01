@@ -15,6 +15,17 @@ This branch uses the **v4.27 SATP checkpoint** in a Lean `v4.27.0` environment.
 Each row is **one run**, not a union or an intersection across runs — see
 [Run selection](#run-selection).
 
+## Thesis Chapter 2
+
+[`thesis_ch2/`](thesis_ch2/README.md) formalizes Chapter 2 of the SATP thesis (Section 2 of the journal
+version) in Lean 4 on stock Mathlib: zero `sorry`, axioms within the allowlist below. It is not a DSP+
+run. The proofs were written by Claude Opus 5.5 agents with Lean in the loop. Afterwards they were
+broken down into 137 single-step leaf lemmas to show which steps `satp` can close:
+
+| Leaves | satp policy infer | satp + generative rule | bfsaesop | Opus 5.5 |
+|---|---|---|---|---|
+| 137 | 73 | 5 | 37 | 22 |
+
 ## Pipeline
 
 [DSP+][dspplus] three stages:

@@ -1,0 +1,12 @@
+project: formalization of thesis Chapter 2 "Formulating Solver Configuration" (journal Section 2): Setup, Lemma 2.3, Lemma 2.4, Proposition 2.5, Remark 2.6, Lemma 2.7, Corollary 2.8
+toolchain: leanprover/lean4:v4.27.0
+mathlib: a3a10db0e9d66acbebf76c5e6a135066525ac900 (stock); project/lake-manifest.json sha256=33e81f93a646db272616c6d88cb12711ed0c52a356ad4f22d47d3956246cfd14 (aesop cb837cc, same as LeanSATP)
+satp: ChristianZ97/satp-policy-v4.27 @ 8ed997e1526e58106a960966b06721dbf313c6a4, best_checkpoint.pt sha256=1c03fdd59943318e439f942e0f1d03f7a428ab54cd8ea6f16ac8d71a0e80f262; one `satp?` call per leaf, each with its own 200000-heartbeat budget (file-level `set_option maxHeartbeats 0`)
+bfsaesop: LeanSATP.BFS with ByteDance-Seed/BFS-Prover-V2-7B @ 533d59fc6b5e04ae6e2c25f1d88cf921061169d0
+generative rule: protocol of thesis Section 5.5 (one rule of A changes; t_C only supplies the arguments of a lemma rule that the search of A runs and that fails; rule type, priority, position, wrapper and lemma unchanged; t_C contains no tactics and no lemmas other than projections of hypotheses; same heartbeat budget); generator g = an Opus 5.5 subagent, at most 5 rounds x 8 candidates per leaf, early stop allowed only with an argument that no arguments can work
+author rulings: (1) when no context-name substitution exists, the counterpart keeps only the arguments that are context names; (2) t_C built with function combinators (Function.comp, Function.swap, Function.onFun, Function.eval, ...) is rejected
+gate: `lake build` of project/ on stock Mathlib with 0 errors; `#print axioms` on all 43 public declarations within ['Classical.choice', 'Quot.sound', 'propext'] (Sec2.Arm uses none); no sorry; proofs/Sec2All.lean compiles with `lake env lean` in the LeanSATP v4.27 workspace with 0 errors
+leaves: 137 = 73 satp policy infer + 5 satp + generative rule + 37 bfsaesop + 22 non-satp (written by Opus 5.5)
+warnings: 12 linter warnings, none in glue: 9 in copied bfsaesop "Try this" proofs (unused simp arguments, unreachable ring/ring_nf, unnecessary <;>), 1 unused hypothesis of a satp leaf, 2 unused hypotheses of public statements (softmax_zero: hM, minSamples_spec: hq0)
+single-file note: proofs/Sec2All.lean concatenates the five modules; the private lemma sum_exp_pos, defined in three modules, is renamed sum_exp_pos_SelfBound and sum_exp_pos_Plateau there
+date: 2026-11-01

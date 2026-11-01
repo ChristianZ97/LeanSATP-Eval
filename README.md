@@ -17,8 +17,8 @@ Each row is **one run**, not a union or an intersection across runs — see
 
 ## Thesis Chapter 2
 
-[`thesis_ch2/`](thesis_ch2/README.md) formalizes Chapter 2 of the SATP thesis (Section 2 of the journal
-version) in Lean 4 on stock Mathlib: zero `sorry`, axioms within the allowlist below. It is not a DSP+
+[`thesis_ch2/`](thesis_ch2/README.md) is a faithful formalization of Chapter 2 of the SATP thesis (Section 2 of
+the journal version) in Lean 4 on stock Mathlib: zero `sorry`, axioms within the allowlist below. It is not a DSP+
 run. The proofs were written by Claude Opus 5.5 agents with Lean in the loop. Afterwards they were
 broken down into 137 single-step leaf lemmas to show which steps `satp` can close:
 

@@ -1,6 +1,6 @@
 # Thesis Chapter 2 ↔ Lean statements
 
-The reference is Chapter 2 of the master's thesis; numbering follows the thesis, and the journal version uses the same numbers. The Lean files are in `project/Sec2/`. All statements are proved: as of 2026-11-01 there is no `sorry`, and only Lean's three standard axioms (`propext`, `Classical.choice`, `Quot.sound`) are used. This document confirms that what Lean proves is what the thesis states.
+The reference is Chapter 2 of the master's thesis; numbering follows the thesis, and the journal version uses the same numbers. The Lean files are in `project/Sec2/`. All statements are proved: as of 2026-11-01 there is no `sorry`, and only Lean's three standard axioms (`propext`, `Classical.choice`, `Quot.sound`) are used. The Lean statements are a faithful formalization of the thesis: they have the thesis's setup, assumptions and conclusions. Where the thesis writes `O(·)`, `Θ(·)`, `Ω(·)` or "sufficiently small", the Lean statement gives explicit constants, which imply the thesis's form. This document maps each thesis statement to its Lean statement and lists what is made precise.
 
 ## Shared setup (`Sec2/Basic.lean`; the Setup remark in §2.2 of the thesis and Eq. (2.1))
 
@@ -26,7 +26,7 @@ How assumptions are written (the same in every file): `hM : 0 < M` is the thesis
 
 - **Thesis:** `‖∇_l J_sparse‖₂ ≤ √(HM) · Δ_r · p_s`.
 - **Lean:** `norm_gradient_expectedReward_le`. For all `l`, `‖gradient J l‖ ≤ √(H·M) · (rs − rf) · p_s(l)`.
-- **Differences:** None.
+- **Made precise:** Nothing; the Lean statement is the thesis's statement.
 - **θ version (Proof sketch):** The thesis says "`‖∇_θ p_s‖₂` is at most a constant times `p_s` (see Lemma 2.3)". Lean: `norm_gradient_expectedReward_comp_le`, which states that when `net` is differentiable at `θ`, `‖∇_θ J‖₂ ≤ ‖∂l/∂θ‖₂ · √(HM) · Δ_r · p_s`; the constant contains `‖∂l/∂θ‖₂` and varies with `θ`.
 
 ## Lemma 2.4 Quadratic per-step growth (`Sec2/Growth.lean`)
@@ -35,7 +35,7 @@ How assumptions are written (the same in every file): `hM : 0 < M` is the thesis
 - **Lean:**
   - `ascentStep Astar rs rf α l = l + α • ∇_l J_sparse(l)`: one step of gradient ascent.
   - `growth`: for all `0 < α ≤ α₀ = 1/((4H+1)·Δ_r)` and all `l`, after one step `0 ≤ p' − p ≤ 2α·HM·Δ_r · p²`.
-- **Differences:** The thesis's "sufficiently small" and `O(·)` are written here as explicit quantities:
+- **Made precise:** The thesis's "sufficiently small" and `O(·)` are written as explicit quantities:
   - `α₀ = 1/((4H+1)·Δ_r)` depends only on `H` and `Δ_r`, not on `l`, `M` or `𝒜*` (`4H+1` is the constant of `provingProb_deriv2_bound`);
   - `c = 2α·HM·Δ_r`, i.e., the constant in the O is taken to be 2;
   - the thesis states the result for the sequence `l_k`, while Lean states one step from an arbitrary `l`; taking `l = l_k` gives every `k`.
@@ -54,7 +54,7 @@ How assumptions are written (the same in every file): `hM : 0 < M` is the thesis
     2. for all `ε < Δ_r(1 − 2p₀)`, every number of steps `k` with `J* − J(l_k) ≤ ε` is `> 1/(2c·p₀)`;
     3. if `V k` is the cumulative verification count after `k` steps, with at least one verification per step (`k ≤ V k`), then `V k > 1/(2c·p₀)` when `ε`-suboptimality is reached.
   - `plateau` additionally assumes `H > 0`, to rule out Lean's `1/0 = 0` when `c = 0`.
-- **Differences:** The thesis's `N(ε) ∈ Ω(1/p_0)` is written as the explicit lower bound `1/(2c·p₀) = 1/(4α·HM·Δ_r·p₀)` in items 2 and 3 (with `α`, `H`, `M`, `Δ_r` fixed). Item 3 expresses "Θ(1) verifications per step" through the cumulative verification count `V`; the lower bound needs only "at least one per step".
+- **Made precise:** The thesis's `N(ε) ∈ Ω(1/p_0)` is written as the explicit lower bound `1/(2c·p₀) = 1/(4α·HM·Δ_r·p₀)` in items 2 and 3 (with `α`, `H`, `M`, `Δ_r` fixed). Item 3 expresses "Θ(1) verifications per step" through the cumulative verification count `V`; the lower bound needs only "at least one per step".
 
 ## Remark 2.6 Implication (`Sec2/Plateau.lean`; the last sentence in `Sec2/RandomSearch.lean`)
 
@@ -79,7 +79,7 @@ How assumptions are written (the same in every file): `hM : 0 < M` is the thesis
   - `minSamples_isTheta`: `N =Θ[p→0⁺] 1/p`.
   - `minSamples_sub_isBigO`: `N − (−log(1−q))/p = O(1)`, which is equivalent to the thesis's `(1 + O(p))` form.
   - `minSamples_bounds`: for `p ∈ (0, 1]`, `q/p ≤ N ≤ (−log(1−q)+1)/p`.
-- **Differences:**
+- **Made precise:**
   - The thesis's distribution `π(·∣C)` and `p_s = Σ_{A∈𝒜*} π(A∣C)` do not appear in Lean; `p` is just a real number. `N` depends on `π` only through `p_s`, and the theorems hold for every `p` in the range, so they cover any fixed distribution.
   - `minSamples_bounds` is an explicit-constant version that the thesis does not have (the thesis has only Θ and `1 + O(p_s)`).
 
@@ -89,15 +89,17 @@ How assumptions are written (the same in every file): `hM : 0 < M` is the thesis
 - **Lean:**
   - `perContext_minTotal`: when each context reaches `q` on its own, the smallest total verification count is `Σ_C N_C` (`N_C = minSamples q p_C`), which is the first step of the proof.
   - `perContext_bounds`: when all `p_C ∈ (0, 1]`, `q·Σ 1/p_C ≤ Σ N_C ≤ (−log(1−q)+1)·Σ 1/p_C`, which is `minSamples_bounds` summed over all `C`.
-- **Differences:**
+- **Made precise:**
   - The thesis's Θ states no constants and does not restrict `p_C`. Here the constants depend only on `q`, not on the number of contexts or on any `p_C`. The lower-bound constant `q` comes from the union bound: the probability that `N` samples yield at least one success is ≤ `N·p_C`.
   - "With probability at least `q`" is a requirement on each context separately, following the reading of the thesis's proof. If it were read as "all contexts succeed simultaneously", the total count would be larger by a factor of about `log|𝒞|`, and the constants could no longer be independent of the number of contexts.
   - One sample counts as one verification (as for `N` in the Ch. 5 notation table).
 
-## Points to confirm
+## Formalization choices
+
+These choices make the thesis's informal parts precise:
 
 1. Lemma 2.4 takes `c` to be `2α·HM·Δ_r` (O constant 2), with the step-size upper bound `α₀ = 1/((4H+1)·Δ_r)`; `plateau` for Prop 2.5 and `plateau_uniform` for Remark 2.6 use the same step-size upper bound and `c`.
 2. The `Ω(1/p_0)` of Prop 2.5 is expressed as "number of steps > `1/(2c·p₀)`" and "cumulative verification count > `1/(2c·p₀)` (at least one verification per step)"; `plateau` additionally assumes `H > 0`.
 3. Cor 2.8 expresses Θ with the constants `q` and `−log(1−q)+1`, which depend only on `q`, with no range assumed beyond `p_C ∈ (0, 1]`; `N_𝒞 = Σ_C N_C` is written as `perContext_minTotal`.
 4. The two Implication sentences of Remark 2.6 are written as `plateau_uniform` and `provingProb_zero_single`, with the assumptions that Remark 2.6 states (`|𝒜*|` bounded and `M ≥ 2`; `|𝒜*| = 1`); see Remark 2.6 above.
-5. The network parameters `θ` are in scope: the Setup remark's chain rule `norm_gradient_comp_le` and the Proof sketch's θ version `norm_gradient_expectedReward_comp_le` are added together; if `θ` is left out of scope, both are moved together to "not formalized".
+5. The network parameters `θ` are in scope: the Setup remark's chain rule `norm_gradient_comp_le` and the Proof sketch's θ version `norm_gradient_expectedReward_comp_le` are formalized together.

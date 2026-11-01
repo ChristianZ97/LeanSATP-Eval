@@ -2,6 +2,7 @@
 
 A complete Lean 4 + Mathlib formalization of Chapter 2, *Formulating Solver Configuration*, of the SATP master's thesis (Section 2 of the journal version). It covers the Setup remark and Lemma 2.3 through Corollary 2.8.
 
+- **Faithful:** the Lean statements say what the thesis says, under the thesis's own setup and assumptions; `O(·)`, `Θ(·)` and "sufficiently small" become explicit constants (see `STATEMENTS.md`).
 - **Zero `sorry`:** every result is proved.
 - **Axioms:** every public declaration depends only on `propext`, `Classical.choice` and `Quot.sound`.
 - **Proof structure:** the proofs are broken down into 137 single-step *leaf* lemmas. Wherever possible, a leaf is closed by the configuration that `satp` emits, copied verbatim, and a comment records how the step was proved.
@@ -108,12 +109,12 @@ Two clarifications were fixed by the author:
 
 Under these rulings, two further A′ that the search found are not counted, and those leaves are tagged by their next method.
 
-## What the formalization fixes
+## Formalization choices
 
-`STATEMENTS.md` maps each thesis statement to its Lean statement. The modeling choices are:
+`STATEMENTS.md` maps each thesis statement to its Lean statement. The statements follow the thesis; these choices make it precise:
 
-- Lemma 2.7 starts from the probability `(1 − p_s)^N` that `N` independent samples all fail; it does not formalize product measures.
-- The Setup simplification `M_h = M` is kept.
+- Lemma 2.7 starts, as the thesis's proof does, from the probability `(1 − p_s)^N` that `N` independent samples all fail; product measures are not formalized.
+- The Setup's simplification `M_h = M` is the thesis's own.
 - The "sufficiently small step size" of Lemma 2.4 is made explicit: `0 < α ≤ 1/((4H + 1) Δ_r)` with `c = 2 α H M Δ_r`.
 - The thesis's proof of Lemma 2.4 uses a bound on the second derivative of the softmax policy without proving it. That bound is proved here (`provingProb_deriv2_bound`).
 

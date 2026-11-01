@@ -13,7 +13,8 @@ The proofs in `../project` (see `../README.md`) were written first and decompose
 the decomposition comes first, and it follows the thesis text.
 
 The DSP theorems live in `namespace Sec2.DSP`. Their statements are the statements of
-`../project`: for each of them, `type_of% @Sec2.DSP.X = type_of% @Sec2.X` holds by `rfl`.
+`../project`, a faithful formalization of the thesis (see `../STATEMENTS.md`). For each of them,
+`type_of% @Sec2.DSP.X = type_of% @Sec2.X` holds by `rfl`.
 
 ## Layout
 

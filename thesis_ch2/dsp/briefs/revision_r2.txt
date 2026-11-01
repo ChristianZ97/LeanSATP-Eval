@@ -1,0 +1,40 @@
+Review result: your sketch is accepted as written. It is faithful, and no step changes.
+
+One revision, the same for all five modules.
+
+Some gaps rely on facts that the thesis treats as known and that are already public theorems
+of `Sec2`. Examples: π(A|C) ≥ 0, p_s ≤ 1, p_s ≥ 0, and that the softmax is positive and sums
+to 1. A prover sees only the hypotheses listed in the gap's `prove_with`, and the automated
+prover retrieves lemmas from Mathlib only, so it cannot find these theorems by name.
+
+Revise as follows.
+
+1. For each gap, ask whether the step's reasoning uses a property of the thesis's objects that
+   one of the public theorems below states. If it does:
+   - add a cite line before the gap. If several gaps use the same fact, add it once, earlier in
+     the proof. Example:
+       -- [aux, cite: policy_pos] π(A|C) > 0 for every arm (used by L23.7)
+       have hπ : ∀ A : Arm H M, 0 < policy l A := fun A => policy_pos l A
+   - add the cite's name to that gap's `prove_with [...]`.
+2. Cite only facts that the step's reasoning uses. Do not cite a theorem that states the step
+   itself, or a stronger form of it.
+3. Change nothing else:
+   - no step's statement;
+   - no new gaps and no removed gaps;
+   - no reordering of steps (moving an existing cite earlier is fine).
+   The number of gaps must stay the same.
+4. If a fact the step needs is not one of the public theorems, do not add an aux gap for it;
+   leave the gap as it is.
+5. The citing rules of the brief still hold:
+   - cite earlier theorems only, never the theorem you are proving;
+   - never cite `policy_zero` or `provingProb_zero`;
+   - a cite term may use `fun` binders and arguments, and nothing that searches.
+
+Public theorems of `Sec2` you may cite (their statements are in the skeleton you already have):
+softmax_pos, sum_softmax, policy_pos, sum_policy, provingProb_nonneg, provingProb_pos,
+provingProb_le_one, differentiable_provingProb, differentiable_expectedReward,
+provingProb_deriv2_bound, softmax_zero, minSamples_spec, minSamples_bounds, and the in-scope
+theorems that come earlier in thesis order than the one you are proving.
+
+Reply with the whole revised file in one fenced lean block, then a short list: for each gap
+whose hint changed, the step ID and the names you added.

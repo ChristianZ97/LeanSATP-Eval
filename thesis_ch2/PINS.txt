@@ -10,3 +10,10 @@ leaves: 137 = 73 satp policy infer + 5 satp + generative rule + 37 bfsaesop + 22
 warnings: 12 linter warnings, none in glue: 9 in copied bfsaesop "Try this" proofs (unused simp arguments, unreachable ring/ring_nf, unnecessary <;>), 1 unused hypothesis of a satp leaf, 2 unused hypotheses of public statements (softmax_zero: hM, minSamples_spec: hq0)
 single-file note: proofs/Sec2All.lean concatenates the five modules; the private lemma sum_exp_pos, defined in three modules, is renamed sum_exp_pos_SelfBound and sum_exp_pos_Plateau there
 date: 2026-11-01
+dsp: Draft-Sketch-Prove version of the 17 theorems asserted or proved in thesis Section 2.2 (namespace Sec2.DSP, project/Sec2/DSP/*.lean; see dsp/README.md)
+dsp draft: dsp/draft/steps.md, 61 steps (and 4 modeling items built into the statements)
+dsp sketch: five Claude Opus 5.5 subagents without tools (input: the thesis chapter, steps.md, the statements with every proof replaced by sorry; transcripts audited); 62 gaps `prove_with [hypotheses]` = 55 steps + 6 aux + 1 conclusion; a second pass added 11 citations of public theorems to gap contexts, statements unchanged
+dsp prove: each gap is credited to the first stage that closes it, run with every other gap sorry: satp? (200000 heartbeats per call, 2400 s per file) -> generative rule (thesis Section 5.5; generator = a fresh Opus 5.5 subagent without tools, at most 5 rounds x 8 candidates or 30 min, no bfsaesop hints) -> bfsaesop (one attempt, 2400 s per file) -> Opus 5.5 (a fresh subagent without tools, at most 12 rounds or 60 min)
+dsp result: 62 gaps = 17 satp policy infer + 0 satp + generative rule + 16 bfsaesop + 29 non-satp (written by Opus 5.5); satp on each whole theorem 0/17; satp on the first sketch 16/62
+dsp gate: `lake build Sec2 Sec2.DSP` with 0 errors; `#print axioms` on the 17 DSP theorems within ['Classical.choice', 'Quot.sound', 'propext']; type_of% @Sec2.DSP.X = type_of% @Sec2.X by rfl for all 17; no direct or indirect use of the 17 in-scope Sec2 theorems; replacing each proof by its gap gives the sketch back verbatim; proofs/Sec2DSPAll.lean compiles with `lake env lean` in the LeanSATP v4.27 workspace
+dsp date: 2026-11-02

@@ -5,6 +5,7 @@ A complete Lean 4 + Mathlib formalization of Chapter 2, *Formulating Solver Conf
 - **Zero `sorry`:** every result is proved.
 - **Axioms:** every public declaration depends only on `propext`, `Classical.choice` and `Quot.sound`.
 - **Proof structure:** the proofs are broken down into 137 single-step *leaf* lemmas. Wherever possible, a leaf is closed by the configuration that `satp` emits, copied verbatim, and a comment records how the step was proved.
+- **DSP version:** `dsp/` holds a second proof of the results of Section 2.2. It follows the thesis text step by step (Draft–Sketch–Prove); see [`dsp/README.md`](dsp/README.md).
 
 ## Layout
 
@@ -15,7 +16,10 @@ project/                   Lake project on stock Mathlib (Lean v4.27.0, Mathlib 
   Sec2/Growth.lean           Lemma 2.4 (Quadratic per-step growth), with the second-derivative bound it relies on
   Sec2/Plateau.lean          Proposition 2.5 (Sparsity inflates verification cost), Remark 2.6 (Implication)
   Sec2/RandomSearch.lean     Lemma 2.7 (Random search costs Θ(1/p_s)), Corollary 2.8 (Cost of per-context search)
+  Sec2/DSP/*.lean            the DSP version of the Section 2.2 proofs (namespace Sec2.DSP; see dsp/)
 proofs/Sec2All.lean        the five modules in one file, checked with `lake env lean` like the rest of this repository
+proofs/Sec2DSPAll.lean     the five modules and the DSP modules in one file
+dsp/                       the DSP version: draft, sketch, briefs, README and STEPS
 STATEMENTS.md              thesis-to-Lean mapping of every statement, with the modeling choices
 LEAVES.md                  all 137 leaves and how each one is proved
 PINS.txt                   versions, checkpoints and the verification gate

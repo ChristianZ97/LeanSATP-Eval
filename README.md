@@ -26,6 +26,15 @@ broken down into 137 single-step leaf lemmas to show which steps `satp` can clos
 |---|---|---|---|---|
 | 137 | 73 | 5 | 37 | 22 |
 
+A second version, [`thesis_ch2/dsp/`](thesis_ch2/dsp/README.md), follows the thesis text instead
+(Draft–Sketch–Prove). Every step of the informal proofs of Section 2.2 is one `have` in a sketch
+written without access to the proofs above. Each gap goes to `satp`, the generative rule,
+`bfsaesop` and, as a fallback, Opus 5.5, in that order:
+
+| Gaps | satp | satp + generative rule | bfsaesop | Opus 5.5 |
+|---|---|---|---|---|
+| 62 | 17 | 0 | 16 | 29 |
+
 ## Pipeline
 
 [DSP+][dspplus] three stages:

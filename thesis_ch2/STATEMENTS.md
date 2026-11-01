@@ -58,7 +58,7 @@ How assumptions are written (the same in every file): `hM : 0 < M` is the thesis
 
 ## Remark 2.6 Implication (`Sec2/Plateau.lean`; the last sentence in `Sec2/RandomSearch.lean`)
 
-- **Thesis:** At a uniform initialization, `π^{(h)}(m∣C) = 1/M`, `p_0 = |𝒜*| M^{−H}`, and `π(·∣C)` is uniform over `𝒜`; uniform random search also has proving probability `p_0` and, by Lemma 2.7, needs `Θ(1/p_0)` verifications.
+- **Thesis:** At a uniform initialization, `π^{(h)}(m∣C) = 1/M`, `p_0 = |𝒜*| M^{−H}`, and `π(·∣C)` is uniform over `𝒜`. If `|𝒜*|` is bounded and `M ≥ 2`, `k̄ = 1/(2c·p_0)` is exponential in `H`; a single component (`H = 1`) with a single optimal arm (`|𝒜*| = 1`) has `p_0 = 1/M`. Uniform random search also has proving probability `p_0` and, by Lemma 2.7, needs `Θ(1/p_0)` verifications.
 - **Lean:**
   - `policy_of_uniform`, `provingProb_of_uniform`: the hypothesis is exactly the thesis's "`π^{(h)}(m∣C) = 1/M` for every `h` and `m`", and the conclusions are that each arm has probability `1/M^H` (uniform over `𝒜`) and that `p_s = |𝒜*| / M^H`;
   - `softmax_zero`: all-zero logits satisfy this hypothesis;
@@ -66,9 +66,9 @@ How assumptions are written (the same in every file): `hM : 0 < M` is the thesis
   - `plateau_uniform`: starting from a uniformly initialized `l₀` (with the same step-size condition as `growth` and `plateau`), every number of steps that reaches ε-suboptimality satisfies `k > M^H/(2c·|𝒜*|)`, where `c = 2α·HM·Δ_r`;
   - `provingProb_zero_single`: `p_0 = 1/M` when `H = 1` and `|𝒜*| = 1`;
   - `uniformSearch_bounds` (`Sec2/RandomSearch.lean`): the last sentence. It is `minSamples_bounds` with `p := p_s(0)`: `q/p_0 ≤ N ≤ (−log(1−q)+1)/p_0`, with constants independent of `H`, `M` and `𝒜*`.
-- **Assumptions made explicit:** Remark 2.6 states its two Implication sentences informally. Neither follows from `p_0 = |𝒜*| M^{−H}` alone, so the Lean versions state the assumptions they rely on:
-  - "`k̄` is exponential in `H`" holds when `p_0` decreases exponentially in `H`, for example with `M ≥ 2` and `|𝒜*|` bounded. Without such an assumption it can fail: `𝒜* = {A : A_0 = 1}` has `M^{H−1}` arms, `p_0 = 1/M`, and `k̄ = 1/(4α·H·Δ_r)` decreases as `H` grows.
-  - "For H = 1, `p_0 = 1/M`" holds when `|𝒜*| = 1`; in general, `p_0 = |𝒜*|/M ≥ 1/M`.
+- **Assumptions:** Remark 2.6 states the assumptions of its two Implication sentences, and the Lean versions match them:
+  - "If `|𝒜*|` is bounded and `M ≥ 2`, `k̄` is exponential in `H`": `plateau_uniform` gives `k̄ = M^H/(2c·|𝒜*|)` explicitly, which grows exponentially in `H` under these assumptions. They are needed: `𝒜* = {A : A_0 = 1}` has `M^{H−1}` arms, `p_0 = 1/M`, and `k̄ = 1/(4α·H·Δ_r)` decreases as `H` grows.
+  - "A single component with a single optimal arm has `p_0 = 1/M`": `provingProb_zero_single`, with the hypotheses `H = 1` and `|𝒜*| = 1`. Without the second, `p_0 = |𝒜*|/M ≥ 1/M`.
 
 ## Lemma 2.7 Random search costs `Θ(1/p_s)` (`Sec2/RandomSearch.lean`)
 
@@ -99,5 +99,5 @@ How assumptions are written (the same in every file): `hM : 0 < M` is the thesis
 1. Lemma 2.4 takes `c` to be `2α·HM·Δ_r` (O constant 2), with the step-size upper bound `α₀ = 1/((4H+1)·Δ_r)`; `plateau` for Prop 2.5 and `plateau_uniform` for Remark 2.6 use the same step-size upper bound and `c`.
 2. The `Ω(1/p_0)` of Prop 2.5 is expressed as "number of steps > `1/(2c·p₀)`" and "cumulative verification count > `1/(2c·p₀)` (at least one verification per step)"; `plateau` additionally assumes `H > 0`.
 3. Cor 2.8 expresses Θ with the constants `q` and `−log(1−q)+1`, which depend only on `q`, with no range assumed beyond `p_C ∈ (0, 1]`; `N_𝒞 = Σ_C N_C` is written as `perContext_minTotal`.
-4. The two Implication sentences of Remark 2.6 are written as `plateau_uniform` and `provingProb_zero_single`, which state the assumptions these sentences rely on (`p_0` decreasing exponentially in `H`; `|𝒜*| = 1`) explicitly; see Remark 2.6 above.
+4. The two Implication sentences of Remark 2.6 are written as `plateau_uniform` and `provingProb_zero_single`, with the assumptions that Remark 2.6 states (`|𝒜*|` bounded and `M ≥ 2`; `|𝒜*| = 1`); see Remark 2.6 above.
 5. The network parameters `θ` are in scope: the Setup remark's chain rule `norm_gradient_comp_le` and the Proof sketch's θ version `norm_gradient_expectedReward_comp_le` are added together; if `θ` is left out of scope, both are moved together to "not formalized".
